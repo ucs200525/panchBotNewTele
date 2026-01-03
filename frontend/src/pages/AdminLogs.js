@@ -77,7 +77,7 @@ const AdminLogs = () => {
               placeholder="Enter Admin Secret"
               style={styles.input}
             />
-            <button type="submit" style={styles.button}>Access Logs</button>
+            <button type="submit" style={styles.button}>Access or Delete</button>
           </form>
           {error && <p style={styles.error}>{error}</p>}
         </div>
