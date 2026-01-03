@@ -197,11 +197,9 @@ const PanchakaMuhurth = () => {
     }, [filteredData, createDummyTable]); // Now including createDummyTable in the dependency array
 
     const handleDateChange = (e) => {
-        const [year, month, day] = e.target.value.split("-");
-        const formattedDate = `${day}/${month}/${year}`;
-        console.log("formattedDate: ",formattedDate);
-        setDate(formattedDate);
-      };
+        // Keep date in yyyy-MM-dd format for HTML date input
+        setDate(e.target.value);
+    };
 
     return (
 
