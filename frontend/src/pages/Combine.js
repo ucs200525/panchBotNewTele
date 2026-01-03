@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import TableScreenshot from '../components/TableScreenshot';
+import LivePeriodTracker from '../components/LivePeriodTracker';
 
 const CombinePage = () => {
   const [city, setCity] = useState('');
@@ -248,6 +249,11 @@ const CombinePage = () => {
             <strong>Weekday:</strong> {weekday}
           </div>
         </div>
+      )}
+
+      {/* LivePeriodTracker - Only shows for TODAY */}
+      {bharagvData && bharagvData.data && bharagvData.data.length > 0 && (
+        <LivePeriodTracker data={bharagvData.data} selectedDate={date} />
       )}
   
       {combinedData && !loading && (
