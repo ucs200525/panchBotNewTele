@@ -336,7 +336,9 @@ h3 {
 }
 
 /* Form Sections */
-.form-section {
+.form-section,
+div[style*="textAlign: 'center'"],
+div[style*="text-align: center"] {
   max-width: 600px;
   margin: 0 auto 2rem;
   text-align: center;
@@ -346,13 +348,21 @@ h3 {
 label,
 .entercity,
 .date,
-.showNonBlue,
-.is12HourFormat {
+.showNonBlue {
   display: block;
   font-size: 0.9375rem;
   font-weight: 600;
   color: #334155;
   margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.is12HourFormat {
+  display: block;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #334155;
+  margin: 1rem auto 0.5rem;
   text-align: center;
 }
 
@@ -370,8 +380,9 @@ input[type="date"],
   border: 2px solid #e2e8f0;
   border-radius: 0.5rem;
   transition: all 0.2s ease;
-  margin: 0 auto;
+  margin: 0.5rem auto;
   display: block;
+  text-align: left;
 }
 
 input[type="text"]:focus,
@@ -393,6 +404,20 @@ input[type="checkbox"] {
   width: 1.125rem;
   height: 1.125rem;
   cursor: pointer;
+  vertical-align: middle;
+}
+
+/* Center all form containers */
+.cityAndDate,
+form,
+.form-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1rem;
 }
 
 /* ========================================
