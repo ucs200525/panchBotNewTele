@@ -63,23 +63,27 @@ body {
 /* ========================================
    Buttons
    ======================================== */
-button {
-  background-color: var(--color-primary);
-  color: var(--color-white);
-  padding: var(--space-3) var(--space-6);
+/* Buttons */
+button,
+.fetch-btn,
+.btn {
+  padding: 0.75rem 1.5rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: 0.5rem;
   cursor: pointer;
-  font-size: var(--text-base);
-  font-weight: var(--font-medium);
-  transition: all var(--transition-fast);
-  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
 }
 
-button:hover {
-  background-color: var(--color-primary-dark);
+button:hover,
+.fetch-btn:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
   transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
 }
 
 button:active {
@@ -295,6 +299,101 @@ th {
   margin: var(--space-4);
 }
 
+/* ========================================
+   Global Styles & Typography
+   ======================================== */
+
+/* Page Content Container */
+.content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+/* Headings - Professional sizing */
+h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1e293b;
+  text-align: center;
+  margin: 1.5rem 0 2rem;
+  letter-spacing: -0.025em;
+}
+
+h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #475569;
+  text-align: center;
+  margin: 1.5rem 0 1rem;
+}
+
+h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #64748b;
+  margin: 1rem 0;
+}
+
+/* Form Sections */
+.form-section {
+  max-width: 600px;
+  margin: 0 auto 2rem;
+  text-align: center;
+}
+
+/* Labels - Clean and readable */
+label,
+.entercity,
+.date,
+.showNonBlue,
+.is12HourFormat {
+  display: block;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+/* Input Fields - Professional styling */
+input[type="text"],
+input[type="date"],
+.city,
+.enterdate {
+  width: 100%;
+  max-width: 400px;
+  padding: 0.75rem 1rem;
+  font-size: 0.9375rem;
+  color: #1e293b;
+  background: #ffffff;
+  border: 2px solid #e2e8f0;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+  margin: 0 auto;
+  display: block;
+}
+
+input[type="text"]:focus,
+input[type="date"]:focus,
+.city:focus,
+.enterdate:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+input[type="text"]::placeholder {
+  color: #94a3b8;
+}
+
+/* Checkboxes */
+input[type="checkbox"] {
+  margin-left: 0.5rem;
+  width: 1.125rem;
+  height: 1.125rem;
+  cursor: pointer;
+}
 /* ========================================
    Responsive Design - Mobile First
    ======================================== */
