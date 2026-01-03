@@ -2,7 +2,10 @@
 export const parseTimeToMinutes = (timeStr) => {
   if (!timeStr || timeStr.trim() === '') return null;
   
-  const parts = timeStr.trim().split(' ');
+  // Remove date suffix if present (e.g., ", Jan 04")
+  let cleanTime = timeStr.split(',')[0].trim();
+  
+  const parts = cleanTime.trim().split(' ');
   if (parts.length !== 2) return null;
   
   const [time, period] = parts;
@@ -16,7 +19,14 @@ export const parseTimeToMinutes = (timeStr) => {
   if (period === 'PM' && hours !== 12) hours += 12;
   if (period === 'AM' && hours === 12) hours = 0;
   
-  return hours * 60 + minutes;
+  let totalMinutes = hours * 60 + minutes;
+  
+  // If the original string had a date (next day), add 24 hours
+  if (timeStr.includes(',')) {
+    totalMinutes += 24 * 60;
+  }
+  
+  return totalMinutes;
 };
 
 export const findCurrentPeriod = (data, currentTime) => {
@@ -27,7 +37,47 @@ export const findCurrentPeriod = (data, currentTime) => {
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     
-    // Check period 1 (Start1-End1)
+    // For Panchaka Muhurth format: "06:34 AM to 07:24 AM" or "10:46 PM to 12:50 AM, Jan 04"
+    if (row.time) {
+      const timeParts = row.time.split(' to ');
+      if (timeParts.length === 2) {
+        const start = parseTimeToMinutes(timeParts[0]);
+        const end = parseTimeToMinutes(timeParts[1]);
+        
+        if (start !== null && end !== null) {
+          // Handle overnight periods
+          if (end > 24 * 60) {
+            // Period crosses midnight
+            if (now >= start || now < (end - 24 * 60)) {
+              return {
+                index: i,
+                column: 'time',
+                start: start,
+                end: end > 24 * 60 ? end - 24 * 60 : end, // Normalize for display
+                startTime: timeParts[0],
+                endTime: timeParts[1],
+                weekday: row.muhurat || row.category || ''
+              };
+            }
+          } else {
+            // Normal period within same day
+            if (now >= start && now < end) {
+              return {
+                index: i,
+                column: 'time',
+                start: start,
+                end: end,
+                startTime: timeParts[0],
+                endTime: timeParts[1],
+                weekday: row.muhurat || row.category || ''
+              };
+            }
+          }
+        }
+      }
+    }
+    
+    // For Bhargava Panchang format: start1/end1 and start2/end2
     const start1 = parseTimeToMinutes(row.start1);
     const end1 = parseTimeToMinutes(row.end1);
     
@@ -43,7 +93,6 @@ export const findCurrentPeriod = (data, currentTime) => {
       };
     }
     
-    // Check period 2 (Start2-End2)
     const start2 = parseTimeToMinutes(row.start2);
     const end2 = parseTimeToMinutes(row.end2);
     
