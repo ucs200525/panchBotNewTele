@@ -19,7 +19,7 @@ const app = express();
 app.use(express.json());
 
 
-const allowedOrigins = ['http://localhost:3000', 'https://panchang-ten.vercel.app'];
+const allowedOrigins = ['http://localhost:3000', 'https://panchang-ten.vercel.app', 'https://panchanfrontend.vercel.app'];
 
 const corsOption = {
   origin: allowedOrigins, // allowed origins
