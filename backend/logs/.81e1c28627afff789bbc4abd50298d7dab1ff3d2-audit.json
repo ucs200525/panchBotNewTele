@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "D:\\4.own\\Projects\\panchBotTele\\backend\\logs\\.81e1c28627afff789bbc4abd50298d7dab1ff3d2-audit.json",
+    "files": [
+        {
+            "date": 1767430058003,
+            "name": "D:\\4.own\\Projects\\panchBotTele\\backend\\logs\\error-2026-01-03.log",
+            "hash": "b5ffc31f68293fcf8c9b4b6a86c9cffb1b1c7028ddb0491c08253f3dfd5b0480"
+        }
+    ],
+    "hashType": "sha256"
+}

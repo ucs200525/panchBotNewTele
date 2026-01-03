@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "D:\\all projects\\www.panchang.blog\\Web\\panchang\\backend\\utils\\logs\\.3443b2ed16a93025db62324da77e077cc9d94ce6-audit.json",
+    "files": [
+        {
+            "date": 1732624425939,
+            "name": "D:\\all projects\\www.panchang.blog\\Web\\panchang\\backend\\utils\\logs\\app-2024-11-26.log",
+            "hash": "cc2d194e72ccc7227ef404da9c32f678e2b8961e305a11f04c39f0fc206c5c6b"
+        }
+    ],
+    "hashType": "sha256"
+}

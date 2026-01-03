@@ -1,0 +1,394 @@
+body {
+    font-family: Calibri;
+    margin: 0;
+    padding: 0;
+    background-color: #dfd9d9;
+}
+/* Inline Information Box Styling */
+.info-inline {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+    background-color: #f0f8ff;
+    border: 1px solid #ccc;
+    padding: 8px 12px;
+    border-radius: 8px;
+  }
+  
+  .info-inline-item {
+    margin-right: 20px;
+    font-size: 16px;
+  }
+  
+  .info-inline-item strong {
+    font-weight: bold;
+  }
+  
+  /* Spinner Styling */
+  .loading-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+  }
+  
+  .spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 2s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  /* Button Styling */
+  .fetch-btn {
+    background-color: #3498db;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 5px;
+  }
+  
+  .fetch-btn:disabled {
+    background-color: #ddd;
+    cursor: not-allowed;
+  }
+  
+  /* Error Message Styling */
+  .error-message {
+    color: red;
+    text-align: center;
+    font-weight: bold;
+    margin-top: 20px;
+  }
+  
+/* Style for loading spinner */
+.loading-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+  }
+  
+  .spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 2s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  /* Style for button */
+  .fetch-btn {
+    background-color: #3498db;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 5px;
+  }
+  
+  .fetch-btn:disabled {
+    background-color: #ddd;
+    cursor: not-allowed;
+  }
+  
+  /* Error message styling */
+  .error-message {
+    color: red;
+    text-align: center;
+    font-weight: bold;
+    margin-top: 20px;
+  }
+
+  
+.navbar {
+    background-color: #333;
+    overflow: hidden;
+    color: white;
+    padding: 1rem;
+}
+
+.navbar a {
+    color: white;
+    text-decoration: none;
+    padding: 14px 20px;
+    display: inline-block;
+}
+
+.navbar a:hover {
+    background-color: #ddd;
+    color: black;
+}
+
+table {
+    width: 80%;
+    border-collapse: collapse;
+    border: 2px solid black;
+    margin: 20px auto;
+}
+
+th, td {
+    border: 1px solid #000;
+    padding: 0px;
+    text-align: center;
+    white-space: nowrap;
+    font-size: 15px;
+    font-weight: normal;
+}
+
+th {
+    font-weight: bold;
+
+}
+
+.header-in-table {
+    background-color: #70AD47;
+}
+
+td, th {
+    height: 20px;
+    width: 45px;
+}
+
+
+.sunrise-today {
+    background-color: #ED7D31;
+}
+
+.sunset-today {
+    background-color: #FF0000;
+}
+
+.blue-background {
+    background-color: #002060;
+}
+
+.sunrise-tmrw {
+    background-color: #FFD966;
+}
+.weekday-column {
+    width: 100px; /* Adjust width as needed */
+    text-align: center;
+    overflow: hidden; /* Ensure text doesn't overflow */
+    white-space: nowrap; /* Prevent text from wrapping */
+}
+.information {
+    display: flex; /* Use flexbox for horizontal alignment */
+    align-items: center; /* Vertically align items in the center */
+    margin: 5px;
+    /* Optional: add margin around the container */
+}
+
+.color-box {
+    width: 15px; /* Adjust size as needed */
+    height: 15px; /* Adjust size as needed */
+    background-color: rgb(0, 32, 96);
+    border-radius: 50%; /* Makes the box round */
+    border: 1px solid #000; /* Optional: border to make the box more visible */
+    margin-right: 10px; /* Space between the color box and text */
+}
+
+.info {
+    font-family: sans-serif, Arial, Helvetica;
+    font-size: 16px;
+}
+
+p {
+    margin: 0; /* Remove default margin */
+    font-size: 25px; /* Adjust size as needed */
+   /* Space between the asterisk and the color box */
+}
+/* General button styling */
+.share-button {
+    background-color: #007bff; /* Blue background */
+    color: white; /* White text */
+    border: none; /* Remove border */
+    border-radius: 50%; /* Circular button */
+    width: 60px; /* Width of button */
+    height: 60px; /* Height of button */
+    padding: 0; /* Remove padding */
+    font-size: 24px; /* Font size */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s; /* Smooth transitions */
+    margin: 10px; /* Margin for spacing */
+    display: flex; /* Flexbox to center icon */
+    align-items: center; /* Center icon vertically */
+    justify-content: center; /* Center icon horizontally */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow below button */
+}
+
+/* Button hover effects */
+.share-button:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+    transform: scale(1.05); /* Slightly enlarge button */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Enhance shadow on hover */
+}
+
+/* Button active state */
+.share-button:active {
+    background-color: #004494; /* Even darker blue when clicked */
+    transform: scale(0.95); /* Slightly shrink button */
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2); /* Adjust shadow when clicked */
+}
+
+/* Button focus state for accessibility */
+.share-button:focus {
+    outline: none; /* Remove default focus outline */
+    box-shadow: 0 0 0 3px rgba(38, 143, 255, 0.5); /* Add custom focus outline */
+}
+
+/* Icon styling */
+.share-button i {
+    font-size: 24px; /* Adjust icon size */
+}
+
+.download-button{
+    margin: 0px;
+}
+
+@media (max-width: 640px) {
+*{
+    margin: 0;
+    font-family: sans-serif,Arial,  Helvetica;
+    font-size: 16px;
+    /* Allows scrolling if content overflows */
+    
+}
+
+
+
+th, td {
+    border: 1px solid #000;
+    padding: 5px;
+    font-size: 16px;
+    font-weight: normal;
+}
+
+table {
+    width: 90%;
+}
+
+
+.sun{
+    display: none;
+}
+.input-city, .input-date {
+    display: block; /* Make each input and label block-level for separate lines */
+    margin: 5px auto; /* Center the elements and add vertical spacing */
+}
+
+.input-city {
+    width: 100%; /* Adjust width as needed */
+}
+
+.input-date {
+    
+    width: 80%; /* Adjust width as needed */
+}
+
+button {
+    display: block;
+    margin: 20px auto; /* Center the button and add vertical spacing */
+}
+
+.input-time{
+    display: none;
+}
+
+.navbar {
+    position: fixed; /* Keep navbar fixed at the top */
+    top: 0;
+    left: 0;
+    width: 100%; /* Full width of the viewport */
+    background-color: #333; /* Change this to your desired color */
+    color: white; /* Text color */
+    padding: 10px; /* Add padding if needed */
+    z-index: 1000; /* Ensure it stays on top of other content */
+}
+
+.content {
+    padding-top: 800px; /* Increased space above content */
+}
+}
+
+@media (max-width: 640px) {
+    * {
+        margin: 0;
+        font-family: sans-serif, Arial, Helvetica;
+        font-size: 16px;
+    }
+
+    /* Adjust label styles to make them neat and aligned */
+    label {
+        font-weight: normal;
+        display: block;
+        margin-bottom: 5px;
+        font-size: 14px; /* Slightly smaller font for labels */
+    }
+
+    /* Center and style the input fields */
+    .input-city, .input-date {
+        display: block; /* Make each input and label block-level for separate lines */
+        width: 100%; /* Ensure full width for inputs */
+        margin: 5px auto; /* Center the elements and add vertical spacing */
+        padding: 8px; /* Add some padding inside input for better appearance */
+        font-size: 16px; /* Ensure readable text */
+        border: 1px solid #ccc; /* Light border for neatness */
+        border-radius: 4px; /* Rounded corners for a softer look */
+    }
+
+    .input-date {
+        width: 90%; /* Slightly reduced width for date input to fit better */
+    }
+
+    /* Style the button */
+    button {
+        display: block;
+        margin: 20px auto; /* Center the button and add vertical spacing */
+        padding: 10px 20px; /* Add some padding for the button */
+        font-size: 16px;
+        background-color: #4CAF50; /* Green background color */
+        color: white; /* White text color */
+        border: none; /* Remove border */
+        border-radius: 4px; /* Rounded corners */
+        cursor: pointer; /* Pointer cursor on hover */
+    }
+
+    button:hover {
+        background-color: #45a049; /* Darker green on hover */
+    }
+
+    /* Adjust navbar and content spacing */
+    .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background-color: #333;
+        color: white;
+        padding: 10px;
+        z-index: 1000;
+    }
+
+    .content {
+        padding-top: 65px; /* Adjust based on the height of your navbar */
+    }
+}
+

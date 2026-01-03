@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hidden Option Example</title>
+  <style>
+    #hidden-option {
+      display: none; /* Keep the hidden option initially hidden */
+    }
+  </style>
+</head>
+<body>
+  <h1>Hidden Option Demo</h1>
+  
+  <!-- Password input to reveal the hidden option -->
+  <input type="password" id="secret" placeholder="Enter secret" oninput="revealOption()" />
+  
+  <!-- Hidden option that will appear when the password is correct -->
+  <div id="hidden-option">Hidden Option</div>
+  
+  <script>
+    function revealOption() {
+      const secret = document.getElementById("secret").value;
+      if (secret === "your_secret_password") { // Replace with your actual password
+        document.getElementById("hidden-option").style.display = "block";
+      } else {
+        document.getElementById("hidden-option").style.display = "none";
+      }
+    }
+  </script>
+</body>
+</html>

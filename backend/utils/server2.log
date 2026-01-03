@@ -1,0 +1,13 @@
+2024-11-26 18:09:11 [INFO]: Server is running on port 4000
+2024-11-26 18:09:27 [ERROR]: get sun times: Vijayawada
+2024-11-26 18:09:27 [ERROR]: get sun times2: 2024-11-26
+2024-11-26 18:09:27 [INFO]: limit , remaining , reset :250024101732665600
+2024-11-26 18:09:27 [ERROR]: get lang lat time : 16.508757380.6185089Asia/Kolkata
+2024-11-26 18:09:27 [ERROR]: get sun times3: [object Object]
+2024-11-26 18:09:28 [INFO]: Sunrise and Sunset for today: 06:16:07, 17:33:40
+2024-11-26 18:09:29 [INFO]: Sunrise for tomorrow: 06:16:41
+2024-11-26 18:10:07 [INFO]: Server is running on port 4000
+2024-11-26 18:14:10 [INFO]: Server is running on port 4000
+2024-11-26 18:14:17 [INFO]: Server is running on port 4000
+2024-11-26 18:15:45 [INFO]: Lat and Lang given : 16.523594980.6366816
+2024-11-26 18:15:46 [INFO]: City Name Found: [object Object]

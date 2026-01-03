@@ -1,0 +1,4 @@
+{"level":"info","message":"Server is running on port 4000","timestamp":"2026-01-03 14:17:38"}
+{"level":"info","message":"::1 - - [03/Jan/2026:08:47:48 +0000] \"GET /api/health HTTP/1.1\" 404 149 \"-\" \"Go-http-client/1.1\"","timestamp":"2026-01-03 14:17:48"}
+{"level":"info","message":"Server is running on port 4000","timestamp":"2026-01-03 14:19:38"}
+{"level":"info","message":"Server is running on port 4000","timestamp":"2026-01-03 14:31:07"}
