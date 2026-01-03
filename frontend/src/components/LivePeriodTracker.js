@@ -6,23 +6,6 @@ const LivePeriodTracker = ({ data, selectedDate }) => {
   const [currentPeriod, setCurrentPeriod] = useState(null);
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // Check if selected date is today
-  const isToday = () => {
-    if (!selectedDate) return true; // If no date provided, assume it's today
-    
-    const today = new Date();
-    const selected = new Date(selectedDate);
-    
-    return today.getFullYear() === selected.getFullYear() &&
-           today.getMonth() === selected.getMonth() &&
-           today.getDate() === selected.getDate();
-  };
-
-  // Don't render if not viewing today's data
-  if (!isToday()) {
-    return null;
-  }
-
   // Real-time clock - updates every second
   useEffect(() => {
     const timer = setInterval(() => {
@@ -39,6 +22,23 @@ const LivePeriodTracker = ({ data, selectedDate }) => {
       setCurrentPeriod(period);
     }
   }, [currentTime, data]);
+
+  // Check if selected date is today
+  const isToday = () => {
+    if (!selectedDate) return true; // If no date provided, assume it's today
+    
+    const today = new Date();
+    const selected = new Date(selectedDate);
+    
+    return today.getFullYear() === selected.getFullYear() &&
+           today.getMonth() === selected.getMonth() &&
+           today.getDate() === selected.getDate();
+  };
+
+  // Don't render if not viewing today's data
+  if (!isToday()) {
+    return null;
+  }
 
   // Calculate remaining time
   const getRemainingTime = () => {
