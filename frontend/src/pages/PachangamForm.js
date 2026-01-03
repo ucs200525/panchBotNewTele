@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import html2canvas from 'html2canvas';
-import { findClosestDay } from '../components/weekdayColumn'; // Import the new component
-import LoadingSpinner from '../components/LoadingSpinner'; // Import the spinner component
+import LoadingSpinner from '../components/LoadingSpinner';
 import { useAuth } from '../context/AuthContext';
 import TableScreenshot from '../components/TableScreenshot';
 import LivePeriodTracker from '../components/LivePeriodTracker';
+import { findCurrentPeriod } from '../utils/periodHelpers';
 
 const TimeConverterApp = () => {
   const { localCity, localDate, setCityAndDate } = useAuth();
@@ -276,6 +275,8 @@ const TimeConverterApp = () => {
           </div>
         </div>
 
+        {/* Phase 2: Live Period Tracker */}
+        {data && data.length > 0 && <LivePeriodTracker data={data} />}
 
         <div>
 
@@ -293,8 +294,13 @@ const TimeConverterApp = () => {
               </tr>
             </thead>
             <tbody>
-              {data.map((item, index) => (
-                <tr key={index}>
+              {data.map((item, index) => {
+                // Check if this row is the current period
+                const currentPeriod = findCurrentPeriod(data, new Date());
+                const isCurrentPeriod = currentPeriod?.index === index;
+                
+                return (
+                <tr key={index} className={isCurrentPeriod ? 'current-period-row' : ''}>
                   <td>{item.start1}</td>
                   <td>{item.end1}</td>
                   <td
@@ -316,7 +322,8 @@ const TimeConverterApp = () => {
               <td>{item.value2}</td> */}
 
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>
