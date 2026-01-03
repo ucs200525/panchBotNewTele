@@ -96,13 +96,12 @@ tr:hover {
 }
 
 .cityAndDate {
-    display: grid;
-    place-items: center;
-    /* Centers both horizontally and vertically */
+    display: block;
     width: 100%;
-    /* Full width */
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
     background-color: #f9f9f9;
-    /* Optional: Background color */
 }
 
 /* Download Image Section */
