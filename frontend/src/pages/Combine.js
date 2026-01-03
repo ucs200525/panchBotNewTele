@@ -251,9 +251,9 @@ const CombinePage = () => {
         </div>
       )}
 
-      {/* LivePeriodTracker - Only shows for TODAY */}
-      {bharagvData && bharagvData.data && bharagvData.data.length > 0 && (
-        <LivePeriodTracker data={bharagvData.data} selectedDate={date} />
+      {/* LivePeriodTracker - Only shows for TODAY with Bhargava Panchang data */}
+      {bharagvData && Array.isArray(bharagvData) && bharagvData.length > 0 && (
+        <LivePeriodTracker data={bharagvData} selectedDate={date} />
       )}
   
       {combinedData && !loading && (
