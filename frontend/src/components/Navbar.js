@@ -1,14 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import './Navbar.css';
 
 const Navbar = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
 
   const isActive = (path) => location.pathname === path;
-
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   return (
     <nav className="modern-navbar">
@@ -24,19 +21,11 @@ const Navbar = () => {
           </Link>
         </div>
 
-        {/* Hamburger Menu (Mobile) */}
-        <button className="hamburger" onClick={toggleMenu} aria-label="Toggle menu">
-          <span className={isMenuOpen ? 'hamburger-line open' : 'hamburger-line'}></span>
-          <span className={isMenuOpen ? 'hamburger-line open' : 'hamburger-line'}></span>
-          <span className={isMenuOpen ? 'hamburger-line open' : 'hamburger-line'}></span>
-        </button>
-
-        {/* Navigation Links */}
-        <div className={`navbar-menu ${isMenuOpen ? 'open' : ''}`}>
+        {/* Navigation Links - Always visible, no hamburger */}
+        <div className="navbar-menu">
           <Link 
             to="/" 
             className={`nav-link ${isActive('/') ? 'active' : ''}`}
-            onClick={() => setIsMenuOpen(false)}
           >
             <span className="nav-icon">🏠</span>
             <span className="nav-text">Home</span>
@@ -45,7 +34,6 @@ const Navbar = () => {
           <Link 
             to="/panchaka" 
             className={`nav-link ${isActive('/panchaka') ? 'active' : ''}`}
-            onClick={() => setIsMenuOpen(false)}
           >
             <span className="nav-icon">⏰</span>
             <span className="nav-text">Panchaka Rahita</span>
@@ -54,13 +42,13 @@ const Navbar = () => {
           <Link 
             to="/combine" 
             className={`nav-link ${isActive('/combine') ? 'active' : ''}`}
-            onClick={() => setIsMenuOpen(false)}
           >
             <span className="nav-icon">⭐</span>
             <span className="nav-text">Good Timings</span>
           </Link>
 
-          {/* More Dropdown */}
+          {/* Removed More dropdown - uncomment if needed */}
+          {/* 
           <div className="nav-dropdown">
             <button className="nav-link dropdown-trigger">
               <span className="nav-icon">📚</span>
@@ -68,20 +56,21 @@ const Navbar = () => {
               <span className="dropdown-arrow">▼</span>
             </button>
             <div className="dropdown-menu">
-              <Link to="/DownloadImage" className="dropdown-item" onClick={() => setIsMenuOpen(false)}>
+              <Link to="/DownloadImage" className="dropdown-item">
                 📥 Download Image
               </Link>
-              <Link to="/drik-table-image" className="dropdown-item" onClick={() => setIsMenuOpen(false)}>
+              <Link to="/drik-table-image" className="dropdown-item">
                 📊 Drik Table
               </Link>
-              <Link to="/bhargav-table-image" className="dropdown-item" onClick={() => setIsMenuOpen(false)}>
+              <Link to="/bhargav-table-image" className="dropdown-item">
                 📊 Bhargav Table
               </Link>
             </div>
           </div>
+          */}
         </div>
 
-        {/* Right side actions */}
+        {/* Settings button - Optional */}
         <div className="navbar-actions">
           <button className="action-btn" title="Settings">
             ⚙️
