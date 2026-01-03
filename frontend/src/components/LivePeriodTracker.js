@@ -4,6 +4,7 @@ import { findCurrentPeriod } from '../utils/periodHelpers';
 const LivePeriodTracker = ({ data }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [currentPeriod, setCurrentPeriod] = useState(null);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   // Real-time clock - updates every second
   useEffect(() => {
@@ -50,7 +51,6 @@ const LivePeriodTracker = ({ data }) => {
   const getNextPeriod = () => {
     if (!currentPeriod || !data || data.length === 0) return null;
     
-    // Simple next period logic - can be enhanced
     const nextIndex = currentPeriod.index < data.length - 1 ? currentPeriod.index + 1 : 0;
     const nextRow = data[nextIndex];
     
@@ -65,11 +65,11 @@ const LivePeriodTracker = ({ data }) => {
   // Don't render if no current period
   if (!currentPeriod) {
     return (
-      <div className="live-status-card" style={{ background: 'linear-gradient(135deg, #94a3b8 0%, #64748b 100%)' }}>
-        <div className="clock">{currentTime.toLocaleTimeString('en-US')}</div>
-        <p style={{ textAlign: 'center', opacity: 0.9 }}>
-          No active period right now. Check the table for upcoming periods.
-        </p>
+      <div className="live-tracker-compact">
+        <div className="tracker-minimal">
+          🕐 {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+          <span className="no-period">• No active period</span>
+        </div>
       </div>
     );
   }
@@ -79,45 +79,41 @@ const LivePeriodTracker = ({ data }) => {
   const nextPeriod = getNextPeriod();
 
   return (
-    <div className="live-status-card">
-      {/* Real-time clock */}
-      <div className="clock">{currentTime.toLocaleTimeString('en-US')}</div>
-      
-      {/* Current period information */}
-      <div className="current-period-info">
-        <h3>🔴 Current Period</h3>
-        <p className="period-name">{currentPeriod.weekday}</p>
-        <p className="time-range">
-          {currentPeriod.startTime} - {currentPeriod.endTime}
-        </p>
-        
-        {/* Countdown timer */}
-        {remaining && (
-          <div className="countdown">
-            <span className="time-remaining">
-              ⏱️ {remaining.hours > 0 ? `${remaining.hours}h ` : ''}
-              {remaining.minutes}m remaining
-            </span>
-            
-            {/* Progress bar */}
-            <div className="progress-bar" title={`${Math.round(progress)}% complete`}>
-              <div 
-                className="progress-fill" 
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-          </div>
-        )}
+    <div className="live-tracker-compact">
+      {/* Minimal collapsed view */}
+      <div 
+        className="tracker-minimal" 
+        onClick={() => setIsExpanded(!isExpanded)}
+        style={{ cursor: 'pointer' }}
+      >
+        <div className="minimal-row">
+          <span className="time-badge">🕐 {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
+          <span className="period-badge">🔴 {currentPeriod.weekday}</span>
+          <span className="countdown-badge">
+            ⏱️ {remaining.hours > 0 ? `${remaining.hours}h ` : ''}{remaining.minutes}m
+          </span>
+          <span className="expand-icon">{isExpanded ? '▼' : '▶'}</span>
+        </div>
+        <div className="mini-progress">
+          <div className="mini-progress-fill" style={{ width: `${progress}%` }} />
+        </div>
       </div>
 
-      {/* Next period preview */}
-      {nextPeriod && (
-        <div className="next-period-preview">
-          <h4>⏭️ Up Next</h4>
-          <p>
-            <strong>{nextPeriod.weekday}</strong><br/>
-            Starts at {nextPeriod.startTime}
-          </p>
+      {/* Expanded view */}
+      {isExpanded && (
+        <div className="tracker-expanded">
+          <div className="expanded-content">
+            <div className="info-row">
+              <span className="label">⏰ Period:</span>
+              <span className="value">{currentPeriod.startTime} - {currentPeriod.endTime}</span>
+            </div>
+            {nextPeriod && (
+              <div className="info-row">
+                <span className="label">⏭️ Next:</span>
+                <span className="value">{nextPeriod.weekday} at {nextPeriod.startTime}</span>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

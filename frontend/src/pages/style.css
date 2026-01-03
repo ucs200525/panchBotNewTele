@@ -402,93 +402,121 @@ th {
 }
 
 /* ========================================
-   Live Period Tracker Styles (Phase 2)
-   COMPACT & RESPONSIVE VERSION
+   Live Period Tracker - ULTRA COMPACT
+   With Emojis & Collapsible Design
    ======================================== */
 
-/* Live status card - More Compact */
-.live-status-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: var(--color-white);
-  padding: var(--space-4);
-  border-radius: var(--radius-lg);
-  margin: var(--space-4) auto;
+/* Compact container */
+.live-tracker-compact {
+  margin: var(--space-3) auto;
   max-width: 100%;
-  box-shadow: var(--shadow-lg);
-  animation: slideInDown 0.5s ease-out;
 }
 
-@keyframes slideInDown {
+/* Minimal collapsed view */
+.tracker-minimal {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
+}
+
+.tracker-minimal:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.minimal-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-2);
+}
+
+.time-badge, .period-badge, .countdown-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: var(--font-medium);
+  white-space: nowrap;
+}
+
+.expand-icon {
+  margin-left: auto;
+  opacity: 0.7;
+  font-size: 0.8em;
+}
+
+.no-period {
+  margin-left: var(--space-3);
+  opacity: 0.8;
+  font-size: var(--text-sm);
+}
+
+/* Mini progress bar */
+.mini-progress {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.mini-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+  transition: width 1s linear;
+}
+
+/* Expanded view */
+.tracker-expanded {
+  background: rgba(255, 255, 255, 0.95);
+  margin-top: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
   from {
     opacity: 0;
     transform: translateY(-10px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-.clock {
-  font-size: var(--text-2xl);
-  font-weight: var(--font-bold);
-  text-align: center;
-  margin-bottom: var(--space-3);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 1px;
+.expanded-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
-.current-period-info {
-  text-align: center;
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--text-sm);
+  color: var(--color-dark);
 }
 
-.current-period-info h3 {
-  font-size: var(--text-base);
-  margin-bottom: var(--space-2);
-  opacity: 0.9;
-  font-weight: var(--font-medium);
-}
-
-.period-name {
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
-  margin: var(--space-2) 0;
-}
-
-.time-range {
-  font-size: var(--text-base);
-  opacity: 0.9;
-  margin: var(--space-2) 0;
-}
-
-.countdown {
-  margin-top: var(--space-3);
-}
-
-.time-remaining {
-  display: block;
-  font-size: var(--text-lg);
+.info-row .label {
   font-weight: var(--font-semibold);
-  margin-bottom: var(--space-2);
+  color: var(--color-gray);
 }
 
-.progress-bar {
-  height: 8px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius-full);
-  overflow: hidden;
-  margin-top: var(--space-2);
+.info-row .value {
+  font-weight: var(--font-medium);
+  color: var(--color-dark);
 }
 
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
-  transition: width 1s linear;
-  border-radius: var(--radius-full);
-}
-
-/* Current period row highlighting */
+/* Current period row highlighting (keep existing) */
 .current-period-row {
   background: linear-gradient(90deg, #fef3c7 0%, #fde68a 50%, #fef3c7 100%) !important;
   border-left: 4px solid var(--color-accent);
@@ -497,35 +525,28 @@ th {
 }
 
 @keyframes pulse {
-
-  0%,
-  100% {
+  0%, 100% {
     opacity: 1;
   }
-
   50% {
     opacity: 0.85;
   }
 }
 
-/* Next period preview - More Compact */
-.next-period-preview {
-  margin-top: var(--space-3);
-  padding: var(--space-3);
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-md);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.next-period-preview h4 {
-  font-size: var(--text-sm);
-  opacity: 0.8;
-  margin-bottom: var(--space-1);
-}
-
-.next-period-preview p {
-  font-size: var(--text-sm);
-  margin: 0;
+/* Mobile responsiveness */
+@media (max-width: 640px) {
+  .tracker-minimal {
+    padding: var(--space-2);
+  }
+  
+  .minimal-row {
+    font-size: var(--text-xs);
+    gap: var(--space-1);
+  }
+  
+  .time-badge, .period-badge, .countdown-badge {
+    font-size: var(--text-xs);
+  }
 }
 
 /* ========================================
@@ -579,28 +600,4 @@ label {
   outline: none;
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-/* Mobile responsiveness for live tracker */
-@media (max-width: 640px) {
-  .live-status-card {
-    padding: var(--space-3);
-    margin: var(--space-3) var(--space-2);
-  }
-
-  .clock {
-    font-size: var(--text-xl);
-  }
-
-  .period-name {
-    font-size: var(--text-lg);
-  }
-
-  .time-remaining {
-    font-size: var(--text-base);
-  }
-
-  .next-period-preview {
-    padding: var(--space-2);
-  }
 }
