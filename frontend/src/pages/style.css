@@ -1,394 +1,522 @@
-body {
-    font-family: Calibri;
-    margin: 0;
-    padding: 0;
-    background-color: #dfd9d9;
-}
-/* Inline Information Box Styling */
-.info-inline {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 20px;
-    background-color: #f0f8ff;
-    border: 1px solid #ccc;
-    padding: 8px 12px;
-    border-radius: 8px;
-  }
-  
-  .info-inline-item {
-    margin-right: 20px;
-    font-size: 16px;
-  }
-  
-  .info-inline-item strong {
-    font-weight: bold;
-  }
-  
-  /* Spinner Styling */
-  .loading-spinner {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100px;
-  }
-  
-  .spinner {
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #3498db;
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    animation: spin 2s linear infinite;
-  }
-  
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-  
-  /* Button Styling */
-  .fetch-btn {
-    background-color: #3498db;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    cursor: pointer;
-    font-size: 16px;
-    border-radius: 5px;
-  }
-  
-  .fetch-btn:disabled {
-    background-color: #ddd;
-    cursor: not-allowed;
-  }
-  
-  /* Error Message Styling */
-  .error-message {
-    color: red;
-    text-align: center;
-    font-weight: bold;
-    margin-top: 20px;
-  }
-  
-/* Style for loading spinner */
-.loading-spinner {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100px;
-  }
-  
-  .spinner {
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #3498db;
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    animation: spin 2s linear infinite;
-  }
-  
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-  
-  /* Style for button */
-  .fetch-btn {
-    background-color: #3498db;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    cursor: pointer;
-    font-size: 16px;
-    border-radius: 5px;
-  }
-  
-  .fetch-btn:disabled {
-    background-color: #ddd;
-    cursor: not-allowed;
-  }
-  
-  /* Error message styling */
-  .error-message {
-    color: red;
-    text-align: center;
-    font-weight: bold;
-    margin-top: 20px;
-  }
+/* ========================================
+   🎨 Panchang Pages - Responsive Styles
+   Consolidated and Modernized
+   ======================================== */
 
-  
+/* ========================================
+   Global Elements
+   ======================================== */
+body {
+  font-family: 'Calibri', var(--font-sans);
+  margin: 0;
+  padding: 0;
+  background-color: #f1f5f9;
+}
+
+/* ========================================
+   Information Banner
+   ======================================== */
+.info-inline {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+  background: linear-gradient(135deg, #f0f8ff 0%, #e0f2fe 100%);
+  border: 1px solid #bae6fd;
+  padding: var(--space-4) var(--space-6);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.info-inline-item {
+  font-size: var(--text-base);
+  color: var(--color-dark);
+}
+
+.info-inline-item strong {
+  font-weight: var(--font-semibold);
+  color: var(--color-primary);
+}
+
+/* ========================================
+   Loading Spinner
+   ======================================== */
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  padding: var(--space-8);
+}
+
+.spinner {
+  border: 4px solid rgba(59, 130, 246, 0.1);
+  border-top: 4px solid var(--color-primary);
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 0.8s linear infinite;
+}
+
+/* ========================================
+   Buttons
+   ======================================== */
+button {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  padding: var(--space-3) var(--space-6);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+}
+
+button:hover {
+  background-color: var(--color-primary-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+button:disabled {
+  background-color: var(--color-light-gray);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.fetch-btn {
+  background-color: var(--color-secondary);
+}
+
+.fetch-btn:hover {
+  background-color: var(--color-secondary-dark);
+}
+
+/* ========================================
+   Error Messages
+   ======================================== */
+.error-message {
+  color: var(--color-error);
+  background-color: #fee2e2;
+  border: 1px solid #fca5a5;
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  text-align: center;
+  font-weight: var(--font-medium);
+  margin: var(--space-6) auto;
+  max-width: 600px;
+}
+
+/* ========================================
+   Navbar
+   ======================================== */
 .navbar {
-    background-color: #333;
-    overflow: hidden;
-    color: white;
-    padding: 1rem;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  color: var(--color-white);
+  padding: var(--space-4) var(--space-6);
+  box-shadow: var(--shadow-lg);
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
 }
 
 .navbar a {
-    color: white;
-    text-decoration: none;
-    padding: 14px 20px;
-    display: inline-block;
+  color: var(--color-white);
+  text-decoration: none;
+  padding: var(--space-3) var(--space-5);
+  display: inline-block;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  font-weight: var(--font-medium);
 }
 
 .navbar a:hover {
-    background-color: #ddd;
-    color: black;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--color-accent-light);
+  transform: translateY(-1px);
 }
 
+/* ========================================
+   Tables
+   ======================================== */
 table {
-    width: 80%;
-    border-collapse: collapse;
-    border: 2px solid black;
-    margin: 20px auto;
+  width: 100%;
+  max-width: 1200px;
+  border-collapse: collapse;
+  margin: var(--space-6) auto;
+  background-color: var(--color-white);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
 }
 
 th, td {
-    border: 1px solid #000;
-    padding: 0px;
-    text-align: center;
-    white-space: nowrap;
-    font-size: 15px;
-    font-weight: normal;
+  border: 1px solid #e2e8f0;
+  padding: var(--space-3) var(--space-4);
+  text-align: center;
+  font-size: var(--text-sm);
+  font-weight: var(--font-normal);
 }
 
 th {
-    font-weight: bold;
-
+  background: linear-gradient(135deg, #70AD47 0%, #5a8c3a 100%);
+  color: var(--color-white);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-base);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.header-in-table {
-    background-color: #70AD47;
+/* Zebra striping for better readability */
+tbody tr:nth-child(even) {
+  background-color: #f8fafc;
 }
 
+tbody tr:hover {
+  background-color: #e0f2fe;
+  transition: background-color var(--transition-fast);
+}
+
+/* Table cell heights */
 td, th {
-    height: 20px;
-    width: 45px;
+  min-height: 40px;
+  vertical-align: middle;
 }
 
+/* Special table cells */
+.header-in-table {
+  background-color: #70AD47;
+}
 
 .sunrise-today {
-    background-color: #ED7D31;
+  background-color: #ED7D31;
+  color: var(--color-white);
+  font-weight: var(--font-semibold);
 }
 
 .sunset-today {
-    background-color: #FF0000;
+  background-color: #FF0000;
+  color: var(--color-white);
+  font-weight: var(--font-semibold);
 }
 
 .blue-background {
-    background-color: #002060;
+  background-color: #002060;
+  color: var(--color-white);
 }
 
 .sunrise-tmrw {
-    background-color: #FFD966;
+  background-color: #FFD966;
+  color: var(--color-dark);
+  font-weight: var(--font-semibold);
 }
+
 .weekday-column {
-    width: 100px; /* Adjust width as needed */
-    text-align: center;
-    overflow: hidden; /* Ensure text doesn't overflow */
-    white-space: nowrap; /* Prevent text from wrapping */
+  width: 150px;
+  text-align: center;
+  font-weight: var(--font-medium);
 }
+
+/* ========================================
+   Information Box
+   ======================================== */
 .information {
-    display: flex; /* Use flexbox for horizontal alignment */
-    align-items: center; /* Vertically align items in the center */
-    margin: 5px;
-    /* Optional: add margin around the container */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  margin: var(--space-5) 0;
+  padding: var(--space-4);
+  background-color: #fef3c7;
+  border-radius: var(--radius-md);
+  border: 1px solid #fde68a;
 }
 
 .color-box {
-    width: 15px; /* Adjust size as needed */
-    height: 15px; /* Adjust size as needed */
-    background-color: rgb(0, 32, 96);
-    border-radius: 50%; /* Makes the box round */
-    border: 1px solid #000; /* Optional: border to make the box more visible */
-    margin-right: 10px; /* Space between the color box and text */
+  width: 20px;
+  height: 20px;
+  background-color: rgb(0, 32, 96);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-dark);
+  flex-shrink: 0;
 }
 
 .info {
-    font-family: sans-serif, Arial, Helvetica;
-    font-size: 16px;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  color: var(--color-dark);
 }
 
-p {
-    margin: 0; /* Remove default margin */
-    font-size: 25px; /* Adjust size as needed */
-   /* Space between the asterisk and the color box */
-}
-/* General button styling */
+/* ========================================
+   Share Button
+   ======================================== */
 .share-button {
-    background-color: #007bff; /* Blue background */
-    color: white; /* White text */
-    border: none; /* Remove border */
-    border-radius: 50%; /* Circular button */
-    width: 60px; /* Width of button */
-    height: 60px; /* Height of button */
-    padding: 0; /* Remove padding */
-    font-size: 24px; /* Font size */
-    cursor: pointer; /* Pointer cursor on hover */
-    transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s; /* Smooth transitions */
-    margin: 10px; /* Margin for spacing */
-    display: flex; /* Flexbox to center icon */
-    align-items: center; /* Center icon vertically */
-    justify-content: center; /* Center icon horizontally */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow below button */
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: var(--color-white);
+  border: none;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  font-size: 24px;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  margin: var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-lg);
 }
 
-/* Button hover effects */
 .share-button:hover {
-    background-color: #0056b3; /* Darker blue on hover */
-    transform: scale(1.05); /* Slightly enlarge button */
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Enhance shadow on hover */
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  transform: scale(1.1);
+  box-shadow: var(--shadow-xl);
 }
 
-/* Button active state */
 .share-button:active {
-    background-color: #004494; /* Even darker blue when clicked */
-    transform: scale(0.95); /* Slightly shrink button */
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2); /* Adjust shadow when clicked */
+  transform: scale(0.95);
 }
 
-/* Button focus state for accessibility */
-.share-button:focus {
-    outline: none; /* Remove default focus outline */
-    box-shadow: 0 0 0 3px rgba(38, 143, 255, 0.5); /* Add custom focus outline */
-}
-
-/* Icon styling */
 .share-button i {
-    font-size: 24px; /* Adjust icon size */
+  font-size: 24px;
 }
 
-.download-button{
-    margin: 0px;
+.download-button {
+  margin: var(--space-4);
 }
 
-@media (max-width: 640px) {
-*{
-    margin: 0;
-    font-family: sans-serif,Arial,  Helvetica;
-    font-size: 16px;
-    /* Allows scrolling if content overflows */
-    
-}
+/* ========================================
+   Responsive Design - Mobile First
+   ======================================== */
 
-
-
-th, td {
-    border: 1px solid #000;
-    padding: 5px;
-    font-size: 16px;
-    font-weight: normal;
-}
-
-table {
+/* Tablet & Up (641px+) */
+@media (min-width: 641px) {
+  .info-inline {
+    flex-wrap: nowrap;
+  }
+  
+  table {
     width: 90%;
+  }
 }
 
-
-.sun{
-    display: none;
-}
-.input-city, .input-date {
-    display: block; /* Make each input and label block-level for separate lines */
-    margin: 5px auto; /* Center the elements and add vertical spacing */
-}
-
-.input-city {
-    width: 100%; /* Adjust width as needed */
-}
-
-.input-date {
-    
-    width: 80%; /* Adjust width as needed */
+/* Desktop & Up (1025px+) */
+@media (min-width: 1025px) {
+  table {
+    width: 80%;
+  }
+  
+  th, td {
+    padding: var(--space-4);
+    font-size: var(--text-base);
+  }
 }
 
-button {
-    display: block;
-    margin: 20px auto; /* Center the button and add vertical spacing */
-}
-
-.input-time{
-    display: none;
-}
-
-.navbar {
-    position: fixed; /* Keep navbar fixed at the top */
-    top: 0;
-    left: 0;
-    width: 100%; /* Full width of the viewport */
-    background-color: #333; /* Change this to your desired color */
-    color: white; /* Text color */
-    padding: 10px; /* Add padding if needed */
-    z-index: 1000; /* Ensure it stays on top of other content */
-}
-
-.content {
-    padding-top: 800px; /* Increased space above content */
-}
-}
-
+/* Mobile Specific (0-640px) */
 @media (max-width: 640px) {
-    * {
-        margin: 0;
-        font-family: sans-serif, Arial, Helvetica;
-        font-size: 16px;
-    }
-
-    /* Adjust label styles to make them neat and aligned */
-    label {
-        font-weight: normal;
-        display: block;
-        margin-bottom: 5px;
-        font-size: 14px; /* Slightly smaller font for labels */
-    }
-
-    /* Center and style the input fields */
-    .input-city, .input-date {
-        display: block; /* Make each input and label block-level for separate lines */
-        width: 100%; /* Ensure full width for inputs */
-        margin: 5px auto; /* Center the elements and add vertical spacing */
-        padding: 8px; /* Add some padding inside input for better appearance */
-        font-size: 16px; /* Ensure readable text */
-        border: 1px solid #ccc; /* Light border for neatness */
-        border-radius: 4px; /* Rounded corners for a softer look */
-    }
-
-    .input-date {
-        width: 90%; /* Slightly reduced width for date input to fit better */
-    }
-
-    /* Style the button */
-    button {
-        display: block;
-        margin: 20px auto; /* Center the button and add vertical spacing */
-        padding: 10px 20px; /* Add some padding for the button */
-        font-size: 16px;
-        background-color: #4CAF50; /* Green background color */
-        color: white; /* White text color */
-        border: none; /* Remove border */
-        border-radius: 4px; /* Rounded corners */
-        cursor: pointer; /* Pointer cursor on hover */
-    }
-
-    button:hover {
-        background-color: #45a049; /* Darker green on hover */
-    }
-
-    /* Adjust navbar and content spacing */
-    .navbar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        background-color: #333;
-        color: white;
-        padding: 10px;
-        z-index: 1000;
-    }
-
-    .content {
-        padding-top: 65px; /* Adjust based on the height of your navbar */
-    }
+  * {
+    margin: 0;
+    font-family: var(--font-sans);
+  }
+  
+  /* Hide certain elements on mobile */
+  .sun {
+    display: none;
+  }
+  
+  .input-time {
+    display: none;
+  }
+  
+  /* Form inputs */
+  label {
+    font-weight: var(--font-medium);
+    display: block;
+    margin-bottom: var(--space-2);
+    font-size: var(--text-sm);
+    color: var(--color-dark);
+  }
+  
+  .input-city,
+  .input-date,
+  input[type="text"],
+  input[type="date"] {
+    display: block;
+    width: 100%;
+    margin: var(--space-2) auto;
+    padding: var(--space-3);
+    font-size: var(--text-base);
+    border: 2px solid var(--color-light-gray);
+    border-radius: var(--radius-md);
+  }
+  
+  .input-date {
+    width: 100%;
+  }
+  
+  /* Buttons */
+  button {
+    display: block;
+    width: 100%;
+    margin: var(--space-4) auto;
+    padding: var(--space-4) var(--space-6);
+    font-size: var(--text-base);
+  }
+  
+  /* Table responsiveness */
+  table {
+    width: 100%;
+    font-size: var(--text-xs);
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  th, td {
+    padding: var(--space-2);
+    font-size:var(--text-xs);
+    white-space: nowrap;
+  }
+  
+  /* Navbar adjustments */
+  .navbar {
+    padding: var(--space-3) var(--space-4);
+  }
+  
+  /* Content spacing */
+  .content {
+    padding-top: 70px;
+  }
 }
 
+/* ========================================
+   Live Period Tracker Styles (Phase 2)
+   ======================================== */
+
+/* Live status card */
+.live-status-card {
+  position: sticky;
+  top: 70px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: var(--color-white);
+  padding: var(--space-6);
+  border-radius: var(--radius-xl);
+  margin: var(--space-6) auto;
+  max-width: 600px;
+  box-shadow: var(--shadow-2xl);
+  z-index: var(--z-sticky);
+  animation: slideInDown 0.5s ease-out;
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.clock {
+  font-size: var(--text-4xl);
+  font-weight: var(--font-bold);
+  text-align: center;
+  margin-bottom: var(--space-4);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 2px;
+}
+
+.current-period-info {
+  text-align: center;
+}
+
+.current-period-info h3 {
+  font-size: var(--text-lg);
+  margin-bottom: var(--space-3);
+  opacity: 0.9;
+}
+
+.period-name {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  margin: var(--space-2) 0;
+}
+
+.time-range {
+  font-size: var(--text-lg);
+  opacity: 0.9;
+  margin: var(--space-2) 0;
+}
+
+.countdown {
+  margin-top: var(--space-5);
+}
+
+.time-remaining {
+  display: block;
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+  margin-bottom: var(--space-3);
+}
+
+.progress-bar {
+  height: 12px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-top: var(--space-3);
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+  transition: width 1s linear;
+  border-radius: var(--radius-full);
+}
+
+/* Current period row highlighting */
+.current-period-row {
+  background: linear-gradient(90deg, #fef3c7 0%, #fde68a 50%, #fef3c7 100%) !important;
+  border-left: 4px solid var(--color-accent);
+  animation: pulse 2s ease-in-out infinite;
+  font-weight: var(--font-semibold);
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+/* Next period preview */
+.next-period-preview {
+  margin-top: var(--space-4);
+  padding: var(--space-4);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.next-period-preview h4 {
+  font-size: var(--text-sm);
+  opacity: 0.8;
+  margin-bottom: var(--space-2);
+}
+
+.next-period-preview p {
+  font-size: var(--text-base);
+  margin: 0;
+}

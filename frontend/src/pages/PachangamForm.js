@@ -4,6 +4,7 @@ import { findClosestDay } from '../components/weekdayColumn'; // Import the new 
 import LoadingSpinner from '../components/LoadingSpinner'; // Import the spinner component
 import { useAuth } from '../context/AuthContext';
 import TableScreenshot from '../components/TableScreenshot';
+import LivePeriodTracker from '../components/LivePeriodTracker';
 
 const TimeConverterApp = () => {
   const { localCity, localDate, setCityAndDate } = useAuth();
@@ -29,6 +30,10 @@ const TimeConverterApp = () => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // Phase 2: Live Period Tracker States
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [currentPeriod, setCurrentPeriod] = useState(null);
 
 
   useEffect(() => {
