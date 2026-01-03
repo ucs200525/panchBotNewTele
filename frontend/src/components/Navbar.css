@@ -225,6 +225,17 @@
 @media (max-width: 480px) {
     .navbar-container {
         padding: 0.5rem 1rem;
+        justify-content: center;
+        /* Center the nav links */
+    }
+
+    /* Hide branding on small devices */
+    .navbar-brand {
+        display: none;
+    }
+
+    .navbar-menu {
+        justify-content: center;
     }
 
     .brand-title {
