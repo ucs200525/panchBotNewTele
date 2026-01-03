@@ -275,8 +275,8 @@ const TimeConverterApp = () => {
           </div>
         </div>
 
-        {/* Phase 2: Live Period Tracker */}
-        {data && data.length > 0 && <LivePeriodTracker data={data} />}
+        {/* Phase 2: Live Period Tracker - Only shows for TODAY */}
+        {data && data.length > 0 && <LivePeriodTracker data={data} selectedDate={currentDate} />}
 
         <div>
 

@@ -188,3 +188,117 @@ tr:hover {
         -webkit-overflow-scrolling: touch;
     }
 }
+
+/* ========================================
+   Category Color Coding
+   ======================================== */
+
+/* Good - Blue/Green */
+.cat-good {
+    background: linear-gradient(90deg, #dbeafe 0%, #bfdbfe 100%) !important;
+    border-left: 4px solid #3b82f6;
+}
+
+.cat-good .muhurat-name {
+    color: #1e40af;
+    font-weight: 600;
+}
+
+.cat-good .category-badge {
+    background: #3b82f6;
+    color: white;
+}
+
+/* Danger - Brown/Dark Orange */
+.cat-danger {
+    background: linear-gradient(90deg, #fed7aa 0%, #fdba74 100%) !important;
+    border-left: 4px solid #ea580c;
+}
+
+.cat-danger .muhurat-name {
+    color: #9a3412;
+    font-weight: 600;
+}
+
+.cat-danger .category-badge {
+    background: #ea580c;
+    color: white;
+}
+
+/* Risk - Light Blue */
+.cat-risk {
+    background: linear-gradient(90deg, #e0f2fe 0%, #bae6fd 100%) !important;
+    border-left: 4px solid #0ea5e9;
+}
+
+.cat-risk .muhurat-name {
+    color: #075985;
+    font-weight: 600;
+}
+
+.cat-risk .category-badge {
+    background: #0ea5e9;
+    color: white;
+}
+
+/* Bad - Red */
+.cat-bad {
+    background: linear-gradient(90deg, #fee2e2 0%, #fecaca 100%) !important;
+    border-left: 4px solid #ef4444;
+}
+
+.cat-bad .muhurat-name {
+    color: #991b1b;
+    font-weight: 600;
+}
+
+.cat-bad .category-badge {
+    background: #ef4444;
+    color: white;
+}
+
+/* Evil - Dark Gray/Black */
+.cat-evil {
+    background: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 100%) !important;
+    border-left: 4px solid #1f2937;
+}
+
+.cat-evil .muhurat-name {
+    color: #1f2937;
+    font-weight: 600;
+}
+
+.cat-evil .category-badge {
+    background: #1f2937;
+    color: white;
+}
+
+/* Muhurat Cell Styling */
+.muhurat-cell {
+    display: flex !important;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+}
+
+.muhurat-name {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.category-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Hover effect for all rows */
+tr[class*='cat-']:hover {
+    transform: translateX(4px);
+    transition: transform 0.2s ease;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}

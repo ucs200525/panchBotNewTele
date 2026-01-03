@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from '../context/AuthContext';
-import LoadingSpinner from '../components/LoadingSpinner'; // Import the spinner component
+import LoadingSpinner from '../components/LoadingSpinner';
 import TableScreenshot from '../components/TableScreenshot';
 import CityAndDateInput from '../components/CityAndDateInput';
+import LivePeriodTracker from '../components/LivePeriodTracker';
 
 
 const PanchakaMuhurth = () => {
@@ -175,10 +176,24 @@ const PanchakaMuhurth = () => {
         setShowAll(!showAll); // Toggle the state
     };
 
-    const renderTableRows = (data) => {
-        return data.map((item, index) => (
-            <tr key={index}>
-                <td>{`${item.muhurat} - ${item.category}`}</td>
+    // Get category color class
+    const getCategoryClass = (category) => {
+        const cat = category.toLowerCase();
+        if (cat.includes('good')) return 'cat-good';
+        if (cat.includes('danger')) return 'cat-danger';
+        if (cat.includes('risk')) return 'cat-risk';
+        if (cat.includes('bad')) return 'cat-bad';
+        if (cat.includes('evil')) return 'cat-evil';
+        return '';
+    };
+
+    const generateRows = () => {
+        return (showAll ? allMuhuratData : filteredData).map((item, index) => (
+            <tr key={index} className={getCategoryClass(item.category)}>
+                <td className="muhurat-cell">
+                    <span className="muhurat-name">{item.muhurat}</span>
+                    <span className="category-badge">{item.category}</span>
+                </td>
                 <td>{item.time}</td>
             </tr>
         ));
@@ -268,6 +283,10 @@ const PanchakaMuhurth = () => {
             {loading && <LoadingSpinner />} {/* Show the spinner when loading */}
 
             <h2>Result</h2>
+
+            {/* Live Period Tracker - Only shows for TODAY */}
+            {filteredData && filteredData.length > 0 && <LivePeriodTracker data={filteredData} selectedDate={date} />}
+
         <div  id="muhurats-table" >
             <div className="info-inline">
           <div className="info-inline-item">
@@ -282,11 +301,11 @@ const PanchakaMuhurth = () => {
                 <thead>
                     <tr>
                         <th>Muhurat and Category</th>
-                        <th>Time</th>
+                        <th>Time & Interval</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {renderTableRows(filteredData)}
+                    {generateRows()}
                 </tbody>
             </table>
             </div>
