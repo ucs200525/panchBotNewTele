@@ -9,24 +9,125 @@ const TableScreenshot = ({ tableId, city }) => {
       return null;
     }
 
-    // Enhanced options for better mobile capture
-    const canvas = await html2canvas(element, {
-      scale: 2, // Higher quality
-      useCORS: true, // Handle cross-origin images
-      allowTaint: true,
-      backgroundColor: '#ffffff',
-      logging: false,
-      width: element.scrollWidth, // Capture full width including scrolled content
-      height: element.scrollHeight, // Capture full height
-      windowWidth: element.scrollWidth,
-      windowHeight: element.scrollHeight,
-      x: 0,
-      y: 0,
-      scrollX: 0,
-      scrollY: 0,
-    });
+    // Store original styles
+    const originalStyles = {
+      height: element.style.height,
+      maxHeight: element.style.maxHeight,
+      overflow: element.style.overflow,
+      position: element.style.position,
+    };
 
-    return canvas;
+    // Find all parent containers and store their styles
+    const parents = [];
+    let parent = element.parentElement;
+    while (parent) {
+      parents.push({
+        element: parent,
+        height: parent.style.height,
+        maxHeight: parent.style.maxHeight,
+        overflow: parent.style.overflow,
+      });
+      parent = parent.parentElement;
+    }
+
+    try {
+      // Temporarily modify styles for full capture
+      element.style.height = 'auto';
+      element.style.maxHeight = 'none';
+      element.style.overflow = 'visible';
+      element.style.position = 'relative';
+
+      // Modify parent containers
+      parents.forEach(p => {
+        p.element.style.height = 'auto';
+        p.element.style.maxHeight = 'none';
+        p.element.style.overflow = 'visible';
+      });
+
+      // Find all tables within the element and expand them
+      const tables = element.getElementsByTagName('table');
+      const tableStyles = [];
+      for (let table of tables) {
+        tableStyles.push({
+          element: table,
+          height: table.style.height,
+          maxHeight: table.style.maxHeight,
+          overflow: table.style.overflow,
+        });
+        table.style.height = 'auto';
+        table.style.maxHeight = 'none';
+        table.style.overflow = 'visible';
+      }
+
+      // Wait a moment for layout to settle
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Capture with enhanced options
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        width: element.scrollWidth,
+        height: element.scrollHeight,
+        windowWidth: element.scrollWidth,
+        windowHeight: element.scrollHeight,
+        x: 0,
+        y: 0,
+        scrollX: -window.scrollX,
+        scrollY: -window.scrollY,
+        onclone: (clonedDoc) => {
+          // Ensure tables are fully expanded in the clone
+          const clonedElement = clonedDoc.getElementById(tableId);
+          if (clonedElement) {
+            clonedElement.style.height = 'auto';
+            clonedElement.style.maxHeight = 'none';
+            clonedElement.style.overflow = 'visible';
+            
+            const clonedTables = clonedElement.getElementsByTagName('table');
+            for (let table of clonedTables) {
+              table.style.height = 'auto';
+              table.style.maxHeight = 'none';
+            }
+          }
+        }
+      });
+
+      // Restore original styles
+      element.style.height = originalStyles.height;
+      element.style.maxHeight = originalStyles.maxHeight;
+      element.style.overflow = originalStyles.overflow;
+      element.style.position = originalStyles.position;
+
+      parents.forEach(p => {
+        p.element.style.height = p.height;
+        p.element.style.maxHeight = p.maxHeight;
+        p.element.style.overflow = p.overflow;
+      });
+
+      tableStyles.forEach(t => {
+        t.element.style.height = t.height;
+        t.element.style.maxHeight = t.maxHeight;
+        t.element.style.overflow = t.overflow;
+      });
+
+      return canvas;
+    } catch (error) {
+      // Restore styles even if capture fails
+      element.style.height = originalStyles.height;
+      element.style.maxHeight = originalStyles.maxHeight;
+      element.style.overflow = originalStyles.overflow;
+      element.style.position = originalStyles.position;
+
+      parents.forEach(p => {
+        p.element.style.height = p.height;
+        p.element.style.maxHeight = p.maxHeight;
+        p.element.style.overflow = p.overflow;
+      });
+
+      throw error;
+    }
   };
 
   const handleDownload = async () => {
@@ -34,7 +135,7 @@ const TableScreenshot = ({ tableId, city }) => {
       const canvas = await captureTable();
       if (!canvas) return;
 
-      const img = canvas.toDataURL('image/png', 1.0); // Max quality
+      const img = canvas.toDataURL('image/png', 1.0);
 
       const link = document.createElement('a');
       link.href = img;
@@ -62,7 +163,6 @@ const TableScreenshot = ({ tableId, city }) => {
           text: 'Check out this Panchang table!',
         });
       } else {
-        // Fallback: Download instead
         alert('Sharing not supported. Downloading instead...');
         await handleDownload();
       }
@@ -78,19 +178,12 @@ const TableScreenshot = ({ tableId, city }) => {
 
   return (
     <div className="download-button">
-      <button className="share-button" onClick={handleDownload} title="Download Table">
+      <button className="share-button" onClick={handleDownload} title="Download Complete Table">
         <i className="fa-solid fa-download"></i>
       </button>
-      <button className="share-button" onClick={handleShare} title="Share Table">
+      <button className="share-button" onClick={handleShare} title="Share Complete Table">
         <i className="far fa-share-square"></i>
       </button>
-{/* 
-      <div className="download-button">
-            <button className="share-button" onClick={takeScreenshot}>
-                <i className="far fa-share-square"></i>
-            </button>
-          </div> */}
-
     </div>
   );
 };
