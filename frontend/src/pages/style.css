@@ -158,7 +158,8 @@ table {
   box-shadow: var(--shadow-md);
 }
 
-th, td {
+th,
+td {
   border: 1px solid #e2e8f0;
   padding: var(--space-3) var(--space-4);
   text-align: center;
@@ -186,7 +187,8 @@ tbody tr:hover {
 }
 
 /* Table cell heights */
-td, th {
+td,
+th {
   min-height: 40px;
   vertical-align: middle;
 }
@@ -302,7 +304,7 @@ td, th {
   .info-inline {
     flex-wrap: nowrap;
   }
-  
+
   table {
     width: 90%;
   }
@@ -313,8 +315,9 @@ td, th {
   table {
     width: 80%;
   }
-  
-  th, td {
+
+  th,
+  td {
     padding: var(--space-4);
     font-size: var(--text-base);
   }
@@ -326,16 +329,16 @@ td, th {
     margin: 0;
     font-family: var(--font-sans);
   }
-  
+
   /* Hide certain elements on mobile */
   .sun {
     display: none;
   }
-  
+
   .input-time {
     display: none;
   }
-  
+
   /* Form inputs */
   label {
     font-weight: var(--font-medium);
@@ -344,7 +347,7 @@ td, th {
     font-size: var(--text-sm);
     color: var(--color-dark);
   }
-  
+
   .input-city,
   .input-date,
   input[type="text"],
@@ -357,11 +360,11 @@ td, th {
     border: 2px solid var(--color-light-gray);
     border-radius: var(--radius-md);
   }
-  
+
   .input-date {
     width: 100%;
   }
-  
+
   /* Buttons */
   button {
     display: block;
@@ -370,7 +373,7 @@ td, th {
     padding: var(--space-4) var(--space-6);
     font-size: var(--text-base);
   }
-  
+
   /* Table responsiveness */
   table {
     width: 100%;
@@ -379,18 +382,19 @@ td, th {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
-  
-  th, td {
+
+  th,
+  td {
     padding: var(--space-2);
-    font-size:var(--text-xs);
+    font-size: var(--text-xs);
     white-space: nowrap;
   }
-  
+
   /* Navbar adjustments */
   .navbar {
     padding: var(--space-3) var(--space-4);
   }
-  
+
   /* Content spacing */
   .content {
     padding-top: 70px;
@@ -399,28 +403,27 @@ td, th {
 
 /* ========================================
    Live Period Tracker Styles (Phase 2)
+   COMPACT & RESPONSIVE VERSION
    ======================================== */
 
-/* Live status card */
+/* Live status card - More Compact */
 .live-status-card {
-  position: sticky;
-  top: 70px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: var(--color-white);
-  padding: var(--space-6);
-  border-radius: var(--radius-xl);
-  margin: var(--space-6) auto;
-  max-width: 600px;
-  box-shadow: var(--shadow-2xl);
-  z-index: var(--z-sticky);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  margin: var(--space-4) auto;
+  max-width: 100%;
+  box-shadow: var(--shadow-lg);
   animation: slideInDown 0.5s ease-out;
 }
 
 @keyframes slideInDown {
   from {
     opacity: 0;
-    transform: translateY(-20px);
+    transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -428,12 +431,12 @@ td, th {
 }
 
 .clock {
-  font-size: var(--text-4xl);
+  font-size: var(--text-2xl);
   font-weight: var(--font-bold);
   text-align: center;
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-3);
   font-variant-numeric: tabular-nums;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
 }
 
 .current-period-info {
@@ -441,40 +444,41 @@ td, th {
 }
 
 .current-period-info h3 {
-  font-size: var(--text-lg);
-  margin-bottom: var(--space-3);
+  font-size: var(--text-base);
+  margin-bottom: var(--space-2);
   opacity: 0.9;
+  font-weight: var(--font-medium);
 }
 
 .period-name {
-  font-size: var(--text-2xl);
+  font-size: var(--text-xl);
   font-weight: var(--font-bold);
   margin: var(--space-2) 0;
 }
 
 .time-range {
-  font-size: var(--text-lg);
+  font-size: var(--text-base);
   opacity: 0.9;
   margin: var(--space-2) 0;
 }
 
 .countdown {
-  margin-top: var(--space-5);
+  margin-top: var(--space-3);
 }
 
 .time-remaining {
   display: block;
-  font-size: var(--text-xl);
+  font-size: var(--text-lg);
   font-weight: var(--font-semibold);
-  margin-bottom: var(--space-3);
+  margin-bottom: var(--space-2);
 }
 
 .progress-bar {
-  height: 12px;
+  height: 8px;
   background: rgba(255, 255, 255, 0.2);
   border-radius: var(--radius-full);
   overflow: hidden;
-  margin-top: var(--space-3);
+  margin-top: var(--space-2);
 }
 
 .progress-fill {
@@ -493,30 +497,110 @@ td, th {
 }
 
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.85;
   }
 }
 
-/* Next period preview */
+/* Next period preview - More Compact */
 .next-period-preview {
-  margin-top: var(--space-4);
-  padding: var(--space-4);
+  margin-top: var(--space-3);
+  padding: var(--space-3);
   background: rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .next-period-preview h4 {
   font-size: var(--text-sm);
   opacity: 0.8;
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--space-1);
 }
 
 .next-period-preview p {
-  font-size: var(--text-base);
+  font-size: var(--text-sm);
   margin: 0;
+}
+
+/* ========================================
+   Form Inputs - Improved Styling
+   ======================================== */
+
+/* Form containers */
+.form-container {
+  background: var(--color-white);
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  margin: var(--space-4) auto;
+  max-width: 600px;
+}
+
+/* Better label styling */
+label {
+  display: block;
+  font-weight: var(--font-semibold);
+  margin-bottom: var(--space-2);
+  color: var(--color-dark);
+  font-size: var(--text-base);
+}
+
+.entercity,
+.date {
+  display: block;
+  font-weight: var(--font-semibold);
+  margin-bottom: var(--space-2);
+  margin-top: var(--space-4);
+  color: var(--color-dark);
+  font-size: var(--text-base);
+}
+
+/* Better input styling */
+.city,
+.enterdate {
+  width: 100%;
+  max-width: 500px;
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-base);
+  border: 2px solid var(--color-light-gray);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  background-color: var(--color-white);
+}
+
+.city:focus,
+.enterdate:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Mobile responsiveness for live tracker */
+@media (max-width: 640px) {
+  .live-status-card {
+    padding: var(--space-3);
+    margin: var(--space-3) var(--space-2);
+  }
+
+  .clock {
+    font-size: var(--text-xl);
+  }
+
+  .period-name {
+    font-size: var(--text-lg);
+  }
+
+  .time-remaining {
+    font-size: var(--text-base);
+  }
+
+  .next-period-preview {
+    padding: var(--space-2);
+  }
 }
