@@ -45,7 +45,22 @@ const LivePeriodTracker = ({ data, selectedDate }) => {
     if (!currentPeriod) return null;
     
     const now = currentTime.getHours() * 60 + currentTime.getMinutes();
-    const remainingMinutes = currentPeriod.end - now;
+    let remainingMinutes;
+    
+    // Handle overnight periods (end time is on next day)
+    if (currentPeriod.end < currentPeriod.start) {
+      // Period crosses midnight
+      // If we're past midnight (now < start), calculate from now to end
+      // If we're before midnight (now >= start), calculate from now to midnight + end
+      if (now < currentPeriod.end) {
+        remainingMinutes = currentPeriod.end - now;
+      } else {
+        remainingMinutes = (24 * 60 - now) + currentPeriod.end;
+      }
+    } else {
+      // Normal same-day period
+      remainingMinutes = currentPeriod.end - now;
+    }
     
     return {
       hours: Math.floor(remainingMinutes / 60),
@@ -58,8 +73,21 @@ const LivePeriodTracker = ({ data, selectedDate }) => {
   const getProgressPercentage = () => {
     if (!currentPeriod) return 0;
     
-    const duration = currentPeriod.end - currentPeriod.start;
-    const elapsed = (currentTime.getHours() * 60 + currentTime.getMinutes()) - currentPeriod.start;
+    const now = currentTime.getHours() * 60 + currentTime.getMinutes();
+    let duration, elapsed;
+    
+    // Handle overnight periods
+    if (currentPeriod.end < currentPeriod.start) {
+      duration = (24 * 60 - currentPeriod.start) + currentPeriod.end;
+      if (now < currentPeriod.end) {
+        elapsed = (24 * 60 - currentPeriod.start) + now;
+      } else {
+        elapsed = now - currentPeriod.start;
+      }
+    } else {
+      duration = currentPeriod.end - currentPeriod.start;
+      elapsed = now - currentPeriod.start;
+    }
     
     return Math.min(100, Math.max(0, (elapsed / duration) * 100));
   };
@@ -68,15 +96,38 @@ const LivePeriodTracker = ({ data, selectedDate }) => {
   const getNextPeriod = () => {
     if (!currentPeriod || !data || data.length === 0) return null;
     
-    const nextIndex = currentPeriod.index < data.length - 1 ? currentPeriod.index + 1 : 0;
+    // Find next row
+    const currentIndex = currentPeriod.index;
+    const nextIndex = currentIndex < data.length - 1 ? currentIndex + 1 : 0;
     const nextRow = data[nextIndex];
     
     if (!nextRow) return null;
     
-    return {
-      weekday: nextRow.weekday,
-      startTime: currentPeriod.column === 'period1' ? nextRow.start2 : (data[nextIndex + 1] || data[0]).start1
-    };
+    // For Panchaka Muhurth format
+    if (nextRow.time) {
+      const timeParts = nextRow.time.split(' to ');
+      return {
+        weekday: nextRow.muhurat || nextRow.category || '',
+        startTime: timeParts[0] || ''
+      };
+    }
+    
+    // For Bhargava Panchang format
+    if (currentPeriod.column === 'period1' && nextRow.start2) {
+      return {
+        weekday: nextRow.weekday,
+        startTime: nextRow.start2
+      };
+    } else if (currentPeriod.column === 'period2') {
+      const nextNextIndex = nextIndex < data.length - 1 ? nextIndex + 1 : 0;
+      const nextNextRow = data[nextNextIndex];
+      return {
+        weekday: nextNextRow?.weekday || '',
+        startTime: nextNextRow?.start1 || ''
+      };
+    }
+    
+    return null;
   };
 
   // Don't render if no current period
