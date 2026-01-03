@@ -314,7 +314,7 @@ th {
 h1 {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #1e293b;
+  color: #1e293b !important;
   text-align: center;
   margin: 1.5rem 0 2rem;
   letter-spacing: -0.025em;
@@ -323,7 +323,7 @@ h1 {
 h2 {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #475569;
+  color: #475569 !important;
   text-align: center;
   margin: 1.5rem 0 1rem;
 }
@@ -331,7 +331,7 @@ h2 {
 h3 {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #64748b;
+  color: #64748b !important;
   margin: 1rem 0;
 }
 
@@ -394,6 +394,7 @@ input[type="checkbox"] {
   height: 1.125rem;
   cursor: pointer;
 }
+
 /* ========================================
    Responsive Design - Mobile First
    ======================================== */
@@ -536,7 +537,9 @@ input[type="checkbox"] {
   margin-bottom: var(--space-2);
 }
 
-.time-badge, .period-badge, .countdown-badge {
+.time-badge,
+.period-badge,
+.countdown-badge {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -585,6 +588,7 @@ input[type="checkbox"] {
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -624,9 +628,12 @@ input[type="checkbox"] {
 }
 
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.85;
   }
@@ -637,13 +644,15 @@ input[type="checkbox"] {
   .tracker-minimal {
     padding: var(--space-2);
   }
-  
+
   .minimal-row {
     font-size: var(--text-xs);
     gap: var(--space-1);
   }
-  
-  .time-badge, .period-badge, .countdown-badge {
+
+  .time-badge,
+  .period-badge,
+  .countdown-badge {
     font-size: var(--text-xs);
   }
 }
