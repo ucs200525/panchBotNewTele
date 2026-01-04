@@ -1596,4 +1596,38 @@ router.get('/getSunTimesForCity/:city/:date', async (req, res) => {
     }
 });
 
+// New endpoint for comprehensive Panchang data
+router.get('/getPanchangData', async (req, res) => {
+    logger.info({ message: 'Route /getPanchangData called', query: req.query });
+    const { city, date } = req.query;
+
+    if (!city || !date) {
+        return res.status(400).json({ error: 'City and date are required' });
+    }
+
+    try {
+        // Get coordinates for the city
+        const coords = await fetchCoordinates(city);
+        if (!coords) {
+            return res.status(404).json({ error: 'City not found' });
+        }
+
+        // Calculate comprehensive Panchang data
+        const { calculatePanchangData } = require('../utils/panchangHelper');
+        const panchangData = await calculatePanchangData(
+            city,
+            date,
+            coords.lat,
+            coords.lng,
+            coords.timeZone
+        );
+
+        logger.info({ message: 'Panchang data calculated successfully', city, date });
+        res.json(panchangData);
+    } catch (error) {
+        logger.error({ message: 'Route /getPanchangData error', error: error.message });
+        res.status(500).json({ error: 'Failed to calculate Panchang data', details: error.message });
+    }
+});
+
 module.exports = router;

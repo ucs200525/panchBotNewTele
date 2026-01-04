@@ -1,0 +1,215 @@
+/* ========================================
+   Panchang Information Display
+   ======================================== */
+
+.panchang-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.panchang-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  text-align: center;
+  margin: 2rem 0 1.5rem;
+}
+
+/* Panchang Elements Grid */
+.panchang-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.panchang-card {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border: 2px solid #cbd5e1;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.panchang-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  border-color: #3b82f6;
+}
+
+.card-icon {
+  font-size: 2.5rem;
+  min-width: 60px;
+  text-align: center;
+}
+
+.card-content {
+  flex: 1;
+}
+
+.card-content h3 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 0.5rem 0;
+}
+
+.card-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 0.25rem 0;
+}
+
+.card-timing {
+  font-size: 0.875rem;
+  color: #475569;
+  margin: 0;
+}
+
+/* Important Timings Grid */
+.timing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.timing-card {
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.timing-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Good timing (Abhijit) */
+.timing-good {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  border: 2px solid #10b981;
+}
+
+/* Bad timing (Rahu Kaal, Gulika) */
+.timing-bad {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  border: 2px solid #ef4444;
+}
+
+.timing-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.timing-icon {
+  font-size: 1.75rem;
+}
+
+.timing-header h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.timing-content {
+  margin-left: 2.5rem;
+}
+
+.timing-range {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 0.5rem 0;
+}
+
+.timing-note {
+  font-size: 0.875rem;
+  color: #475569;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Additional Info */
+.additional-info {
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-radius: 1rem;
+  border: 2px solid #f59e0b;
+  margin-top: 2rem;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.info-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #78350f;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.info-value {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .panchang-title {
+    font-size: 1.25rem;
+  }
+
+  .panchang-grid,
+  .timing-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .panchang-card {
+    padding: 1rem;
+  }
+
+  .card-icon {
+    font-size: 2rem;
+    min-width: 50px;
+  }
+
+  .timing-card {
+    padding: 1rem;
+  }
+
+  .timing-content {
+    margin-left: 0;
+  }
+
+  .additional-info {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+
+  .info-item {
+    justify-content: center;
+  }
+}
