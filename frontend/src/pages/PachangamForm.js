@@ -3,6 +3,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import { useAuth } from '../context/AuthContext';
 import TableScreenshot from '../components/TableScreenshot';
 import LivePeriodTracker from '../components/LivePeriodTracker';
+import PanchangInfo from '../components/PanchangInfo';
 import { findCurrentPeriod } from '../utils/periodHelpers';
 
 const TimeConverterApp = () => {
@@ -33,6 +34,9 @@ const TimeConverterApp = () => {
   // Phase 2: Live Period Tracker States
   const [currentTime, setCurrentTime] = useState(new Date());
   const [currentPeriod, setCurrentPeriod] = useState(null);
+
+  // Phase 1: Panchang Data State
+  const [panchangData, setPanchangData] = useState(null);
 
 
   useEffect(() => {
@@ -133,6 +137,22 @@ const TimeConverterApp = () => {
     }
     if (fetchSuntimes) {
       Getpanchangam();
+      // Fetch Panchang data (Tithi, Nakshatra, Rahu Kaal, etc.)
+      async function fetchPanchangData() {
+        if (!cityName || !currentDate) return;
+        
+        try {
+          const response = await fetch(
+            `${process.env.REACT_APP_API_URL}/api/getPanchangData?city=${encodeURIComponent(cityName)}&date=${currentDate}`
+          );
+          const panchangResult = await response.json();
+          setPanchangData(panchangResult);
+          console.log('Panchang data:', panchangResult);
+        } catch (error) {
+          console.error('Error fetching Panchang data:', error);
+        }
+      }
+      fetchPanchangData(); // Call the function
       setfetchSuntimes(false);
     }
   }, [fetchData, fetchSuntimes]); // Runs when fetchData changes
