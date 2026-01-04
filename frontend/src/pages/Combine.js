@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import TableScreenshot from '../components/TableScreenshot';
 import LivePeriodTracker from '../components/LivePeriodTracker';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const CombinePage = () => {
   const [city, setCity] = useState('');
