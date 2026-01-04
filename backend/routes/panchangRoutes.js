@@ -1630,7 +1630,7 @@ router.get('/getPanchangData', async (req, res) => {
         );
 
         logger.info({ message: 'Panchang data calculated successfully', city, date });
-        res.json(panchang Data);
+        res.json(panchangData);
     } catch (error) {
         logger.error({ message: 'Route /getPanchangData error', error: error.message });
         res.status(500).json({ error: 'Failed to calculate Panchang data', details: error.message });
