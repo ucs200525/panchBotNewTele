@@ -305,3 +305,4 @@ async function calculatePanchangData(city, date, lat, lng, timeZone) {
 }
 
 module.exports = { calculatePanchangData };
+
