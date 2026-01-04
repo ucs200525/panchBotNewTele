@@ -1612,6 +1612,12 @@ router.get('/getPanchangData', async (req, res) => {
             return res.status(404).json({ error: 'City not found' });
         }
 
+        // Get sun times first
+        const sunTimesData = await fetchSunTimes(coords.lat, coords.lng, date, coords.timeZone);
+        if (!sunTimesData) {
+            return res.status(500).json({ error: 'Failed to fetch sun times' });
+        }
+
         // Calculate comprehensive Panchang data
         const { calculatePanchangData } = require('../utils/panchangHelper');
         const panchangData = await calculatePanchangData(
@@ -1619,11 +1625,12 @@ router.get('/getPanchangData', async (req, res) => {
             date,
             coords.lat,
             coords.lng,
-            coords.timeZone
+            sunTimesData.sunriseToday,
+            sunTimesData.sunsetToday
         );
 
         logger.info({ message: 'Panchang data calculated successfully', city, date });
-        res.json(panchangData);
+        res.json(panchang Data);
     } catch (error) {
         logger.error({ message: 'Route /getPanchangData error', error: error.message });
         res.status(500).json({ error: 'Failed to calculate Panchang data', details: error.message });
