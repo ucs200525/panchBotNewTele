@@ -47,7 +47,7 @@ async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr
         const abhijitStart = new Date(noonTime.getTime() - 12 * 60 * 1000);
         const abhijitEnd = new Date(noonTime.getTime() + 12 * 60 * 1000);
 
-        // Gulika (Yamghanda) timing
+        // Calculate Gulika (Yamghanda) timing
         const gulikaParts = {
             0: 6,   // Sunday
             1: 4.5, // Monday
@@ -62,17 +62,22 @@ async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr
         const gulikaStartTime = new Date(sunriseTime.getTime() + gulikaStartOffset * 60 * 1000);
         const gulikaEndTime = new Date(gulikaStartTime.getTime() + (oneEighth * 60 * 1000));
 
-        // Calculate Tithi (simplified - actual calculation requires moon phase)
-        // Using day of lunar month approximation
-        const lunarDay = Math.floor(((dateObj.getDate() - 1) % 30) / 2) + 1;
+        // Calculate day of year for better variation
+        const startOfYear = new Date(dateObj.getFullYear(), 0, 1);
+        const dayOfYear = Math.floor((dateObj - startOfYear) / (1000 * 60 * 60 * 24)) + 1;
+
+        // Calculate Tithi (15 tithis per paksha, ~30 day cycle)
+        // Using day of year to approximate lunar cycle (29.5 days)
+        const lunarCycle = ((dayOfYear - 1) % 30);
+        const tithiIndex = Math.floor(lunarCycle / 2);
         const tithis = [
             'Pratipada', 'Dwitiya', 'Tritiya', 'Chaturthi', 'Panchami',
             'Shashthi', 'Saptami', 'Ashtami', 'Navami', 'Dashami',
             'Ekadashi', 'Dwadashi', 'Trayodashi', 'Chaturdashi', 'Purnima/Amavasya'
         ];
-        const tithiName = tithis[Math.min(lunarDay - 1, 14)];
+        const tithiName = tithis[Math.min(tithiIndex, 14)];
 
-        // Calculate Nakshatra (simplified)
+        // Calculate Nakshatra (27 nakshatras, ~13.3 day cycle each)
         const nakshatras = [
             'Ashwini', 'Bharani', 'Krittika', 'Rohini', 'Mrigashira',
             'Ardra', 'Punarvasu', 'Pushya', 'Ashlesha', 'Magha',
@@ -81,10 +86,10 @@ async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr
             'Uttara Ashadha', 'Shravana', 'Dhanishta', 'Shatabhisha',
             'Purva Bhadrapada', 'Uttara Bhadrapada', 'Revati'
         ];
-        const nakshatraIndex = ((dateObj.getDate() - 1) * 27 / 30) % 27;
+        const nakshatraIndex = ((dayOfYear * 27) / 365) % 27;
         const nakshatraName = nakshatras[Math.floor(nakshatraIndex)];
 
-        // Yoga (simplified)
+        // Yoga (27 yogas)
         const yogas = [
             'Vishkambha', 'Priti', 'Ayushman', 'Saubhagya', 'Shobhana',
             'Atiganda', 'Sukarma', 'Dhriti', 'Shula', 'Ganda',
@@ -93,15 +98,15 @@ async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr
             'Siddha', 'Sadhya', 'Shubha', 'Shukla', 'Brahma',
             'Indra', 'Vaidhriti'
         ];
-        const yogaIndex = ((dateObj.getDate() - 1) * 27 / 30) % 27;
+        const yogaIndex = ((dayOfYear * 27) / 365 + 7) % 27; // Offset for variation
         const yogaName = yogas[Math.floor(yogaIndex)];
 
-        // Karana (half of tithi)
+        // Karana (11 karanas, half of tithi)
         const karanas = [
             'Bava', 'Balava', 'Kaulava', 'Taitila', 'Garaja',
             'Vanija', 'Vishti', 'Shakuni', 'Chatushpada', 'Naga', 'Kimstughna'
         ];
-        const karanaIndex = (dateObj.getDate() - 1) % 11;
+        const karanaIndex = (lunarCycle) % 11;
         const karanaName = karanas[karanaIndex];
 
         // Format time helper
