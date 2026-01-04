@@ -1,0 +1,131 @@
+/**
+ * Karana Calculator
+ * Calculates Karana transitions during a day
+ */
+
+const swisseph = require('swisseph');
+const BaseCalculator = require('../core/baseCalculator');
+const julianDay = require('../core/julianDay');
+
+class KaranaCalculator extends BaseCalculator {
+    constructor() {
+        super();
+        this.KARANA_NAMES = [
+            'Bava', 'Balava', 'Kaulava', 'Taitila', 'Garaja', 'Vanija', 'Vishti',
+            'Shakuni', 'Chatushpada', 'Naga', 'Kimstughna'
+        ];
+    }
+
+    /**
+     * Calculate Karana from Tithi
+     * Each Tithi has 2 Karanas, Karana changes every 6 degrees of elongation
+     */
+    calculateKarana(moonLong, sunLong) {
+        let elongation = moonLong - sunLong;
+        if (elongation < 0) elongation += 360;
+        
+        // Karana number (0-59, but only 0-10 are used cyclically)
+        const karanaNumber = Math.floor(elongation / 6) % 60;
+        const percentage = (elongation % 6) / 6;
+        
+        // First 4 Karanas (Shakuni, Chatushpada, Naga, Kimstughna) are fixed
+        // Remaining 7 Karanas repeat 8 times
+        let karanaIndex;
+        if (karanaNumber === 0) karanaIndex = 7; // Shakuni
+        else if (karanaNumber === 57) karanaIndex = 8; // Chatushpada
+        else if (karanaNumber === 58) karanaIndex = 9; // Naga
+        else if (karanaNumber === 59) karanaIndex = 10; // Kimstughna
+        else karanaIndex = (karanaNumber - 1) % 7; // Bava to Vishti cycle
+        
+        return {
+            number: karanaNumber,
+            name: this.KARANA_NAMES[karanaIndex],
+            percentage: percentage * 100
+        };
+    }
+
+    /**
+     * Get Karana at a specific time
+     */
+    getKaranaAtTime(date) {
+        const jd = julianDay.dateToJulianDay(date);
+        const ayanamsa = swisseph.swe_get_ayanamsa_ut(jd);
+        
+        const moonResult = swisseph.swe_calc_ut(jd, swisseph.SE_MOON, swisseph.SEFLG_SWIEPH);
+        const sunResult = swisseph.swe_calc_ut(jd, swisseph.SE_SUN, swisseph.SEFLG_SWIEPH);
+        
+        const moonSidereal = (moonResult.longitude - ayanamsa + 360) % 360;
+        const sunSidereal = (sunResult.longitude - ayanamsa + 360) % 360;
+        
+        return this.calculateKarana(moonSidereal, sunSidereal);
+    }
+
+    /**
+     * Calculate all Karana transitions during a day
+     */
+    calculateDayKaranas(date, timezone = 'Asia/Kolkata') {
+        const karanas = [];
+        const startOfDay = new Date(date);
+        startOfDay.setHours(0, 0, 0, 0);
+        
+        let currentKarana = this.getKaranaAtTime(startOfDay);
+        let startTime = startOfDay;
+        
+        // Sample every hour to detect transitions (Karanas change ~2 times per day)
+        for (let hour = 1; hour <= 24; hour++) {
+            const checkTime = new Date(startOfDay);
+            checkTime.setHours(hour, 0, 0, 0);
+            
+            const nextKarana = this.getKaranaAtTime(checkTime);
+            
+            if (nextKarana.number !== currentKarana.number) {
+                const transitionTime = this.findTransitionTime(
+                    startTime,
+                    checkTime,
+                    currentKarana.number
+                );
+                
+                karanas.push({
+                    number: currentKarana.number,
+                    name: currentKarana.name,
+                    startTime: startTime.toISOString(),
+                    endTime: transitionTime.toISOString()
+                });
+                
+                currentKarana = nextKarana;
+                startTime = transitionTime;
+            }
+        }
+        
+        // Add the final Karana
+        karanas.push({
+            number: currentKarana.number,
+            name: currentKarana.name,
+            startTime: startTime.toISOString(),
+            endTime: null
+        });
+        
+        return karanas;
+    }
+
+    findTransitionTime(startTime, endTime, oldKaranaNumber) {
+        let start = startTime.getTime();
+        let end = endTime.getTime();
+        
+        while (end - start > 60000) {
+            const mid = Math.floor((start + end) / 2);
+            const midDate = new Date(mid);
+            const karana = this.getKaranaAtTime(midDate);
+            
+            if (karana.number === oldKaranaNumber) {
+                start = mid;
+            } else {
+                end = mid;
+            }
+        }
+        
+        return new Date(end);
+    }
+}
+
+module.exports = KaranaCalculator;

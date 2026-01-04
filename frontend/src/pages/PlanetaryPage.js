@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import LoadingSpinner from '../components/LoadingSpinner';
+import React, { useState } from 'react';
+import { PageContainer, PageHeader, Section } from '../components/layout';
+import { LoadingSpinner, ErrorMessage } from '../components/common';
+import { CityDateForm } from '../components/forms';
 import PlanetTable from '../components/planetary/PlanetTable';
 import { useAuth } from '../context/AuthContext';
 
 const PlanetaryPage = () => {
     const { localCity, localDate } = useAuth();
-    const [cityName, setCityName] = useState(localCity || 'Tadepallegudem');
-    const [currentDate, setCurrentDate] = useState(localDate || new Date().toISOString().substring(0, 10));
     const [planetData, setPlanetData] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    const fetchPlanetData = async () => {
+    const fetchPlanetData = async (city, date) => {
         setIsLoading(true);
         setError(null);
         try {
@@ -20,7 +20,7 @@ const PlanetaryPage = () => {
                 {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ city: cityName, date: currentDate })
+                    body: JSON.stringify({ city, date })
                 }
             );
 
@@ -34,47 +34,30 @@ const PlanetaryPage = () => {
         }
     };
 
-    useEffect(() => {
-        fetchPlanetData();
-    }, [cityName, currentDate]);
-
     return (
-        <div className="container" style={{ maxWidth: '900px', margin: '0 auto', padding: '20px' }}>
-            <h1 style={{ textAlign: 'center', marginBottom: '30px' }}>🪐 Planetary Positions</h1>
-
-            <div style={{ marginBottom: '30px', padding: '20px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '15px', alignItems: 'end' }}>
-                    <div>
-                        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>City</label>
-                        <input
-                            type="text"
-                            value={cityName}
-                            onChange={(e) => setCityName(e.target.value)}
-                            style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
-                        />
-                    </div>
-                    <div>
-                        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Date</label>
-                        <input
-                            type="date"
-                            value={currentDate}
-                            onChange={(e) => setCurrentDate(e.target.value)}
-                            style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
-                        />
-                    </div>
-                    <button
-                        onClick={fetchPlanetData}
-                        style={{ padding: '10px 20px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
-                    >
-                        Update
-                    </button>
-                </div>
-            </div>
+        <PageContainer maxWidth="1000px">
+            <PageHeader 
+                title="Planetary Positions"
+                icon="🪐"
+                subtitle="Sidereal positions of celestial bodies"
+            />
+            
+            <CityDateForm 
+                initialCity={localCity || ''}
+                initialDate={localDate || new Date().toISOString().substring(0, 10)}
+                onSubmit={fetchPlanetData}
+                showGeolocation={true}
+            />
 
             {isLoading && <LoadingSpinner />}
-            {error && <div className="error-box">{error}</div>}
-            {planetData && <PlanetTable planets={planetData} />}
-        </div>
+            {error && <ErrorMessage message={error} onDismiss={() => setError(null)} />}
+            
+            {planetData && (
+                <Section title="Planet Positions">
+                    <PlanetTable planets={planetData} />
+                </Section>
+            )}
+        </PageContainer>
     );
 };
 

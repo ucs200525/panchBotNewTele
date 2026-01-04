@@ -1638,4 +1638,46 @@ router.get('/getPanchangData', async (req, res) => {
     }
 });
 
+// New POST route for design system frontend
+router.post('/panchang', async (req, res) => {
+    try {
+        const { city, date } = req.body;
+        logger.info({ message: 'POST /panchang called', city, date });
+
+        if (!city || !date) {
+            return res.status(400).json({ error: 'City and date are required' });
+        }
+
+        // Get coordinates for the city
+        const coords = await fetchCoordinates(city);
+        if (!coords) {
+            return res.status(404).json({ error: 'City not found' });
+        }
+
+        // Get sun times first
+        const sunTimesData = await fetchSunTimes(coords.lat, coords.lng, date, coords.timeZone);
+        if (!sunTimesData) {
+            return res.status(500).json({ error: 'Failed to fetch sun times' });
+        }
+
+        // Calculate comprehensive Panchang data WITH SWISS EPHEMERIS
+        const { calculatePanchangData } = require('../utils/panchangHelper');
+        const panchangData = await calculatePanchangData(
+            city,
+            date,
+            coords.lat,
+            coords.lng,
+            sunTimesData.sunriseToday,
+            sunTimesData.sunsetToday,
+            true  // includeTransitions - Enable Swiss Ephemeris calculations!
+        );
+
+        logger.info({ message: 'Panchang data calculated successfully', city, date });
+        res.json(panchangData);
+    } catch (error) {
+        logger.error({ message: 'POST /panchang error', error: error.message });
+        res.status(500).json({ error: 'Failed to calculate Panchang data', details: error.message });
+    }
+});
+
 module.exports = router;

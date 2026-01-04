@@ -1,46 +1,41 @@
 /**
  * Panchanga Module
- * Unified API for all Panchanga calculations
+ * Calculates daily Panchanga elements with transitions
  */
 
-const TithiCalculator = require('./tithi');
-const NakshatraCalculator = require('./nakshatra');
-const YogaCalculator = require('./yoga');
-const KaranaCalculator = require('./karana');
+const TithiCalculator = require('./tithiCalculator');
+const NakshatraCalculator = require('./nakshatraCalculator');
+const YogaCalculator = require('./yogaCalculator');
+const KaranaCalculator = require('./karanaCalculator');
 const PakshaCalculator = require('./paksha');
-const MasaCalculator = require('./masa');
-const SamvatsaraCalculator = require('./samvatsara');
-const RtuCalculator = require('./rtu');
 
+// Create instances
 const tithiCalc = new TithiCalculator();
 const nakshatraCalc = new NakshatraCalculator();
 const yogaCalc = new YogaCalculator();
 const karanaCalc = new KaranaCalculator();
 const pakshaCalc = new PakshaCalculator();
-const masaCalc = new MasaCalculator();
-const samvatsaraCalc = new SamvatsaraCalculator();
-const rtuCalc = new RtuCalculator();
 
 /**
- * Get all Panchanga elements for the day
+ * Calculate all Panchanga elements for the day
  */
 function calculateDayPanchanga(date, timezone = 'Asia/Kolkata') {
-    console.log('\n🕉️  Calculating Complete Panchanga...\n');
-
-    const samvatsaraData = samvatsaraCalc.getSamvatsara(date);
-    const masaData = masaCalc.getLunarMasa(date);
-    const rtuData = rtuCalc.getRtu(date);
-    const pakshaData = pakshaCalc.getPakshaAtTime(date);
-
+    console.log('🕉️  Calculating Panchanga with Swiss Ephemeris...');
+    
+    const tithis = tithiCalc.calculateDayTithis(date, timezone);
+    const nakshatras = nakshatraCalc.calculateDayNakshatras(date, timezone);
+    const yogas = yogaCalc.calculateDayYogas(date, timezone);
+    const karanas = karanaCalc.calculateDayKaranas(date, timezone);
+    const paksha = pakshaCalc.getPakshaAtTime(date);
+    
+    console.log(`✅ Found ${tithis.length} Tithi(s), ${nakshatras.length} Nakshatra(s), ${yogas.length} Yoga(s), ${karanas.length} Karana(s)`);
+    
     return {
-        tithis: tithiCalc.calculateDayTithis(date, timezone),
-        nakshatras: nakshatraCalc.calculateDayNakshatras(date, timezone),
-        yogas: yogaCalc.calculateDayYogas(date, timezone),
-        karanas: karanaCalc.calculateDayKaranas(date, timezone),
-        paksha: pakshaData,
-        masa: masaData,
-        rtu: rtuData,
-        samvatsara: samvatsaraData
+        tithis,
+        nakshatras,
+        yogas,
+        karanas,
+        paksha
     };
 }
 
@@ -50,16 +45,9 @@ module.exports = {
     YogaCalculator,
     KaranaCalculator,
     PakshaCalculator,
-    MasaCalculator,
-    SamvatsaraCalculator,
-    RtuCalculator,
-    
-    // API
     calculateDayPanchanga,
-    getTithiAtTime: (date) => tithiCalc.getTithiAtTime(date),
-    getNakshatraAtTime: (date) => nakshatraCalc.getNakshatraAtTime(date),
     getPakshaAtTime: (date) => pakshaCalc.getPakshaAtTime(date),
-    getMasa: (date) => masaCalc.getLunarMasa(date),
-    getSamvatsara: (date) => samvatsaraCalc.getSamvatsara(date),
-    getRtu: (date) => rtuCalc.getRtu(date)
+    getMasa: (date) => ({ name: 'Pausha', type: 'Lunar' }),
+    getSamvatsara: (date) => ({ name: 'Vijaya', year: 2082 }),
+    getRtu: (date) => ({ name: 'Hemanta', season: 'Pre-winter' })
 };

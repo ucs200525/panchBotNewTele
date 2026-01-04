@@ -32,6 +32,12 @@ class PlanetaryCalculator extends BaseCalculator {
             if (result && result.transitTime) {
                 return this.julianDayToDate(result.transitTime);
             }
+            
+            // Swiss Ephemeris may fail if ephemeris files are missing
+            // Caller should implement fallback mechanism
+            if (result && result.error) {
+                console.warn(`Swiss Ephemeris warning: ${result.error}`);
+            }
             return null;
         } catch (error) {
             console.error(`Error calculating rise/set for body ${bodyId}:`, error);

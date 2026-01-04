@@ -30,8 +30,8 @@ router.post('/details', async (req, res) => {
         res.json({
             date,
             lagna: lagnaInfo,
-            d1: { houses: d1Houses, planets: d1Planets },
-            d9: { houses: d9Houses, planets: d9Planets }
+            rasiChart: { houses: d1Houses, planets: d1Planets },
+            navamsaChart: { houses: d9Houses, planets: d9Planets }
         });
     } catch (error) {
         console.error('Charts API Error:', error);

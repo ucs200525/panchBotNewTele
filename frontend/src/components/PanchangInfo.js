@@ -4,6 +4,30 @@ import './PanchangInfo.css';
 const PanchangInfo = ({ data }) => {
     if (!data) return null;
 
+    // Helper function to format time strings
+    const formatTime = (timeStr) => {
+        if (!timeStr) return 'N/A';
+        
+        // If it's already formatted (contains AM/PM), return as is
+        if (timeStr.includes('AM') || timeStr.includes('PM') || timeStr.includes('am') || timeStr.includes('pm')) {
+            return timeStr;
+        }
+        
+        // If it's an ISO string, parse and format
+        try {
+            const date = new Date(timeStr);
+            if (isNaN(date.getTime())) return timeStr;
+            
+            return date.toLocaleTimeString('en-IN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            });
+        } catch (e) {
+            return timeStr;
+        }
+    };
+
     return (
         <div className="panchang-container">
             <h2 className="panchang-title">📅 Today's Panchanga</h2>
@@ -15,15 +39,25 @@ const PanchangInfo = ({ data }) => {
                     <div className="panchang-label">🌙 Tithi</div>
                     <div className="panchang-value">
                         {data.tithis && data.tithis.map((tithi, index) => (
-                            <div key={`tithi-${index}`} style={{ marginBottom: index < data.tithis.length - 1 ? '10px' : '0' }}>
-                                <strong>{tithi.name}</strong>
-                                {tithi.paksha && <span className="badge-small" style={{ marginLeft: '8px', fontSize: '0.85em' }}>{tithi.paksha === 'Shukla Paksha' ? '🤍' : '🖤'} {tithi.paksha}</span>}
+                            <div key={`tithi-${index}`} className="panchang-item">
+                                <div className="item-header">
+                                    <strong>{tithi.name}</strong>
+                                    {tithi.paksha && (
+                                        <span className="badge-small">
+                                            {tithi.paksha === 'Shukla Paksha' ? '🤍' : '🖤'} {tithi.paksha}
+                                        </span>
+                                    )}
+                                </div>
                                 {tithi.startTime && tithi.endTime && (
-                                    <div style={{ color: '#666', fontSize: '0.9em', marginTop: '4px' }}>
-                                        {tithi.startTime} → {tithi.endTime}
+                                    <div className="item-time">
+                                        {formatTime(tithi.startTime)} → {formatTime(tithi.endTime)}
                                     </div>
                                 )}
-                                {tithi.endTime && !tithi.startTime && <span style={{ color: '#666', marginLeft: '8px' }}>(till {tithi.endTime})</span>}
+                                {tithi.endTime && !tithi.startTime && (
+                                    <div className="item-time">
+                                        till {formatTime(tithi.endTime)}
+                                    </div>
+                                )}
                             </div>
                         ))}
                     </div>
@@ -34,15 +68,23 @@ const PanchangInfo = ({ data }) => {
                     <div className="panchang-label">⭐ Nakshatra</div>
                     <div className="panchang-value">
                         {data.nakshatras && data.nakshatras.map((nakshatra, index) => (
-                            <div key={`nakshatra-${index}`} style={{ marginBottom: index < data.nakshatras.length - 1 ? '10px' : '0' }}>
-                                <strong>{nakshatra.name}</strong>
-                                {nakshatra.pada && <span className="badge-small" style={{ marginLeft: '8px' }}>Pada {nakshatra.pada}</span>}
+                            <div key={`nakshatra-${index}`} className="panchang-item">
+                                <div className="item-header">
+                                    <strong>{nakshatra.name}</strong>
+                                    {nakshatra.pada && (
+                                        <span className="badge-small">Pada {nakshatra.pada}</span>
+                                    )}
+                                </div>
                                 {nakshatra.startTime && nakshatra.endTime && (
-                                    <div style={{ color: '#666', fontSize: '0.9em', marginTop: '4px' }}>
-                                        {nakshatra.startTime} → {nakshatra.endTime}
+                                    <div className="item-time">
+                                        {formatTime(nakshatra.startTime)} → {formatTime(nakshatra.endTime)}
                                     </div>
                                 )}
-                                {nakshatra.endTime && !nakshatra.startTime && <span style={{ color: '#666', marginLeft: '8px' }}>(till {nakshatra.endTime})</span>}
+                                {nakshatra.endTime && !nakshatra.startTime && (
+                                    <div className="item-time">
+                                        till {formatTime(nakshatra.endTime)}
+                                    </div>
+                                )}
                             </div>
                         ))}
                     </div>
@@ -52,14 +94,20 @@ const PanchangInfo = ({ data }) => {
                     <div className="panchang-label">🔗 Yoga</div>
                     <div className="panchang-value">
                         {data.yogas && data.yogas.map((yoga, index) => (
-                            <div key={`yoga-${index}`} style={{ marginBottom: index < data.yogas.length - 1 ? '10px' : '0' }}>
-                                <strong>{yoga.name}</strong>
+                            <div key={`yoga-${index}`} className="panchang-item">
+                                <div className="item-header">
+                                    <strong>{yoga.name}</strong>
+                                </div>
                                 {yoga.startTime && yoga.endTime && (
-                                    <div style={{ color: '#666', fontSize: '0.9em', marginTop: '4px' }}>
-                                        {yoga.startTime} → {yoga.endTime}
+                                    <div className="item-time">
+                                        {formatTime(yoga.startTime)} → {formatTime(yoga.endTime)}
                                     </div>
                                 )}
-                                {yoga.endTime && !yoga.startTime && <span style={{ color: '#666', marginLeft: '8px' }}>(till {yoga.endTime})</span>}
+                                {yoga.endTime && !yoga.startTime && (
+                                    <div className="item-time">
+                                        till {formatTime(yoga.endTime)}
+                                    </div>
+                                )}
                             </div>
                         ))}
                     </div>
@@ -69,14 +117,20 @@ const PanchangInfo = ({ data }) => {
                     <div className="panchang-label">⚡ Karana</div>
                     <div className="panchang-value">
                         {data.karanas && data.karanas.map((karana, index) => (
-                            <div key={`karana-${index}`} style={{ marginBottom: index < data.karanas.length - 1 ? '10px' : '0' }}>
-                                <strong>{karana.name}</strong>
+                            <div key={`karana-${index}`} className="panchang-item">
+                                <div className="item-header">
+                                    <strong>{karana.name}</strong>
+                                </div>
                                 {karana.startTime && karana.endTime && (
-                                    <div style={{ color: '#666', fontSize: '0.9em', marginTop: '4px' }}>
-                                        {karana.startTime} → {karana.endTime}
+                                    <div className="item-time">
+                                        {formatTime(karana.startTime)} → {formatTime(karana.endTime)}
                                     </div>
                                 )}
-                                {karana.endTime && !karana.startTime && <span style={{ color: '#666', marginLeft: '8px' }}>(till {karana.endTime})</span>}
+                                {karana.endTime && !karana.startTime && (
+                                    <div className="item-time">
+                                        till {formatTime(karana.endTime)}
+                                    </div>
+                                )}
                             </div>
                         ))}
                     </div>

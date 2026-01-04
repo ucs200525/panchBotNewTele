@@ -1,39 +1,39 @@
-import React, { useState, useEffect } from 'react';
-import LoadingSpinner from '../components/LoadingSpinner';
+import React, { useState } from 'react';
+import { PageContainer, PageHeader, Section } from '../components/layout';
+import { LoadingSpinner, ErrorMessage } from '../components/common';
+import { CityDateForm } from '../components/forms';
 import { useAuth } from '../context/AuthContext';
+import './DashaPage.css';
 
 const DashaPage = () => {
     const { localCity, localDate } = useAuth();
-    const [cityName, setCityName] = useState(localCity || 'Tadepallegudem');
-    const [currentDate, setCurrentDate] = useState(localDate || new Date().toISOString().substring(0, 10));
     const [dashaData, setDashaData] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [birthTime, setBirthTime] = useState('12:00');
 
-    const fetchDashaData = async () => {
+    const fetchDashaData = async (city, date) => {
         setIsLoading(true);
         setError(null);
         try {
-            const geoResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/fetchCoordinates/${cityName}`);
+            const geoResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/fetchCoordinates/${city}`);
             if (!geoResponse.ok) throw new Error('Could not find city');
             const coords = await geoResponse.json();
 
-            const response = await fetch(
-                `${process.env.REACT_APP_API_URL}/api/dasha/vimshottari`,
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        date: currentDate,
-                        lat: coords.lat,
-                        lng: coords.lng
-                    })
-                }
-            );
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/dasha/vimshottari`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    date,
+                    time: birthTime,
+                    lat: coords.lat,
+                    lng: coords.lng
+                })
+            });
 
-            if (!response.ok) throw new Error('Failed to fetch dasha data');
+            if (!response.ok) throw new Error('Failed to fetch Dasha data');
             const data = await response.json();
-            setDashaData(data.dasha);
+            setDashaData(data);
         } catch (err) {
             setError(err.message);
         } finally {
@@ -41,69 +41,66 @@ const DashaPage = () => {
         }
     };
 
-    useEffect(() => {
-        fetchDashaData();
-    }, [cityName, currentDate]);
+    const formatDate = (dateStr) => {
+        if (!dateStr) return 'N/A';
+        try {
+            return new Date(dateStr).toLocaleDateString('en-IN', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        } catch (e) {
+            return dateStr;
+        }
+    };
 
     return (
-        <div className="container" style={{ maxWidth: '900px', margin: '0 auto', padding: '20px' }}>
-            <h1 style={{ textAlign: 'center', marginBottom: '30px' }}>⏳ Vimshottari Mahadasha</h1>
+        <PageContainer maxWidth="1000px">
+            <PageHeader 
+                title="Vimshottari Dasha"
+                icon="⏳"
+                subtitle="120-year planetary period system"
+            />
             
-            <div style={{ marginBottom: '30px', padding: '20px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '15px', alignItems: 'end' }}>
-                    <div>
-                        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>City Name (Birth Location)</label>
-                        <input 
-                            type="text" 
-                            value={cityName} 
-                            onChange={(e) => setCityName(e.target.value)}
-                            style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
-                        />
-                    </div>
-                    <div>
-                        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Birth Date</label>
-                        <input 
-                            type="date" 
-                            value={currentDate} 
-                            onChange={(e) => setCurrentDate(e.target.value)}
-                            style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
-                        />
-                    </div>
-                    <button 
-                        onClick={fetchDashaData}
-                        style={{ padding: '10px 20px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
-                    >
-                        Calculate
-                    </button>
+            <div className="dasha-form-container">
+                <CityDateForm 
+                    initialCity={localCity || ''}
+                    initialDate={localDate || new Date().toISOString().substring(0, 10)}
+                    onSubmit={fetchDashaData}
+                    showGeolocation={true}
+                />
+                
+                <div className="time-input-group">
+                    <label htmlFor="birth-time-dasha" className="time-label">Birth Time</label>
+                    <input
+                        id="birth-time-dasha"
+                        type="time"
+                        value={birthTime}
+                        onChange={(e) => setBirthTime(e.target.value)}
+                        className="time-input"
+                    />
                 </div>
             </div>
 
             {isLoading && <LoadingSpinner />}
-            {error && <div className="error-box" style={{ background: '#fee2e2', color: '#b91c1c', padding: '1rem', borderRadius: '8px' }}>{error}</div>}
+            {error && <ErrorMessage message={error} onDismiss={() => setError(null)} />}
             
-            {dashaData && (
-                <div className="dasha-timeline">
-                    {dashaData.map((d, i) => (
-                        <div key={i} style={{ 
-                            display: 'grid', 
-                            gridTemplateColumns: '150px 1fr 150px', 
-                            padding: '15px', 
-                            borderBottom: '1px solid #e2e8f0',
-                            background: i % 2 === 0 ? '#fff' : '#f8fafc'
-                        }}>
-                            <div style={{ fontWeight: 'bold', color: '#1e293b' }}>{d.lord}</div>
-                            <div style={{ color: '#64748b', fontSize: '0.9rem' }}>
-                                Duration: {d.duration} Years 
-                                {d.isInitial && <span style={{ marginLeft: '10px', color: '#3b82f6', fontStyle: 'italic' }}>(Balance at birth)</span>}
+            {dashaData && dashaData.mahadashas && (
+                <Section title="Mahadasha Periods">
+                    <div className="dasha-table">
+                        {dashaData.mahadashas.map((dasha, idx) => (
+                            <div key={idx} className="dasha-row">
+                                <div className="dasha-planet">{dasha.planet}</div>
+                                <div className="dasha-period">
+                                    {formatDate(dasha.start)} - {formatDate(dasha.end)}
+                                </div>
+                                <div className="dasha-duration">{dasha.years} years</div>
                             </div>
-                            <div style={{ textAlign: 'right', fontSize: '0.9rem', color: '#475569' }}>
-                                Ends: {new Date(d.end).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
-                            </div>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                </Section>
             )}
-        </div>
+        </PageContainer>
     );
 };
 

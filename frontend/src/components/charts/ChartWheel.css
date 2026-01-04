@@ -12,6 +12,22 @@
     position: relative;
 }
 
+.chart-container {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: var(--space-lg);
+}
+
+.chart-error {
+    padding: var(--space-xl);
+    text-align: center;
+    color: var(--color-text-secondary);
+    background: var(--color-bg-secondary);
+    border-radius: var(--radius-md);
+    border: 2px dashed var(--color-border);
+}
+
 .chart-cell {
     border: 1px solid #94a3b8;
     padding: 5px;

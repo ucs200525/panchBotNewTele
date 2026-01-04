@@ -5,7 +5,13 @@ import './ChartWheel.css';
  * South Indian Style Chart Component
  */
 const ChartWheel = ({ houses, title, lagnaRashi }) => {
-    if (!houses) return null;
+    if (!houses || !Array.isArray(houses)) {
+        return (
+            <div className="chart-error">
+                <p>No chart data available</p>
+            </div>
+        );
+    }
 
     // Mapping house index to South Indian grid positions (4x4)
     // 0: Meena, 1: Mesha, 2: Vrishabha, 3: Mithuna

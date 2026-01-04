@@ -1,0 +1,42 @@
+.error-message {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-md) var(--space-lg);
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+    border: 2px solid var(--color-error);
+    border-radius: var(--radius-md);
+    color: #991b1b;
+    margin-bottom: var(--space-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.error-icon {
+    font-size: var(--font-size-xl);
+    flex-shrink: 0;
+}
+
+.error-text {
+    flex: 1;
+    font-weight: var(--font-weight-medium);
+}
+
+.error-dismiss {
+    background: none;
+    border: none;
+    font-size: var(--font-size-2xl);
+    color: #991b1b;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    transition: background var(--transition-fast);
+}
+
+.error-dismiss:hover {
+    background: rgba(153, 27, 27, 0.1);
+}
