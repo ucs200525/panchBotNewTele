@@ -12,12 +12,18 @@ const PanchangInfo = ({ data }) => {
             <div className="panchang-table">
                 {/* Display all Tithis together under one label */}
                 <div className="panchang-row">
-                    <div className="panchang-label">Tithi</div>
+                    <div className="panchang-label">🌙 Tithi</div>
                     <div className="panchang-value">
                         {data.tithis && data.tithis.map((tithi, index) => (
                             <div key={`tithi-${index}`} style={{ marginBottom: index < data.tithis.length - 1 ? '10px' : '0' }}>
-                                {tithi.name}
-                                {tithi.endTime && <span style={{ color: '#666', marginLeft: '8px' }}>(till {tithi.endTime})</span>}
+                                <strong>{tithi.name}</strong>
+                                {tithi.paksha && <span className="badge-small" style={{ marginLeft: '8px', fontSize: '0.85em' }}>{tithi.paksha === 'Shukla Paksha' ? '🤍' : '🖤'} {tithi.paksha}</span>}
+                                {tithi.startTime && tithi.endTime && (
+                                    <div style={{ color: '#666', fontSize: '0.9em', marginTop: '4px' }}>
+                                        {tithi.startTime} → {tithi.endTime}
+                                    </div>
+                                )}
+                                {tithi.endTime && !tithi.startTime && <span style={{ color: '#666', marginLeft: '8px' }}>(till {tithi.endTime})</span>}
                             </div>
                         ))}
                     </div>
@@ -25,41 +31,66 @@ const PanchangInfo = ({ data }) => {
 
                 {/* Display all Nakshatras together under one label */}
                 <div className="panchang-row">
-                    <div className="panchang-label">Nakshatra</div>
+                    <div className="panchang-label">⭐ Nakshatra</div>
                     <div className="panchang-value">
                         {data.nakshatras && data.nakshatras.map((nakshatra, index) => (
                             <div key={`nakshatra-${index}`} style={{ marginBottom: index < data.nakshatras.length - 1 ? '10px' : '0' }}>
-                                {nakshatra.name}
-                                {nakshatra.endTime && <span style={{ color: '#666', marginLeft: '8px' }}>(till {nakshatra.endTime})</span>}
+                                <strong>{nakshatra.name}</strong>
                                 {nakshatra.pada && <span className="badge-small" style={{ marginLeft: '8px' }}>Pada {nakshatra.pada}</span>}
+                                {nakshatra.startTime && nakshatra.endTime && (
+                                    <div style={{ color: '#666', fontSize: '0.9em', marginTop: '4px' }}>
+                                        {nakshatra.startTime} → {nakshatra.endTime}
+                                    </div>
+                                )}
+                                {nakshatra.endTime && !nakshatra.startTime && <span style={{ color: '#666', marginLeft: '8px' }}>(till {nakshatra.endTime})</span>}
                             </div>
                         ))}
                     </div>
                 </div>
 
                 <div className="panchang-row">
-                    <div className="panchang-label">Yoga</div>
+                    <div className="panchang-label">🔗 Yoga</div>
                     <div className="panchang-value">
-                        {data.yoga?.name || 'N/A'}
+                        {data.yogas && data.yogas.map((yoga, index) => (
+                            <div key={`yoga-${index}`} style={{ marginBottom: index < data.yogas.length - 1 ? '10px' : '0' }}>
+                                <strong>{yoga.name}</strong>
+                                {yoga.startTime && yoga.endTime && (
+                                    <div style={{ color: '#666', fontSize: '0.9em', marginTop: '4px' }}>
+                                        {yoga.startTime} → {yoga.endTime}
+                                    </div>
+                                )}
+                                {yoga.endTime && !yoga.startTime && <span style={{ color: '#666', marginLeft: '8px' }}>(till {yoga.endTime})</span>}
+                            </div>
+                        ))}
                     </div>
                 </div>
 
                 <div className="panchang-row">
-                    <div className="panchang-label">Karana</div>
+                    <div className="panchang-label">⚡ Karana</div>
                     <div className="panchang-value">
-                        {data.karana?.name || 'N/A'}
+                        {data.karanas && data.karanas.map((karana, index) => (
+                            <div key={`karana-${index}`} style={{ marginBottom: index < data.karanas.length - 1 ? '10px' : '0' }}>
+                                <strong>{karana.name}</strong>
+                                {karana.startTime && karana.endTime && (
+                                    <div style={{ color: '#666', fontSize: '0.9em', marginTop: '4px' }}>
+                                        {karana.startTime} → {karana.endTime}
+                                    </div>
+                                )}
+                                {karana.endTime && !karana.startTime && <span style={{ color: '#666', marginLeft: '8px' }}>(till {karana.endTime})</span>}
+                            </div>
+                        ))}
                     </div>
                 </div>
 
                 <div className="panchang-row">
-                    <div className="panchang-label">Weekday</div>
+                    <div className="panchang-label">📆 Weekday</div>
                     <div className="panchang-value">
                         {data.vara || data.weekday || 'N/A'}
                     </div>
                 </div>
 
                 <div className="panchang-row">
-                    <div className="panchang-label">Paksha</div>
+                    <div className="panchang-label">🌓 Paksha</div>
                     <div className="panchang-value">
                         {data.paksha ? `${data.paksha} Paksha` : 'N/A'}
                     </div>
@@ -100,6 +131,15 @@ const PanchangInfo = ({ data }) => {
                         {data.abhijitMuhurat?.start || 'N/A'} - {data.abhijitMuhurat?.end || 'N/A'}
                     </span>
                 </div>
+                {data.brahmaMuhurta && (
+                    <div className="timing-row timing-good">
+                        <span className="timing-icon">☸️</span>
+                        <span className="timing-label">Brahma Muhurta</span>
+                        <span className="timing-time">
+                            {data.brahmaMuhurta.start} - {data.brahmaMuhurta.end}
+                        </span>
+                    </div>
+                )}
                 {data.rahuKaal && (
                     <div className="timing-row timing-bad">
                         <span className="timing-icon">⛔</span>
@@ -152,6 +192,12 @@ const PanchangInfo = ({ data }) => {
                 <>
                     <h3 className="section-title">📅 Hindu Calendar</h3>
                     <div className="panchang-table">
+                        {data.rtu && data.rtu !== 'N/A' && (
+                            <div className="panchang-row">
+                                <div className="panchang-label">Rtu (Season)</div>
+                                <div className="panchang-value">{data.rtu}</div>
+                            </div>
+                        )}
                         {data.masa && data.masa !== 'N/A' && (
                             <div className="panchang-row">
                                 <div className="panchang-label">Masa</div>
@@ -194,6 +240,43 @@ const PanchangInfo = ({ data }) => {
                                 <div className="panchang-value">{data.ayanamsa}</div>
                             </div>
                         )}
+                    </div>
+                </>
+            )}
+
+            {/* Choghadiya Timings */}
+            {data.choghadiya && (
+                <>
+                    <h3 className="section-title">⏱️ Choghadiya Timings</h3>
+                    <div className="choghadiya-container">
+                        <div className="choghadiya-column">
+                            <h4 className="choghadiya-subtitle">Day Choghadiya</h4>
+                            <div className="panchang-table">
+                                {data.choghadiya.day.map((p, i) => (
+                                    <div key={`day-chog-${i}`} className={`panchang-row ${p.type.toLowerCase()}-row`}>
+                                        <div className="panchang-label">{p.name}</div>
+                                        <div className="panchang-value">
+                                            {p.start} - {p.end}
+                                            <span className={`badge-${p.type.toLowerCase()}`}>{p.type}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="choghadiya-column">
+                            <h4 className="choghadiya-subtitle">Night Choghadiya</h4>
+                            <div className="panchang-table">
+                                {data.choghadiya.night.map((p, i) => (
+                                    <div key={`night-chog-${i}`} className={`panchang-row ${p.type.toLowerCase()}-row`}>
+                                        <div className="panchang-label">{p.name}</div>
+                                        <div className="panchang-value">
+                                            {p.start} - {p.end}
+                                            <span className={`badge-${p.type.toLowerCase()}`}>{p.type}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 </>
             )}

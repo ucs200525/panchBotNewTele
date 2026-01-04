@@ -1,0 +1,73 @@
+/* South Indian Chart Grid Styles */
+
+.south-indian-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    width: 360px;
+    height: 360px;
+    border: 2px solid #1e293b;
+    margin: 1rem auto;
+    background: #fff;
+    position: relative;
+}
+
+.chart-cell {
+    border: 1px solid #94a3b8;
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    position: relative;
+    font-size: 0.75rem;
+}
+
+.cell-rashi-name {
+    color: #64748b;
+    font-size: 0.65rem;
+    margin-bottom: 2px;
+}
+
+.cell-lagna-mark {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    color: #ef4444;
+    font-weight: 800;
+    font-size: 0.75rem;
+}
+
+.cell-planets {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
+    margin-top: 5px;
+}
+
+.planet-name {
+    font-weight: bold;
+    color: #1e293b;
+}
+
+.chart-center {
+    grid-row: 2 / 4;
+    grid-column: 2 / 4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #1e293b;
+    background: #f8fafc;
+}
+
+.center-title {
+    font-weight: bold;
+    color: #3b82f6;
+    text-align: center;
+}
+
+.chart-wheel-container h3 {
+    text-align: center;
+    color: #475569;
+}

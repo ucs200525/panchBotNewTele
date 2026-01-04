@@ -101,18 +101,29 @@ async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr
         const formattedSunrise = formatProvidedTime(sunriseHour, sunriseMin, sunriseSec);
         const formattedSunset = formatProvidedTime(sunsetHour, sunsetMin, sunsetSec);
         
-        // Get ALL elements for the day (no cache - always calculate)
+        // Get ALL elements for the day using NEW Swiss Ephemeris modules
         let dayElements = null;
         let lagnas = [];
         if (includeTransitions) {
             try {
-                const { getDayPanchangElements } = require('./transitionFinder');
+                // Use NEW Swiss Ephemeris modules
+                const { panchanga: swissPanchanga } = require('../swisseph');
                 const { calculateDayLagnas } = require('./lagnaFinder');
                 
-                dayElements = getDayPanchangElements(dateObj, lat, lng, timezone);
+                console.log('  🕉️  Using Swiss Ephemeris for accurate calculations...');
+                
+                // Calculate Panchanga elements (Tithi, Nakshatra)
+                const panchangaData = swissPanchanga.calculateDayPanchanga(dateObj, timezone);
+                
+                dayElements = panchangaData;
+                
+                // Calculate Lagna timings
                 lagnas = calculateDayLagnas(dateObj, lat, lng, timezone, sunriseStr);
+                
+                console.log(`  ✅ Found ${panchangaData.tithis.length} Tithi(s), ${panchangaData.nakshatras.length} Nakshatra(s), ${panchangaData.yogas.length} Yoga(s), ${panchangaData.karanas.length} Karana(s)`);
             } catch (error) {
                 console.warn('  ⚠️  Could not calculate transitions:', error.message);
+                console.error(error);
             }
         }
         
@@ -125,15 +136,8 @@ async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr
             sunrise: formattedSunrise,
             sunset: formattedSunset,
             
-            // Core Panchanga elements - now as arrays showing all elements for the day
-            tithis: dayElements?.tithis?.map(t => ({
-                name: t.name,
-                number: t.number,
-                paksha: t.paksha,
-                percentage: t.percentage,
-                startTime: t.startTime ? formatTime(t.startTime) : null,
-                endTime: t.endTime ? formatTime(t.endTime) : null
-            })) || [{
+            // Core Panchanga elements
+            tithis: dayElements?.tithis || [{
                 name: panchanga.tithi.name,
                 number: panchanga.tithi.number,
                 paksha: panchanga.tithi.paksha,
@@ -142,14 +146,7 @@ async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr
                 endTime: null
             }],
             
-            nakshatras: dayElements?.nakshatras?.map(n => ({
-                name: n.name,
-                number: n.number,
-                pada: n.pada,
-                lord: n.lord,
-                startTime: n.startTime ? formatTime(n.startTime) : null,
-                endTime: n.endTime ? formatTime(n.endTime) : null
-            })) || [{
+            nakshatras: dayElements?.nakshatras || [{
                 name: panchanga.nakshatra.name,
                 number: panchanga.nakshatra.number,
                 pada: panchanga.nakshatra.pada,
@@ -158,6 +155,21 @@ async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr
                 endTime: null
             }],
             
+            yogas: dayElements?.yogas || [{
+                name: panchanga.yoga.name,
+                number: panchanga.yoga.number,
+                startTime: null,
+                endTime: null
+            }],
+            
+            karanas: dayElements?.karanas || [{
+                name: panchanga.karana.name,
+                number: panchanga.karana.number,
+                startTime: null,
+                endTime: null
+            }],
+            
+            // Backward compatibility fields
             yoga: {
                 name: panchanga.yoga.name,
                 number: panchanga.yoga.number,
@@ -168,14 +180,115 @@ async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr
                 number: panchanga.karana.number,
             },
             
-            vara: panchanga.vara.name || panchanga.vara, // Day of the week
+            vara: panchanga.vara.name || panchanga.vara, 
             weekday: panchanga.vara.name || panchanga.vara,
             
             // Moon phase
             moonPhase: panchanga.moonPhase || 'N/A',
             
-            // Paksha (fortnight)
-            paksha: panchanga.tithi.paksha,
+            // Paksha
+            paksha: dayElements?.paksha?.name || panchanga.tithi.paksha,
+            
+            // Ayanamsa
+            ayanamsa: (() => {
+                try {
+                    const { julianDay } = require('../swisseph');
+                    const jd = julianDay.dateToJulianDay(dateObj);
+                    const swisseph = require('swisseph');
+                    const ayanamsaValue = swisseph.swe_get_ayanamsa_ut(jd);
+                    return `${ayanamsaValue.toFixed(6)}° (Lahiri)`;
+                } catch (error) {
+                    return 'N/A';
+                }
+            })(),
+            
+            // Masa & Rtu
+            masa: dayElements?.masa ? `${dayElements.masa.name} (${dayElements.masa.rashi})` : 'N/A',
+            rtu: dayElements?.rtu?.name || 'N/A',
+            
+            // Years & Cycle
+            samvatsara: dayElements?.samvatsara?.name || 'N/A',
+            shakaYear: dayElements?.samvatsara?.shakaYear || 'N/A',
+            vikramaYear: dayElements?.samvatsara?.vikramaYear || 'N/A',
+            kaliYear: dayElements?.samvatsara?.kaliYear || 'N/A',
+            
+            // Moon Sign
+            moonSign: (() => {
+                try {
+                    const { julianDay } = require('../swisseph');
+                    const swisseph = require('swisseph');
+                    const jd = julianDay.dateToJulianDay(dateObj);
+                    const ayanamsa = swisseph.swe_get_ayanamsa_ut(jd);
+                    const moonResult = swisseph.swe_calc_ut(jd, swisseph.SE_MOON, swisseph.SEFLG_SWIEPH);
+                    const moonSidereal = (moonResult.longitude - ayanamsa + 360) % 360;
+                    const moonRashi = Math.floor(moonSidereal / 30);
+                    const rashiNames = ['Mesha', 'Vrishabha', 'Mithuna', 'Karka', 'Simha', 'Kanya',
+                                       'Tula', 'Vrishchika', 'Dhanu', 'Makara', 'Kumbha', 'Meena'];
+                    const symbols = ['♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓'];
+                    return `${symbols[moonRashi]} ${rashiNames[moonRashi]}`;
+                } catch (error) {
+                    return 'N/A';
+                }
+            })(),
+            
+            // Sun Sign
+            sunSign: (() => {
+                try {
+                    const { julianDay } = require('../swisseph');
+                    const swisseph = require('swisseph');
+                    const jd = julianDay.dateToJulianDay(dateObj);
+                    const ayanamsa = swisseph.swe_get_ayanamsa_ut(jd);
+                    const sunResult = swisseph.swe_calc_ut(jd, swisseph.SE_SUN, swisseph.SEFLG_SWIEPH);
+                    const sunSidereal = (sunResult.longitude - ayanamsa + 360) % 360;
+                    const sunRashi = Math.floor(sunSidereal / 30);
+                    const rashiNames = ['Mesha', 'Vrishabha', 'Mithuna', 'Karka', 'Simha', 'Kanya',
+                                      'Tula', 'Vrishchika', 'Dhanu', 'Makara', 'Kumbha', 'Meena'];
+                    const symbols = ['♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓'];
+                    return `${symbols[sunRashi]} ${rashiNames[sunRashi]}`;
+                } catch (error) {
+                    return 'N/A';
+                }
+            })(),
+            
+            // NEW: Moon Sign
+            moonSign: (() => {
+                try {
+                    const { julianDay } = require('../swisseph');
+                    const swisseph = require('swisseph');
+                    const jd = julianDay.dateToJulianDay(dateObj);
+                    const ayanamsa = swisseph.swe_get_ayanamsa_ut(jd);
+                    const moonResult = swisseph.swe_calc_ut(jd, swisseph.SE_MOON, swisseph.SEFLG_SWIEPH);
+                    const moonSidereal = (moonResult.longitude - ayanamsa + 360) % 360;
+                    const moonRashi = Math.floor(moonSidereal / 30);
+                    const rashiNames = ['Mesha', 'Vrishabha', 'Mithuna', 'Karka', 'Simha', 'Kanya',
+                                       'Tula', 'Vrishchika', 'Dhanu', 'Makara', 'Kumbha', 'Meena'];
+                    const symbols = ['♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓'];
+                    return `${symbols[moonRashi]} ${rashiNames[moonRashi]}`;
+                } catch (error) {
+                    console.warn('Could not calculate moon sign:', error.message);
+                    return 'N/A';
+                }
+            })(),
+            
+            // NEW: Sun Sign
+            sunSign: (() => {
+                try {
+                    const { julianDay } = require('../swisseph');
+                    const swisseph = require('swisseph');
+                    const jd = julianDay.dateToJulianDay(dateObj);
+                    const ayanamsa = swisseph.swe_get_ayanamsa_ut(jd);
+                    const sunResult = swisseph.swe_calc_ut(jd, swisseph.SE_SUN, swisseph.SEFLG_SWIEPH);
+                    const sunSidereal = (sunResult.longitude - ayanamsa + 360) % 360;
+                    const sunRashi = Math.floor(sunSidereal / 30);
+                    const rashiNames = ['Mesha', 'Vrishabha', 'Mithuna', 'Karka', 'Simha', 'Kanya',
+                                       'Tula', 'Vrishchika', 'Dhanu', 'Makara', 'Kumbha', 'Meena'];
+                    const symbols = ['♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓'];
+                    return `${symbols[sunRashi]} ${rashiNames[sunRashi]}`;
+                } catch (error) {
+                    console.warn('Could not calculate sun sign:', error.message);
+                    return 'N/A';
+                }
+            })(),
             
             // Rahu Kaal (inauspicious time) - check if valid
             rahuKaal: (() => {
@@ -196,21 +309,62 @@ async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr
                 return null;
             })(),
             
-            gulika: (panchanga.gulikaKaal && panchanga.gulikaKaal.start && panchanga.gulikaKaal.end) ? {
-                start: formatTime(panchanga.gulikaKaal.start),
-                end: formatTime(panchanga.gulikaKaal.end),
-                duration: calculateDuration(panchanga.gulikaKaal.start, panchanga.gulikaKaal.end)
-            } : null,
+            // NEW: Calculate Gulika Kalam using Swiss Ephemeris muhurta module
+            gulika: (() => {
+                try {
+                    const { muhurta } = require('../swisseph');
+                    const sunriseDate = new Date(dateObj);
+                    const [sh, sm, ss = 0] = sunriseStr.split(':').map(Number);
+                    sunriseDate.setHours(sh, sm, ss || 0, 0);
+                    
+                    const sunsetDate = new Date(dateObj);
+                    const [suh, sum, sus = 0] = sunsetStr.split(':').map(Number);
+                    sunsetDate.setHours(suh, sum, sus || 0, 0);
+                    
+                    const weekday = dateObj.getDay();
+                    const gulikaData = muhurta.calculateGulikaKalam(sunriseDate, sunsetDate, weekday);
+                    
+                    return {
+                        start: formatTime(gulikaData.start),
+                        end: formatTime(gulikaData.end),
+                        duration: calculateDuration(gulikaData.start, gulikaData.end)
+                    };
+                } catch (error) {
+                    console.warn('Could not calculate Gulika:', error.message);
+                    return null;
+                }
+            })(),
             
-            yamaganda: (panchanga.yamaganda && panchanga.yamaganda.start && panchanga.yamaganda.end) ? {
-                start: formatTime(panchanga.yamaganda.start),
-                end: formatTime(panchanga.yamaganda.end),
-                duration: calculateDuration(panchanga.yamaganda.start, panchanga.yamaganda.end)
-            } : null,
+            // NEW: Calculate Yamaganda using Swiss Ephemeris muhurta module  
+            yamaganda: (() => {
+                try {
+                    const { muhurta } = require('../swisseph');
+                    const sunriseDate = new Date(dateObj);
+                    const [sh, sm, ss = 0] = sunriseStr.split(':').map(Number);
+                    sunriseDate.setHours(sh, sm, ss || 0, 0);
+                    
+                    const sunsetDate = new Date(dateObj);
+                    const [suh, sum, sus = 0] = sunsetStr.split(':').map(Number);
+                    sunsetDate.setHours(suh, sum, sus || 0, 0);
+                    
+                    const weekday = dateObj.getDay();
+                    const yamagandaData = muhurta.calculateYamaganda(sunriseDate, sunsetDate, weekday);
+                    
+                    return {
+                        start: formatTime(yamagandaData.start),
+                        end: formatTime(yamagandaData.end),
+                        duration: calculateDuration(yamagandaData.start, yamagandaData.end)
+                    };
+                } catch (error) {
+                    console.warn('Could not calculate Yamaganda:', error.message);
+                    return null;
+                }
+            })(),
             
             // Lagna (Ascendant) timings - all 12 signs for the day
             lagnas: lagnas.map(lagna => ({
                 name: lagna.name,
+                symbol: lagna.symbol || '',
                 index: lagna.index,
                 startTime: lagna.startTime ? formatTime(lagna.startTime) : null,
                 endTime: lagna.endTime ? formatTime(lagna.endTime) : null,
@@ -239,24 +393,88 @@ async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr
                 return calculateAbhijitMuhurat(sunriseStr, sunsetStr);
             })(),
             
-            // Additional astronomical data (if available)
-            moonSign: panchanga.moonSign || 'N/A',
-            sunSign: panchanga.sunSign || 'N/A',
-            masa: panchanga.masa || panchanga.month || 'N/A',
-            samvatsara: panchanga.samvatsara || panchanga.year || 'N/A',
-            ayanamsa: panchanga.ayanamsa || 'N/A',
+            // Hindu calendar years and cycles
+            shakaYear: dayElements?.samvatsara?.shakaYear || 'N/A',
+            vikramaYear: dayElements?.samvatsara?.vikramaYear || 'N/A',
+            kaliYear: dayElements?.samvatsara?.kaliYear || 'N/A',
+            samvatsara: dayElements?.samvatsara?.name || 'N/A',
             
-            // Lunar months (if available)
-            amantaMonth: panchanga.amantaMonth || 'N/A',
-            purnimantaMonth: panchanga.purnimantaMonth || 'N/A',
-            
-            // Hindu calendar years (if available)
-            shakaYear: panchanga.shakaYear || 'N/A',
-            vikramaYear: panchanga.vikramaYear || 'N/A',
-            
-            // Moonrise/Moonset (if available)
-            moonrise: panchanga.moonrise ? formatTime(panchanga.moonrise) : 'N/A',
-            moonset: panchanga.moonset ? formatTime(panchanga.moonset) : 'N/A',
+            // NEW: Moonrise/Moonset - calculate using Swiss Ephemeris
+            moonrise: (() => {
+                try {
+                    const { planetary } = require('../swisseph');
+                    const planner = new planetary.PlanetaryCalculator();
+                    const moonriseTime = planner.getMoonrise(dateObj, lat, lng);
+                    return moonriseTime ? formatTime(moonriseTime) : 'N/A';
+                } catch (error) {
+                    console.warn('Could not calculate moonrise:', error.message);
+                    return 'N/A';
+                }
+            })(),
+
+            moonset: (() => {
+                try {
+                    const { planetary } = require('../swisseph');
+                    const planner = new planetary.PlanetaryCalculator();
+                    const moonsetTime = planner.getMoonset(dateObj, lat, lng);
+                    return moonsetTime ? formatTime(moonsetTime) : 'N/A';
+                } catch (error) {
+                    console.warn('Could not calculate moonset:', error.message);
+                    return 'N/A';
+                }
+            })(),
+
+            // NEW: Brahma Muhurta
+            brahmaMuhurta: (() => {
+                try {
+                    const { muhurta } = require('../swisseph');
+                    const sunriseDate = new Date(dateObj);
+                    const [sh, sm, ss = 0] = sunriseStr.split(':').map(Number);
+                    sunriseDate.setHours(sh, sm, ss || 0, 0);
+                    
+                    const brahmaData = muhurta.calculateBrahmaMuhurta(sunriseDate);
+                    return {
+                        start: formatTime(brahmaData.start),
+                        end: formatTime(brahmaData.end),
+                        duration: calculateDuration(brahmaData.start, brahmaData.end)
+                    };
+                } catch (error) {
+                    return null;
+                }
+            })(),
+
+            // NEW: Choghadiya
+            choghadiya: (() => {
+                try {
+                    const { muhurta } = require('../swisseph');
+                    const sunriseDate = new Date(dateObj);
+                    const [sh, sm, ss = 0] = sunriseStr.split(':').map(Number);
+                    sunriseDate.setHours(sh, sm, ss || 0, 0);
+
+                    const sunsetDate = new Date(dateObj);
+                    const [suh, sum, sus = 0] = sunsetStr.split(':').map(Number);
+                    sunsetDate.setHours(suh, sum, sus || 0, 0);
+
+                    const sunriseNextDate = new Date(sunriseDate);
+                    sunriseNextDate.setDate(sunriseNextDate.getDate() + 1);
+                    
+                    const choghadiyaData = muhurta.calculateChoghadiya(dateObj, sunriseDate, sunsetDate, sunriseNextDate);
+                    
+                    const formatP = (p) => ({
+                        name: p.name,
+                        type: p.type,
+                        start: formatTime(p.start),
+                        end: formatTime(p.end)
+                    });
+
+                    return {
+                        day: choghadiyaData.day.map(formatP),
+                        night: choghadiyaData.night.map(formatP)
+                    };
+                } catch (error) {
+                    return null;
+                }
+            })(),
             
             // Store raw data for debugging
             _rawPanchangData: panchanga,

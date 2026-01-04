@@ -23,28 +23,60 @@ const Navbar = () => {
 
         {/* Navigation Links - Always visible, no hamburger */}
         <div className="navbar-menu">
-          <Link 
-            to="/" 
+          <Link
+            to="/"
             className={`nav-link ${isActive('/') ? 'active' : ''}`}
           >
             <span className="nav-icon">🏠</span>
             <span className="nav-text">Home</span>
           </Link>
 
-          <Link 
-            to="/panchaka" 
+          <Link
+            to="/panchaka"
             className={`nav-link ${isActive('/panchaka') ? 'active' : ''}`}
           >
             <span className="nav-icon">⏰</span>
             <span className="nav-text">Panchaka Rahita</span>
           </Link>
 
-          <Link 
-            to="/panchang" 
+          <Link
+            to="/panchang"
             className={`nav-link ${isActive('/panchang') ? 'active' : ''}`}
           >
             <span className="nav-icon">📅</span>
             <span className="nav-text">Panchang</span>
+          </Link>
+
+          <Link 
+            to="/charts" 
+            className={`nav-link ${isActive('/charts') ? 'active' : ''}`}
+          >
+            <span className="nav-icon">📊</span>
+            <span className="nav-text">Charts</span>
+          </Link>
+
+          <Link 
+            to="/dasha" 
+            className={`nav-link ${isActive('/dasha') ? 'active' : ''}`}
+          >
+            <span className="nav-icon">⏳</span>
+            <span className="nav-text">Dasha</span>
+          </Link>
+
+          <Link 
+            to="/lagna" 
+            className={`nav-link ${isActive('/lagna') ? 'active' : ''}`}
+          >
+            <span className="nav-icon">🌅</span>
+            <span className="nav-text">Lagna</span>
+          </Link>
+
+          <Link 
+            to="/hora" 
+            className={`nav-link ${isActive('/hora') ? 'active' : ''}`}
+          >
+            <span className="nav-icon">⌛</span>
+            <span className="nav-text">Hora</span>
           </Link>
 
           <Link 

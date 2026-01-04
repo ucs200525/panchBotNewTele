@@ -269,3 +269,64 @@
     grid-column: 1;
   }
 }
+
+/* Choghadiya Styles */
+.choghadiya-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.choghadiya-subtitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 0.75rem;
+  text-align: center;
+}
+
+.good-row {
+  background-color: #f0fdf4 !important;
+}
+
+.bad-row {
+  background-color: #fef2f2 !important;
+}
+
+.neutral-row {
+  background-color: #f8fafc !important;
+}
+
+.badge-good {
+  padding: 0.2rem 0.5rem;
+  background: #dcfce7;
+  color: #166534;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: bold;
+}
+
+.badge-bad {
+  padding: 0.2rem 0.5rem;
+  background: #fee2e2;
+  color: #991b1b;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: bold;
+}
+
+.badge-neutral {
+  padding: 0.2rem 0.5rem;
+  background: #f1f5f9;
+  color: #475569;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: bold;
+}
+
+@media (max-width: 768px) {
+  .choghadiya-container {
+    grid-template-columns: 1fr;
+  }
+}

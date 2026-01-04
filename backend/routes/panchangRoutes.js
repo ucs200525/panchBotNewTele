@@ -1618,7 +1618,7 @@ router.get('/getPanchangData', async (req, res) => {
             return res.status(500).json({ error: 'Failed to fetch sun times' });
         }
 
-        // Calculate comprehensive Panchang data
+        // Calculate comprehensive Panchang data WITH SWISS EPHEMERIS
         const { calculatePanchangData } = require('../utils/panchangHelper');
         const panchangData = await calculatePanchangData(
             city,
@@ -1626,7 +1626,8 @@ router.get('/getPanchangData', async (req, res) => {
             coords.lat,
             coords.lng,
             sunTimesData.sunriseToday,
-            sunTimesData.sunsetToday
+            sunTimesData.sunsetToday,
+            true  // includeTransitions - Enable Swiss Ephemeris calculations!
         );
 
         logger.info({ message: 'Panchang data calculated successfully', city, date });

@@ -6,6 +6,11 @@ const cors = require('cors');
 const logger = require('./utils/logger');
 const requestLogger = require('./utils/requestLogger');
 const panchangRoutes = require('./routes/panchangRoutes');
+const planetaryRoutes = require('./routes/planetaryRoutes');
+const chartsRoutes = require('./routes/chartsRoutes');
+const dashaRoutes = require('./routes/dashaRoutes');
+const astronomicalRoutes = require('./routes/astronomicalRoutes');
+const lagnaRoutes = require('./routes/lagnaRoutes');
 const newRoutes = require('./routes/newRoutes');
 const adminRoutes = require('./routes/adminRoutes'); // Import Admin Routes
 const connectDB = require('./utils/db'); // Import DB Connection Helper
@@ -36,6 +41,11 @@ app.use(requestLogger);
 // Routes
 // Routes
 app.use('/api', panchangRoutes);
+app.use('/api/planetary', planetaryRoutes);
+app.use('/api/charts', chartsRoutes);
+app.use('/api/dasha', dashaRoutes);
+app.use('/api/astronomical', astronomicalRoutes);
+app.use('/api/lagna', lagnaRoutes);
 app.use('/admin', adminRoutes); // Mount Admin API
 
 

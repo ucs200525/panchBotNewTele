@@ -35,15 +35,27 @@ import DrikTableImage from './pages/DrikTableImage';
 import BhargavTableImage from './pages/BhargavTableImage';
 import AdminLogs from './pages/AdminLogs';
 import PanchangPage from './pages/PanchangPage';
+import PlanetaryPage from './pages/PlanetaryPage';
+import ChartsPage from './pages/ChartsPage';
+import DashaPage from './pages/DashaPage';
+import AstronomicalPage from './pages/AstronomicalPage';
+import LagnaPage from './pages/LagnaPage';
+import HoraPage from './pages/HoraPage';
 
 function App() {
   return (
     <BrowserRouter>
       <Navbar />
       <Routes>
-      <Route path="/" element={<PachangamForm />} />
+        <Route path="/" element={<PachangamForm />} />
         <Route path="/panchaka" element={<PanchakaMuhurth />} />
         <Route path="/panchang" element={<PanchangPage />} />
+        <Route path="/planetary" element={<PlanetaryPage />} />
+        <Route path="/charts" element={<ChartsPage />} />
+        <Route path="/dasha" element={<DashaPage />} />
+        <Route path="/astronomical" element={<AstronomicalPage />} />
+        <Route path="/lagna" element={<LagnaPage />} />
+        <Route path="/hora" element={<HoraPage />} />
         <Route path="/combine" element={<Combine />} />
         <Route path="/DownloadImage" element={<DownloadImage />} />
         <Route path="/drik-table-image" element={<DrikTableImage />} />
