@@ -34,6 +34,7 @@ import DownloadImage from './pages/DownloadImage';
 import DrikTableImage from './pages/DrikTableImage';
 import BhargavTableImage from './pages/BhargavTableImage';
 import AdminLogs from './pages/AdminLogs';
+import PanchangPage from './pages/PanchangPage';
 
 function App() {
   return (
@@ -42,6 +43,7 @@ function App() {
       <Routes>
       <Route path="/" element={<PachangamForm />} />
         <Route path="/panchaka" element={<PanchakaMuhurth />} />
+        <Route path="/panchang" element={<PanchangPage />} />
         <Route path="/combine" element={<Combine />} />
         <Route path="/DownloadImage" element={<DownloadImage />} />
         <Route path="/drik-table-image" element={<DrikTableImage />} />

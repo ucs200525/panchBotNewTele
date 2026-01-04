@@ -297,9 +297,7 @@ const TimeConverterApp = () => {
 
         {/* Phase 2: Live Period Tracker - Only shows for TODAY */}
         {data && data.length > 0 && <LivePeriodTracker data={data} selectedDate={currentDate} />}
-
-        {/* Phase 1: Panchang Information Display */}
-        {panchangData && <PanchangInfo data={panchangData} />}
+        {/* Panchang data moved to dedicated /panchang page */}
 
         <div>
 

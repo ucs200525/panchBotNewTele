@@ -40,6 +40,14 @@ const Navbar = () => {
           </Link>
 
           <Link 
+            to="/panchang" 
+            className={`nav-link ${isActive('/panchang') ? 'active' : ''}`}
+          >
+            <span className="nav-icon">📅</span>
+            <span className="nav-text">Panchang</span>
+          </Link>
+
+          <Link 
             to="/combine" 
             className={`nav-link ${isActive('/combine') ? 'active' : ''}`}
           >
