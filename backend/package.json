@@ -11,6 +11,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@ishubhamx/panchangam-js": "^1.0.3",
     "axios": "^1.7.8",
     "canvas": "^3.1.0",
     "cheerio": "^1.0.0",
