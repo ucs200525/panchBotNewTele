@@ -231,11 +231,7 @@ const CombinePage = () => {
         </button>
       </div>
   
-      {loading && (
-        <div className="loading-spinner">
-          <div className="spinner"></div>
-        </div>
-      )}
+      {loading && <LoadingSpinner message="Fetching Muhurat Data..." />}
   <div id="tableToCapture">
       {/* Inline City, Date, Weekday Info (Compact Layout) */}
       {combinedData && !loading && (
