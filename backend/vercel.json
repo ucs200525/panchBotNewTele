@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "buildCommand": "python3 -m pip install --upgrade pip setuptools && npm install",
   "builds": [
     {
       "src": "server.js",
