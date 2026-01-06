@@ -39,7 +39,7 @@ const Navbar = () => {
             <span className="nav-text">Panchaka Rahita</span>
           </Link>
 
-          <Link
+          {/* <Link
             to="/panchang"
             className={`nav-link ${isActive('/panchang') ? 'active' : ''}`}
           >
@@ -77,7 +77,7 @@ const Navbar = () => {
           >
             <span className="nav-icon">⌛</span>
             <span className="nav-text">Hora</span>
-          </Link>
+          </Link> */}
 
           <Link 
             to="/combine" 
@@ -111,11 +111,11 @@ const Navbar = () => {
         </div>
 
         {/* Settings button - Optional */}
-        <div className="navbar-actions">
+        {/* <div className="navbar-actions">
           <button className="action-btn" title="Settings">
             ⚙️
           </button>
-        </div>
+        </div> */}
       </div>
     </nav>
   );
