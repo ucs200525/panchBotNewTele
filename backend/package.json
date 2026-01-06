@@ -3,19 +3,13 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon server.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "test:panchang": "node quick-test.js",
-    "test:panchang:full": "node test-panchang.js",
-    "conda:remind": "echo ⚠️  Remember to activate Conda environment: conda activate nodegyp-panchang"
+    "start": "nodemon server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@bidyashish/panchang": "^1.0.10",
-    "@ishubhamx/panchangam-js": "^1.0.3",
     "axios": "^1.7.8",
     "canvas": "^3.1.0",
     "cheerio": "^1.0.0",
@@ -32,8 +26,6 @@
   },
   "devDependencies": {
     "nodemon": "^3.1.7"
-  },
-  "engines": {
-    "node": "24.x"
   }
+
 }
