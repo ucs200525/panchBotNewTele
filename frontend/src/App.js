@@ -49,17 +49,17 @@ function App() {
       <Routes>
         <Route path="/" element={<PachangamForm />} />
         <Route path="/panchaka" element={<PanchakaMuhurth />} />
-        <Route path="/panchang" element={<PanchangPage />} />
+        {/* <Route path="/panchang" element={<PanchangPage />} />
         <Route path="/planetary" element={<PlanetaryPage />} />
         <Route path="/charts" element={<ChartsPage />} />
         <Route path="/dasha" element={<DashaPage />} />
         <Route path="/astronomical" element={<AstronomicalPage />} />
         <Route path="/lagna" element={<LagnaPage />} />
-        <Route path="/hora" element={<HoraPage />} />
+        <Route path="/hora" element={<HoraPage />} /> */}
         <Route path="/combine" element={<Combine />} />
-        <Route path="/DownloadImage" element={<DownloadImage />} />
+        {/* <Route path="/DownloadImage" element={<DownloadImage />} />
         <Route path="/drik-table-image" element={<DrikTableImage />} />
-        <Route path="/bhargav-table-image" element={<BhargavTableImage />} />
+        <Route path="/bhargav-table-image" element={<BhargavTableImage />} /> */}
         <Route path="/admin" element={<AdminLogs />} />
         {/* Add more routes here if needed */}
       </Routes>

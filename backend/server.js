@@ -41,11 +41,11 @@ app.use(requestLogger);
 // Routes
 // Routes
 app.use('/api', panchangRoutes);
-app.use('/api/planetary', planetaryRoutes);
-app.use('/api/charts', chartsRoutes);
-app.use('/api/dasha', dashaRoutes);
-app.use('/api/astronomical', astronomicalRoutes);
-app.use('/api/lagna', lagnaRoutes);
+// app.use('/api/planetary', planetaryRoutes);
+// app.use('/api/charts', chartsRoutes);
+// app.use('/api/dasha', dashaRoutes);
+// app.use('/api/astronomical', astronomicalRoutes);
+// app.use('/api/lagna', lagnaRoutes);
 app.use('/admin', adminRoutes); // Mount Admin API
 
 
