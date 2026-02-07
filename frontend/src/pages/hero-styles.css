@@ -360,4 +360,47 @@
   .info-cards {
     grid-template-columns: 1fr;
   }
+
+  .hero-title {
+    font-size: 1.5rem !important;
+  }
+
+  .hero-subtitle {
+    font-size: 0.9rem;
+  }
+
+  .hero-form {
+    padding: 1rem;
+  }
+
+  .input-label {
+    font-size: 0.7rem;
+  }
+
+  .date-input-hero {
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+
+  .get-panchang-btn-hero {
+    font-size: 0.9rem;
+    padding: 12px 20px;
+  }
+
+  .card-icon {
+    font-size: 1.25rem;
+  }
+
+  .card-label {
+    font-size: 0.65rem;
+  }
+
+  .card-value {
+    font-size: 0.8rem;
+  }
+
+  /* Table optimizations for very small screens */
+  .table-wrapper {
+    margin: 1rem -0.5rem; /* Extend to screen edges */
+  }
 }

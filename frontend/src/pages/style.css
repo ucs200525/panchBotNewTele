@@ -678,20 +678,76 @@ div[style*="margin: 20px"] {
     font-size: var(--text-base);
   }
 
-  /* Table responsiveness */
-  table {
+  /* Table responsiveness - ENHANCED FOR MOBILE */
+  .table-wrapper,
+  .table-container {
     width: 100%;
-    font-size: var(--text-xs);
-    display: block;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    margin: var(--space-4) 0;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
   }
 
-  th,
+  table {
+    width: 100%;
+    min-width: 100%;
+    font-size: 0.7rem; /* Smaller base font */
+    display: table; /* Keep table display for proper rendering */
+    border-collapse: collapse;
+    margin: 0;
+  }
+
+  /* Table headers - compact */
+  thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: #F8FAFC;
+  }
+
+  th {
+    padding: 0.4rem 0.5rem; /* Reduced padding */
+    font-size: 0.65rem; /* Smaller header font */
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    white-space: normal; /* Allow wrapping */
+    line-height: 1.2;
+    vertical-align: middle;
+    background-color: #F8FAFC;
+    position: sticky;
+    top: 0;
+  }
+
+  /* Table cells - compact and readable */
   td {
-    padding: var(--space-2);
-    font-size: var(--text-xs);
-    white-space: nowrap;
+    padding: 0.4rem 0.5rem; /* Reduced padding */
+    font-size: 0.7rem; /* Smaller cell font */
+    white-space: normal; /* Allow text wrapping */
+    line-height: 1.3;
+    vertical-align: middle;
+    word-break: break-word; /* Break long words */
+  }
+
+  /* Specific adjustments for common table patterns */
+  td[style*="fontWeight: 700"],
+  td strong {
+    font-size: 0.75rem; /* Slightly larger for emphasis */
+  }
+
+  /* Data cards - mobile optimized */
+  .data-grid {
+    grid-template-columns: 1fr; /* Single column on mobile */
+    gap: var(--space-3);
+  }
+
+  .data-card-value {
+    font-size: 1.25rem; /* Smaller value size */
+  }
+
+  .data-card-label {
+    font-size: 0.7rem;
   }
 
   /* Navbar adjustments */
@@ -701,7 +757,55 @@ div[style*="margin: 20px"] {
 
   /* Content spacing */
   .content {
-    padding-top: 70px;
+    padding: 1rem 0.5rem;
+  }
+
+  /* Hero sections */
+  h1 {
+    font-size: 1.75rem;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+  }
+
+  h3 {
+    font-size: 1rem;
+  }
+
+  /* Information boxes */
+  .information {
+    font-size: 0.8rem;
+    padding: var(--space-3);
+  }
+
+  .info-icon {
+    font-size: 1rem;
+  }
+}
+
+/* Extra small devices - very compact (0-375px) */
+@media (max-width: 375px) {
+  table {
+    font-size: 0.65rem; /* Even smaller on very small screens */
+  }
+
+  th {
+    font-size: 0.6rem;
+    padding: 0.3rem 0.4rem;
+  }
+
+  td {
+    font-size: 0.65rem;
+    padding: 0.3rem 0.4rem;
+  }
+
+  .data-card-value {
+    font-size: 1.1rem;
+  }
+
+  h1 {
+    font-size: 1.5rem;
   }
 }
 
