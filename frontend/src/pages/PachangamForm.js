@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { CityAutocomplete } from '../components/forms';
 import { useAuth } from '../context/AuthContext';
