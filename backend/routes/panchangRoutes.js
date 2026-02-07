@@ -1641,23 +1641,35 @@ router.get('/getPanchangData', async (req, res) => {
 // New POST route for design system frontend
 router.post('/panchang', async (req, res) => {
     try {
-        const { city, date } = req.body;
-        logger.info({ message: 'POST /panchang called', city, date });
+        const { city, date, lat, lng } = req.body;
+        logger.info({ message: 'POST /panchang called', city, date, lat, lng });
 
         if (!city || !date) {
             return res.status(400).json({ error: 'City and date are required' });
         }
 
-        // Get coordinates for the city
-        const coords = await fetchCoordinates(city);
-        if (!coords) {
-            return res.status(404).json({ error: 'City not found' });
+        // Use provided coordinates or fetch them
+        let coords;
+        if (lat && lng) {
+            logger.info({ message: 'Using provided coordinates', lat, lng });
+            // If coordinates are provided, we still need timezone
+            const coordsData = await fetchCoordinates(city);
+            if (!coordsData) {
+                return res.status(404).json({ error: 'Could not determine timezone for city' });
+            }
+            coords = { lat: parseFloat(lat), lng: parseFloat(lng), timeZone: coordsData.timeZone };
+        } else {
+            // Get coordinates for the city
+            coords = await fetchCoordinates(city);
+            if (!coords) {
+                return res.status(404).json({ error: 'City not found' });
+            }
         }
 
         // Get sun times first
         const sunTimesData = await fetchSunTimes(coords.lat, coords.lng, date, coords.timeZone);
         if (!sunTimesData) {
-            return res.status(500).json({ error: 'Failed to fetch sun times' });
+            return res.status(500).json({ error: 'Could not calculate sunrise/sunset times' });
         }
 
         // Calculate comprehensive Panchang data WITH SWISS EPHEMERIS
@@ -1675,7 +1687,7 @@ router.post('/panchang', async (req, res) => {
         logger.info({ message: 'Panchang data calculated successfully', city, date });
         res.json(panchangData);
     } catch (error) {
-        logger.error({ message: 'POST /panchang error', error: error.message });
+        logger.error({ message: 'POST /panchang error', error: error.message, stack: error.stack });
         res.status(500).json({ error: 'Failed to calculate Panchang data', details: error.message });
     }
 });

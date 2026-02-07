@@ -1,318 +1,249 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from '../context/AuthContext';
-import LoadingSpinner from '../components/LoadingSpinner';
-import TableScreenshot from '../components/TableScreenshot';
-import CityAndDateInput from '../components/CityAndDateInput';
+import { CityAutocomplete } from '../components/forms';
 import LivePeriodTracker from '../components/LivePeriodTracker';
-
+import TableScreenshot from '../components/TableScreenshot';
 
 const PanchakaMuhurth = () => {
-    
-    const [city, setCity] = useState('');
-    const [date, setDate] = useState(new Date().toISOString().substring(0, 10));
-    const { localCity, localDate, setCityAndDate  } = useAuth();
-    const [allMuhuratData, setAllMuhuratData] = useState([]);
-   const [filteredData, setFilteredData] = useState(() => {
-  const storedData = sessionStorage.getItem('filteredData');
-  return storedData ? JSON.parse(storedData) : [];
-});
+  const { localCity, localDate, setCityAndDate } = useAuth();
+  const [city, setCity] = useState(localCity || '');
+  const [date, setDate] = useState(localDate || new Date().toISOString().substring(0, 10));
+  const [allMuhuratData, setAllMuhuratData] = useState([]);
+  const [filteredData, setFilteredData] = useState(() => {
+    const storedData = sessionStorage.getItem('filteredData');
+    return storedData ? JSON.parse(storedData) : [];
+  });
 
-    const [showAll, setShowAll] = useState(true); // State to toggle between all rows and filtered rows
-    const [loading, setLoading] = useState(false); // Add loading state
-    const [error, setError] = useState(null);
-    const [fetchCity, setfetchCity] = useState(false);
+  const [showAll, setShowAll] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [fetchCity, setfetchCity] = useState(false);
 
-    useEffect(() => {
-        sessionStorage.setItem('filteredData', JSON.stringify(filteredData));
-        
-      }, [filteredData]);
+  useEffect(() => {
+    sessionStorage.setItem('filteredData', JSON.stringify(filteredData));
+  }, [filteredData]);
 
-    const createDummyTable = useCallback(() => {
-        const dummyTable = filteredData.map((row) => {
-            const [startTime, endTime] = row.time.split(" to ");
+  const createDummyTable = useCallback(() => {
+    if (!filteredData.length) return;
+    const dummyTable = filteredData.map((row) => {
+      const [startTime, endTime] = row.time.split(" to ");
+      let endTimeWithoutDate, endDatePart;
 
-            let endTimeWithoutDate, endDatePart;
+      if (endTime.includes(", ")) {
+        [endTimeWithoutDate, endDatePart] = endTime.split(", ");
+      } else {
+        endTimeWithoutDate = endTime;
+        endDatePart = null;
+      }
 
-            if (endTime.includes(", ")) {
-                [endTimeWithoutDate, endDatePart] = endTime.split(", ");
-            } else {
-                endTimeWithoutDate = endTime; // If no comma, the entire string is the time
-                endDatePart = null;          // No date part available
-            }
+      let adjustedStartTime = startTime.includes("PM")
+        ? `${startTime}`
+        : startTime.includes("AM") && endTime.includes(",")
+          ? `${endDatePart} , ${startTime}`
+          : startTime;
 
-            const currentDate = new Date(date);
-            let adjustedStartTime = startTime.includes("PM")
-                ? `${startTime}`
-                : startTime.includes("AM") && endTime.includes(",")
-                    ? `${endDatePart} , ${startTime}`
-                    : startTime;
+      let adjustedEndTime = endTime.includes("AM") && endTime.includes(",")
+        ? `${endDatePart} , ${endTimeWithoutDate}`
+        : endTime.includes("PM")
+          ? `${endTimeWithoutDate}`
+          : endTime;
 
-            let adjustedEndTime = endTime.includes("AM") && endTime.includes(",")
-                ? `${endDatePart} , ${endTimeWithoutDate}`
-                : endTime.includes("PM")
-                    ? `${endTimeWithoutDate}`
-                    : endTime;
-
-            const timeIntervalFormatted = `${adjustedStartTime} to ${adjustedEndTime}`;
-
-            return {
-                category: row.category,
-                muhurat: row.muhurat,
-                time: timeIntervalFormatted,
-            };
-        });
-
-        // Save the dummy table in sessionStorage
-        sessionStorage.setItem("muhurats", JSON.stringify(dummyTable));
-        console.log("Dummy Table Saved: ", dummyTable);
-    }, [filteredData, date]); // Memoize with filteredData and date as dependencies
-
-    const autoGeolocation = async () => {
-        // setIsLoading(true);
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(
-            async (position) => {
-              const lat = position.coords.latitude;
-              const lng = position.coords.longitude;
-              try {
-                const cityResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/fetchCityName/${lat}/${lng}`);
-                if (!cityResponse.ok) {
-                  throw new Error('Failed to fetch city name');
-                }
-                const cityData = await cityResponse.json();
-                const cityName = cityData.cityName;
-                console.log("cityData",cityData);
-                setCity(cityName);
-                setfetchCity(true);
-              } catch (error) {
-                setError(error.message || 'Error fetching city name');}
-              //  finally {
-              //   setIsLoading(false);
-              // }
-            },
-            (error) => {
-              setError('Geolocation error: ' + error.message);
-           
-            }
-          );
-          
-        } else {
-          setError('Geolocation is not supported by this browser.');
-         
-        }
+      return {
+        category: row.category,
+        muhurat: row.muhurat,
+        time: `${adjustedStartTime} to ${adjustedEndTime}`,
       };
-    
-    const getMuhuratData = async () => {
-        if (!city || !date) {
-            await autoGeolocation();
-            
-            return;
-        }
+    });
 
-        if (!city ) {
-            alert("City value is not correct,Please Enter Manually.")
-            return;
-        }
+    sessionStorage.setItem("muhurats", JSON.stringify(dummyTable));
+  }, [filteredData]);
 
-        setLoading(true); // Set loading to true before fetching data
-        fetch(`${process.env.REACT_APP_API_URL}/api/fetch_muhurat`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ city, date: convertToDDMMYYYY(date) })
-        })
-            .then(response => response.json())
-            .then(data => {
-                setAllMuhuratData(data);  // Store all the muhurat data
-                console.log("Complete data", data);
-                setFilteredData(data);  // Initially display all data
-                setShowAll(true);       // Reset to showing all rows
-                createDummyTable(); // Create the dummy table and save to localStorage
-                setLoading(false);  // Set loading to false after data is fetched
-            })
-            .catch(error => {
-                console.error("Error fetching data:", error);
-                setLoading(false);  // Set loading to false in case of an error
-            });
-    };
+  const getMuhuratData = async (cityName, dateValue) => {
+    if (!cityName || !dateValue) return;
 
-    useEffect(() => {
-        if (fetchCity) {
-            getMuhuratData();
-          setfetchCity(false); // Reset fetchData to prevent re-fetching immediately
-        }
-      }, [fetchCity]); // Runs when fetchData changes
-    
-    
-  const checkAndFetchPanchangam = async () => {
-    if (city && date) {
-      await getMuhuratData();
-      
-    } else {
-      await autoGeolocation();
-      
+    setLoading(true);
+    setError(null);
+    try {
+      const ddmmvvyy = dateValue.split("-").reverse().join("/");
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/fetch_muhurat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ city: cityName, date: ddmmvvyy })
+      });
+
+      if (!response.ok) throw new Error('Failed to fetch muhurat data');
+      const data = await response.json();
+      setAllMuhuratData(data);
+      setFilteredData(data);
+      setShowAll(true);
+      setCityAndDate(cityName, dateValue);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
-  const convertToDDMMYYYY = (date) => {
-    const [year, month, day] = date.split("-");
-    return `${day}/${month}/${year}`;
+
+  const toggleShowAllRows = () => {
+    if (showAll) {
+      const goodTimings = allMuhuratData.filter(item => item.category.toLowerCase().includes("good"));
+      setFilteredData(goodTimings);
+    } else {
+      setFilteredData(allMuhuratData);
+    }
+    setShowAll(!showAll);
   };
 
-    const filterGoodTimings = () => {
-        const goodTimings = allMuhuratData.filter(item => item.category.toLowerCase() === "good");
-        setFilteredData(goodTimings);  // Render the table with filtered data
-        setShowAll(false);             // Switch to filtered view
-        createDummyTable(); // Create the dummy table for filtered data
-    };
+  const handleCitySelect = (cityObj) => {
+    setCity(cityObj.name);
+    localStorage.setItem('selectedCity', cityObj.name);
+  };
 
-    const toggleShowAllRows = () => {
-        if (showAll) {
-            filterGoodTimings(); // If currently showing all rows, filter "Good Timings"
-        } else {
-            setFilteredData(allMuhuratData); // Reset to show all rows
-            createDummyTable(); // Create the dummy table for all data
-        }
-        setShowAll(!showAll); // Toggle the state
-    };
+  // Get category color class
+  const getCategoryClass = (category) => {
+    const cat = category.toLowerCase();
+    if (cat.includes('good')) return 'cat-good';
+    if (cat.includes('danger')) return 'cat-danger';
+    if (cat.includes('risk')) return 'cat-risk';
+    if (cat.includes('bad')) return 'cat-bad';
+    if (cat.includes('evil')) return 'cat-evil';
+    return '';
+  };
 
-    // Get category color class
-    const getCategoryClass = (category) => {
-        const cat = category.toLowerCase();
-        if (cat.includes('good')) return 'cat-good';
-        if (cat.includes('danger')) return 'cat-danger';
-        if (cat.includes('risk')) return 'cat-risk';
-        if (cat.includes('bad')) return 'cat-bad';
-        if (cat.includes('evil')) return 'cat-evil';
-        return '';
-    };
+  return (
+    <div className="content">
+      {/* Hero Section */}
+      <div className="hero-section">
+        <div className="hero-content">
+          <div className="hero-icon">🔱</div>
+          <h1 className="hero-title">Panchaka Muhurat</h1>
+          <p className="hero-subtitle">
+            Comprehensive daily guide to auspicious and inauspicious time intervals
+          </p>
+        </div>
 
-    const generateRows = () => {
-        return (showAll ? allMuhuratData : filteredData).map((item, index) => (
-            <tr key={index} className={getCategoryClass(item.category)}>
-                <td className="muhurat-cell">
-                    <span className="muhurat-name">{item.muhurat}</span>
-                    <span className="category-badge">{item.category}</span>
-                </td>
-                <td>{item.time}</td>
-            </tr>
-        ));
-    };
-    useEffect(() => {
-        // Sync the state with AuthContext whenever city or date changes
-        if (city !== localCity || date !== localDate) {
-            setCityAndDate(city, date);
-        }
-    }, [city, date, localCity, localDate, setCityAndDate]);
-
-    useEffect(() => {
-        if (filteredData.length > 0) {
-            createDummyTable(); // Save the dummy table to localStorage every time the filtered data is updated
-        }
-    }, [filteredData, createDummyTable]); // Now including createDummyTable in the dependency array
-
-    const handleDateChange = (e) => {
-        // Keep date in yyyy-MM-dd format for HTML date input
-        setDate(e.target.value);
-    };
-
-    return (
-
-    <div className="PanchakaMuhurthContent">
-        {error && <div className="error-message">{error}</div>}
-  
-      <div style={{ textAlign: 'center', margin: '20px' }}>
-      <h1>Panchaka Muhurat Table</h1>
-        <label className="entercity">Enter City Name:</label>
-        <input
-          className="city"
-          type="text"
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
-          placeholder="Enter city"
-        />
-      </div>
-  
-      <div style={{ textAlign: "center", margin: "20px" }}>
-        <label className="date">Enter Date:</label>
-        <input
-          className="enterdate"
-          type="date"
-          value={date}
-          onChange={handleDateChange}
-          style={{
-            padding: "10px",
-            border: "1px solid #cccccc",
-            borderRadius: "5px",
-            fontSize: "16px",
-            margin: "10px 0",
-          }}
-        />
-      </div>
-  
-            <div className="cityAndDate">
-                {/* <label htmlFor="city">City:</label>
-                <input
-                    type="text"
-                    id="city"
-                    placeholder="Enter city"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
+        {/* Hero Form */}
+        <div className="hero-form">
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            getMuhuratData(city, date);
+          }}>
+            <div className="form-group-inline">
+              <div className="input-wrapper">
+                <label className="input-label">Location</label>
+                <CityAutocomplete
+                  value={city}
+                  onSelect={handleCitySelect}
+                  placeholder="Select city..."
                 />
-                <br />
-                <label className="date">Enter Date:</label>
+              </div>
+
+              <div className="input-wrapper">
+                <label className="input-label">Date</label>
                 <input
-                className="enterdate"
-                type="date"
-                value={date}
-                onChange={handleDateChange}
-                style={{
-                    padding: "10px",
-                    border: "1px solid #cccccc",
-                    borderRadius: "5px",
-                    fontSize: "16px",
-                    margin: "10px 0",
-                }}
-                /> */}
-                <button onClick={checkAndFetchPanchangam}>Get Muhurat</button>
-                <button onClick={toggleShowAllRows}>
-                    {showAll ? "Good Timings Only" : "Show All Rows"}
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="date-input-hero"
+                />
+              </div>
+            </div>
+
+            <div className="form-actions-hero">
+              <button
+                type="submit"
+                className="get-panchang-btn-hero"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <span className="spinner-small"></span>
+                    Calculating...
+                  </>
+                ) : (
+                  <>
+                    <span className="btn-icon">✨</span>
+                    Find Muhurats
+                  </>
+                )}
+              </button>
+
+              {allMuhuratData.length > 0 && (
+                <button
+                  type="button"
+                  onClick={toggleShowAllRows}
+                  className="secondary-btn-hero"
+                >
+                  {showAll ? "Filter Good Only" : "Show All Periods"}
                 </button>
+              )}
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div className="results-section">
+        {error && (
+          <div className="error-box-hero">
+            <span>⚠️</span>
+            {error}
+          </div>
+        )}
+
+        {loading && (
+          <div className="loading-spinner">
+            <div className="spinner"></div>
+          </div>
+        )}
+
+        {/* Live Period Tracker */}
+        {filteredData && filteredData.length > 0 && (
+          <div className="results-section">
+            <div className="floating-section">
+              <LivePeriodTracker data={filteredData} selectedDate={date} />
             </div>
 
-            {loading && <LoadingSpinner />} {/* Show the spinner when loading */}
+            <div id="muhurats-table" className="table-section">
+              <div className="floating-section">
+                <div className="table-wrapper">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Muhurat / Category</th>
+                        <th>Timings & Interval</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredData.map((item, index) => (
+                        <tr key={index} className={getCategoryClass(item.category)}>
+                          <td className="muhurat-cell">
+                            <div className="muhurat-name">{item.muhurat}</div>
+                            <span className={`category-badge badge-${item.category.toLowerCase().replace(' ', '-')}`}>
+                              {item.category}
+                            </span>
+                          </td>
+                          <td className="time-cell">{item.time}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
 
-            <h2>Result</h2>
+                <div className="table-footer-actions">
+                  <TableScreenshot tableId="muhurats-table" city={city} />
+                </div>
 
-            {/* Live Period Tracker - Only shows for TODAY */}
-            {filteredData && filteredData.length > 0 && <LivePeriodTracker data={filteredData} selectedDate={date} />}
-
-        <div  id="muhurats-table" >
-            <div className="info-inline">
-          <div className="info-inline-item">
-            <strong>City:</strong> {city}
-          </div>
-          <div className="info-inline-item">
-            <strong>Date:</strong> {date}
-          </div>
-
-        </div>
-            <table border="1" cellspacing="0" cellpadding="5">
-                <thead>
-                    <tr>
-                        <th>Muhurat and Category</th>
-                        <th>Time & Interval</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {generateRows()}
-                </tbody>
-            </table>
+                <div className="information">
+                  <span className="info-icon">ℹ️</span>
+                  <p className="info">Panchaka Muhurat considers five aspects of the time to determine its quality. Choose "Good" periods for important ventures and avoid "Danger" or "Risk" periods when possible.</p>
+                </div>
+              </div>
             </div>
-            <TableScreenshot tableId="muhurats-table" city={city} />
-        </div>
-        
-    );
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default PanchakaMuhurth;

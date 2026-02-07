@@ -24,7 +24,7 @@ const app = express();
 app.use(express.json());
 
 
-const allowedOrigins = ['http://localhost:3000', 'https://panchang-ten.vercel.app', 'https://panchanfrontend.vercel.app'];
+const allowedOrigins = ['http://localhost:3000', 'https://panchang-ten.vercel.app', 'https://panchanfrontend.vercel.app', 'https://panchanfrontendnew.vercel.app'];
 
 const corsOption = {
   origin: allowedOrigins, // allowed origins
@@ -39,13 +39,12 @@ app.use(cors(corsOption)); // apply CORS middleware
 app.use(requestLogger);
 
 // Routes
-// Routes
 app.use('/api', panchangRoutes);
-// app.use('/api/planetary', planetaryRoutes);
-// app.use('/api/charts', chartsRoutes);
-// app.use('/api/dasha', dashaRoutes);
-// app.use('/api/astronomical', astronomicalRoutes);
-// app.use('/api/lagna', lagnaRoutes);
+app.use('/api/planetary', planetaryRoutes);
+app.use('/api/charts', chartsRoutes);
+app.use('/api/dasha', dashaRoutes);
+app.use('/api/astronomical', astronomicalRoutes);
+app.use('/api/lagna', lagnaRoutes);
 app.use('/admin', adminRoutes); // Mount Admin API
 
 

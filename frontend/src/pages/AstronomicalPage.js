@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import LoadingSpinner from '../components/LoadingSpinner';
 import { useAuth } from '../context/AuthContext';
 
 const AstronomicalPage = () => {
@@ -37,63 +36,112 @@ const AstronomicalPage = () => {
     }, [currentDate]);
 
     return (
-        <div className="container" style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
-            <h1 style={{ textAlign: 'center', marginBottom: '30px' }}>🔭 Astronomical Events</h1>
-            
-            <div style={{ marginBottom: '30px', padding: '20px', background: '#f0f9ff', borderRadius: '12px', border: '1px solid #bae6fd' }}>
-                <div style={{ display: 'flex', gap: '15px', alignItems: 'center', justifyContent: 'center' }}>
-                    <label style={{ fontWeight: 'bold' }}>Reference Date:</label>
-                    <input 
-                        type="date" 
-                        value={currentDate} 
-                        onChange={(e) => setCurrentDate(e.target.value)}
-                        style={{ padding: '10px', borderRadius: '6px', border: '1px solid #bae6fd' }}
-                    />
-                    <button 
-                        onClick={fetchEventData}
-                        style={{ padding: '10px 20px', background: '#0ea5e9', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
-                    >
-                        Search Upcoming
-                    </button>
+        <div className="content">
+            {/* Hero Section */}
+            <div className="hero-section">
+                <div className="hero-content">
+                    <div className="hero-icon">🔭</div>
+                    <h1 className="hero-title">Astronomical Events</h1>
+                    <p className="hero-subtitle">
+                        Track significant celestial phenomena including solar and lunar eclipses
+                    </p>
+                </div>
+
+                {/* Hero Form */}
+                <div className="hero-form">
+                    <form onSubmit={(e) => { e.preventDefault(); fetchEventData(); }}>
+                        <div className="form-group-inline">
+                            <div className="input-wrapper" style={{ flex: '2' }}>
+                                <label className="input-label">Reference Date</label>
+                                <input
+                                    type="date"
+                                    value={currentDate}
+                                    onChange={(e) => setCurrentDate(e.target.value)}
+                                    className="date-input-hero"
+                                />
+                            </div>
+                        </div>
+
+                        <button
+                            type="submit"
+                            className="get-panchang-btn-hero"
+                            disabled={isLoading}
+                        >
+                            {isLoading ? (
+                                <>
+                                    <span className="spinner-small"></span>
+                                    Searching...
+                                </>
+                            ) : (
+                                <>
+                                    <span className="btn-icon">✨</span>
+                                    Find Upcoming Events
+                                </>
+                            )}
+                        </button>
+                    </form>
                 </div>
             </div>
 
-            {isLoading && <LoadingSpinner />}
-            {error && <div className="error-box">{error}</div>}
-            
-            {eventData && (
-                <div className="events-list">
-                    <h2 className="section-title">🌑 Upcoming Eclipses</h2>
-                    <div className="panchang-table">
-                        <div className="panchang-row">
-                            <div className="panchang-label">Solar Eclipse</div>
-                            <div className="panchang-value">
-                                {eventData.solar ? (
-                                    <div>
-                                        <strong>{new Date(eventData.solar.time).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</strong>
-                                        <div style={{ fontSize: '0.85rem', color: '#64748b' }}>
-                                            Type: {eventData.solar.type} | Magnitude: {eventData.solar.magnitude.toFixed(4)}
+            <div className="results-section">
+                {error && (
+                    <div className="error-box-hero">
+                        <span>⚠️</span>
+                        {error}
+                    </div>
+                )}
+
+                {isLoading && (
+                    <div className="loading-spinner">
+                        <div className="spinner"></div>
+                    </div>
+                )}
+
+                {eventData && (
+                    <div className="events-grid">
+                        <h2 className="section-title">🌑 Upcoming Eclipses</h2>
+
+                        <div className="data-grid">
+                            <div className="data-card">
+                                <div className="data-card-label">Solar Eclipse</div>
+                                <div className="data-card-value">
+                                    {eventData.solar ? (
+                                        <div>
+                                            {new Date(eventData.solar.time).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}
                                         </div>
+                                    ) : 'No Upcoming Solar Eclipse'}
+                                </div>
+                                {eventData.solar && (
+                                    <div className="data-card-sub">
+                                        Type: {eventData.solar.type} | Magnitude: {eventData.solar.magnitude.toFixed(4)}
                                     </div>
-                                ) : 'None found in next search window'}
+                                )}
+                            </div>
+
+                            <div className="data-card">
+                                <div className="data-card-label">Lunar Eclipse</div>
+                                <div className="data-card-value">
+                                    {eventData.lunar ? (
+                                        <div>
+                                            {new Date(eventData.lunar.time).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}
+                                        </div>
+                                    ) : 'No Upcoming Lunar Eclipse'}
+                                </div>
+                                {eventData.lunar && (
+                                    <div className="data-card-sub">
+                                        Type: {eventData.lunar.type} | Magnitude: {eventData.lunar.magnitude.toFixed(4)}
+                                    </div>
+                                )}
                             </div>
                         </div>
-                        <div className="panchang-row">
-                            <div className="panchang-label">Lunar Eclipse</div>
-                            <div className="panchang-value">
-                                {eventData.lunar ? (
-                                    <div>
-                                        <strong>{new Date(eventData.lunar.time).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</strong>
-                                        <div style={{ fontSize: '0.85rem', color: '#64748b' }}>
-                                            Type: {eventData.lunar.type} | Magnitude: {eventData.lunar.magnitude.toFixed(4)}
-                                        </div>
-                                    </div>
-                                ) : 'None found in next search window'}
-                            </div>
+
+                        <div className="information">
+                            <span className="info-icon">ℹ️</span>
+                            <p className="info">Eclipses are calculated for the entire planet. Visibility and precise timings depend on your specific geographical location.</p>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
         </div>
     );
 };

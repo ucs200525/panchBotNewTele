@@ -1,42 +1,74 @@
-// const express = require('express');
-// const router = express.Router();
-// const { planetary, lagna, charts } = require('../swisseph');
+const express = require('express');
+const router = express.Router();
+const { planetary, lagna, charts } = require('../swisseph');
+const logger = require('../utils/logger');
 
-// /**
-//  * POST /api/charts/details
-//  */
-// router.post('/details', async (req, res) => {
-//     try {
-//         const { date, lat, lng } = req.body;
-//         const [year, month, day] = date.split('-').map(Number);
-//         // Use noon for general planetary positions or birth time if provided
-//         const dateObj = new Date(year, month - 1, day, 12, 0, 0);
+/**
+ * POST /api/charts/details
+ * Calculate D1, D9, and D10 charts
+ */
+router.post('/details', async (req, res) => {
+    try {
+        const { date, time = '12:00', lat, lng } = req.body;
+        logger.info({ message: 'Charts requested', date, time, lat, lng });
 
-//         // 1. Get all planets positions
-//         const planets = planetary.getAllPlanetDetails(dateObj);
+        if (!date || lat === undefined || lng === undefined) {
+            return res.status(400).json({ error: 'Date, latitude, and longitude are required' });
+        }
 
-//         // 2. Get Lagna at birth time (noon here, could be dynamic)
-//         const lagnaInfo = lagna.getLagnaAtTime(dateObj, lat, lng);
-//         const lagnaIdx = lagnaInfo.index; // Correct property is "index"
+        const [year, month, day] = date.split('-').map(Number);
+        const [hour, minute] = (time || '12:00').split(':').map(Number);
+        const dateObj = new Date(year, month - 1, day, hour, minute, 0);
 
-//         // 3. Calculate D1 and D9
-//         const d1Planets = charts.calculateD1(planets);
-//         const d9Planets = charts.calculateD9(planets);
+        // 1. Get all planets positions
+        const planets = planetary.getAllPlanetDetails(dateObj);
 
-//         // 4. Get House layout for D1
-//         const d1Houses = charts.getHouses(lagnaIdx, d1Planets);
-//         const d9Houses = charts.getHouses(d9Planets.find(p => p.name === 'Lagna')?.rashiIndex || lagnaIdx, d9Planets); // Simplified D9 Lagna
+        // 2. Get Lagna at birth time
+        const lagnaInfo = lagna.getLagnaAtTime(dateObj, lat, lng);
+        const lagnaIdx = lagnaInfo.index;
 
-//         res.json({
-//             date,
-//             lagna: lagnaInfo,
-//             rasiChart: { houses: d1Houses, planets: d1Planets },
-//             navamsaChart: { houses: d9Houses, planets: d9Planets }
-//         });
-//     } catch (error) {
-//         console.error('Charts API Error:', error);
-//         res.status(500).json({ error: error.message });
-//     }
-// });
+        // 3. Calculate D1, D9, and D10
+        const d1Planets = charts.calculateD1(planets);
+        const d9Planets = charts.calculateD9(planets);
+        const d10Planets = charts.calculateD10(planets);
 
-// module.exports = router;
+        // 4. Get House layout for charts
+        const d1Houses = charts.getHouses(lagnaIdx, d1Planets);
+        
+        // For D9, calculate navamsa lagna
+        const d9LagnaIdx = Math.floor(((lagnaInfo.degree % 30) * 9) / 30) + ((lagnaIdx % 3) * 3);
+        const d9Houses = charts.getHouses(d9LagnaIdx % 12, d9Planets);
+        
+        // For D10, calculate dasamsa lagna
+        const d10LagnaIdx = Math.floor(((lagnaInfo.degree % 30) * 10) / 30);
+        const d10Houses = charts.getHouses(d10LagnaIdx % 12, d10Planets);
+
+        res.json({
+            success: true,
+            date,
+            time,
+            lagna: lagnaInfo,
+            rasiChart: { 
+                houses: d1Houses, 
+                planets: d1Planets,
+                lagnaRashi: lagnaInfo.rashi 
+            },
+            navamsaChart: { 
+                houses: d9Houses, 
+                planets: d9Planets,
+                lagnaRashi: d9LagnaIdx 
+            },
+            dasamsaChart: { 
+                houses: d10Houses, 
+                planets: d10Planets,
+                lagnaRashi: d10LagnaIdx 
+            }
+        });
+    } catch (error) {
+        logger.error({ message: 'Charts API Error', error: error.message, stack: error.stack });
+        console.error('Charts API Error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+module.exports = router;

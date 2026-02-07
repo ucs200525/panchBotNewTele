@@ -1,81 +1,34 @@
 import React, { useState, useEffect } from 'react';
+import { CityAutocomplete } from '../components/forms';
 import TableScreenshot from '../components/TableScreenshot';
 import LivePeriodTracker from '../components/LivePeriodTracker';
-import LoadingSpinner from '../components/LoadingSpinner';
+import { useAuth } from '../context/AuthContext';
 
 const CombinePage = () => {
-  const [city, setCity] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().substring(0, 10));
+  const { localCity, localDate, setCityAndDate } = useAuth();
+  const [city, setCity] = useState(localCity || '');
+  const [date, setDate] = useState(localDate || new Date().toISOString().substring(0, 10));
   const [combinedData, setCombinedData] = useState(() => {
     const storedData = sessionStorage.getItem('combinedData');
     return storedData ? JSON.parse(storedData) : null;
   });
-  
+
   const [muhurthaData, setMuhurthaData] = useState(null);
-  const [fetchCity, setFetchCity] = useState(false); // Track whether city was auto-fetched
-  const [fetchData, setFetchData] = useState(false);
   const [bharagvData, setBharagvData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [weekday, setWeekday] = useState(() => sessionStorage.getItem('weekday') || '');
-  const [showNonBlue, setShowNonBlue] = useState(true);  // default to true
-  const [is12HourFormat, setIs12HourFormat] = useState(true); // default to true
-
+  const [showNonBlue, setShowNonBlue] = useState(true);
+  const [is12HourFormat, setIs12HourFormat] = useState(true);
 
   useEffect(() => {
-    sessionStorage.setItem('city', city);
-    sessionStorage.setItem('date', date);
     sessionStorage.setItem('combinedData', JSON.stringify(combinedData));
     sessionStorage.setItem('weekday', weekday);
-  }, [city, date, combinedData, weekday]);
+  }, [combinedData, weekday]);
 
-
-  const autoGeolocation = async () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const lat = position.coords.latitude;
-          const lng = position.coords.longitude;
-          try {
-            const cityResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/fetchCityName/${lat}/${lng}`);
-            if (!cityResponse.ok) {
-              throw new Error('Failed to fetch city name');
-            }
-            const cityData = await cityResponse.json();
-            const cityName = cityData.cityName;
-            console.log('cityData', cityData);
-            setCity(cityName);
-            setFetchCity(true);
-            setFetchData(true);
-          } catch (error) {
-            setError(error.message || 'Error fetching city name');
-          }
-        },
-        (error) => {
-          setError('Geolocation error: ' + error.message);
-        }
-      );
-    } else {
-      setError('Geolocation is not supported by this browser.');
-    }
-  };
-
-  const handleCityChange = (e) => {
-    setCity(e.target.value);
-    setFetchCity(false); // Reset fetchCity if user provides a manual input
-  };
-
-
-  const handleDateChange = (e) => {
-    setDate(e.target.value);
-  };
-
-  const handleShowNonBlueChange = (e) => {
-    setShowNonBlue(e.target.checked);
-  };
-
-  const handle12HourFormatChange = (e) => {
-    setIs12HourFormat(e.target.checked);
+  const handleCitySelect = (cityObj) => {
+    setCity(cityObj.name);
+    localStorage.setItem('selectedCity', cityObj.name);
   };
 
   const convertToDDMMYYYY = (date) => {
@@ -83,75 +36,41 @@ const CombinePage = () => {
     return `${day}/${month}/${year}`;
   };
 
-  const checkAndFetchPanchangam = async () => {
-    if (city && date) {
-      await fetchMuhuratData();
-      // setCityAndDate(cityName,currentDate);
-    } else {
-      await autoGeolocation();
-      // setCityAndDate(cityName,currentDate);
-    }
-  };
-
-    
-    useEffect(() => {
-        if (fetchData) {
-          fetchMuhuratData();
-          setFetchData(false); // Reset fetchData to prevent re-fetching immediately
-       
-        }
-      }, [fetchData]); // Runs when fetchData changes
-    
-  
-  // Fetch Muhurat and Bharagv Data together
-  const fetchMuhuratData = async () => {
+  const fetchMuhuratData = async (cityName, dateValue) => {
     setLoading(true);
     setError(null);
     try {
-      // Set goodTimingsOnly to true by default
-      const goodTimingsOnly = true;
-
-      // Fetch both Muhurat and Bharagv Data with updated parameters
       const [muhurthaResponse, bharagvResponse] = await Promise.all([
         fetch(
-            `${process.env.REACT_APP_API_URL}/api/getDrikTable?city=${city}&date=${convertToDDMMYYYY(date)}&goodTimingsOnly=${showNonBlue}`
-          ),
-          
+          `${process.env.REACT_APP_API_URL}/api/getDrikTable?city=${cityName}&date=${convertToDDMMYYYY(dateValue)}&goodTimingsOnly=${showNonBlue}`
+        ),
         fetch(
-          `${process.env.REACT_APP_API_URL}/api/getBharagvTable?city=${city}&date=${date}&showNonBlue=${showNonBlue}&is12HourFormat=${is12HourFormat}`
+          `${process.env.REACT_APP_API_URL}/api/getBharagvTable?city=${cityName}&date=${dateValue}&showNonBlue=${showNonBlue}&is12HourFormat=${is12HourFormat}`
         ),
       ]);
 
-      // Parse the responses as JSON
-      const muhurthaData = await muhurthaResponse.json();
-      const bharagvData = await bharagvResponse.json();
+      const mData = await muhurthaResponse.json();
+      const bData = await bharagvResponse.json();
 
-      console.log("DATA Muhurat", muhurthaData);
-      console.log("DATA Bharagv", bharagvData);
+      setMuhurthaData(mData);
+      setBharagvData(bData);
 
-      setMuhurthaData(muhurthaData);
-      setBharagvData(bharagvData);
-
-      // Combine the fetched data
       const combinedResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/combine`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          muhuratData: muhurthaData,
-          panchangamData: bharagvData,
-          city: city,
-          date: date,
+          muhuratData: mData,
+          panchangamData: bData,
+          city: cityName,
+          date: dateValue,
         }),
       });
-      const combinedData = await combinedResponse.json();
-      console.log("DATA combinedData", combinedData);
-      setCombinedData(combinedData);
+      const cData = await combinedResponse.json();
+      setCombinedData(cData);
 
-      // Calculate weekday
-      const weekday = new Date(date).toLocaleString('en-US', { weekday: 'long' });
-      setWeekday(weekday);
+      const wDay = new Date(dateValue).toLocaleString('en-US', { weekday: 'long' });
+      setWeekday(wDay);
+      setCityAndDate(cityName, dateValue);
     } catch (error) {
       setError("Error fetching data. Please try again.");
       console.error("Error fetching data", error);
@@ -159,143 +78,151 @@ const CombinePage = () => {
       setLoading(false);
     }
   };
+
   return (
     <div className="content">
-      {error && <div className="error-message">{error}</div>}
-  
-      <div style={{ textAlign: 'center', margin: '20px' }}>
-        <h1>Combined Muhurat and Bharagv Table</h1>
-        <label className="entercity">Enter City Name:</label>
-        <input
-          className="city"
-          type="text"
-          value={city}
-          onChange={handleCityChange}
-          placeholder="Enter city"
-        />
-      </div>
-  
-      <div style={{ textAlign: "center", margin: "20px" }}>
-        <label className="date">Enter Date:</label>
-        <input
-          className="enterdate"
-          type="date"
-          value={date}
-          onChange={handleDateChange}
-          style={{
-            padding: "10px",
-            border: "1px solid #cccccc",
-            borderRadius: "5px",
-            fontSize: "16px",
-            margin: "10px 0",
-          }}
-        />
-      </div>
-
-      <div style={{ textAlign: "center", margin: "20px" }}>
-        <label className="showNonBlue">
-            Good Timings only :
-          <input
-            type="checkbox"
-            checked={showNonBlue}
-            onChange={handleShowNonBlueChange}
-          />
-        </label>
-        <label className="is12HourFormat">
-          12 Hour Format(NOT WORKING AT PRESENT):
-          <input
-            type="checkbox"
-            checked={is12HourFormat}
-            onChange={handle12HourFormatChange}
-          />
-        </label>
-      </div>
-  
-      <div style={{ display: "flex", justifyContent: "center", margin: "20px" }}>
-        <button
-          className="fetch-btn"
-          onClick={checkAndFetchPanchangam}
-          disabled={loading}
-          style={{
-            backgroundColor: "#007BFF",
-            color: "white",
-            padding: "10px 20px",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer",
-            fontSize: "16px",
-            transition: "background-color 0.3s ease",
-          }}
-        >
-          {loading ? "Fetching Data..." : "Get Muhurat"}
-        </button>
-      </div>
-  
-      {loading && <LoadingSpinner message="Fetching Muhurat Data..." />}
-  <div id="tableToCapture">
-      {/* Inline City, Date, Weekday Info (Compact Layout) */}
-      {combinedData && !loading && (
-        <div className="info-inline">
-          <div className="info-inline-item">
-            <strong>City:</strong> {city}
-          </div>
-          <div className="info-inline-item">
-            <strong>Date:</strong> {date}
-          </div>
-          <div className="info-inline-item">
-            <strong>Weekday:</strong> {weekday}
-          </div>
+      {/* Hero Section */}
+      <div className="hero-section">
+        <div className="hero-content">
+          <div className="hero-icon">🖇️</div>
+          <h1 className="hero-title">Combined Insights</h1>
+          <p className="hero-subtitle">
+            Unified view of Muhurat timings and Bhargava Panchang calculations
+          </p>
         </div>
-      )}
 
-      {/* LivePeriodTracker - Only shows for TODAY with Bhargava Panchang data */}
-      {bharagvData && Array.isArray(bharagvData) && bharagvData.length > 0 && (
-        <LivePeriodTracker data={bharagvData} selectedDate={date} />
-      )}
-  
-      {combinedData && !loading && (
-        <table >
-          <thead>
-            <tr>
-              <th>SNO</th>
-              <th>TYPE</th>
-              <th>DESCRIPTION</th>
-              <th>TIME & INTERVAL</th>
-              <th>WEEKDAY</th>
-            </tr>
-          </thead>
-          <tbody>
-            {combinedData.map((row, index) => (
-              <React.Fragment key={index}>
-                <tr>
-                  <td>{row.sno}</td>
-                  <td>{row.type}</td>
-                  <td>{row.description}</td>
-                  <td>{row.timeInterval}</td>
-                  <td>
-                    {row.weekdays && row.weekdays.length > 0 ? (
-                      <table>
-                        <tbody>
-                          {row.weekdays.map((weekday, subIndex) => (
-                            <tr key={subIndex}>
-                              <td><strong>{weekday.weekday}</strong>: {weekday.time}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    ) : (
-                      "-"
-                    )}
-                  </td>
-                </tr>
-              </React.Fragment>
-            ))}
-          </tbody>
-        </table>
-      )}
-  
-      {combinedData && !loading && <TableScreenshot tableId="tableToCapture" city={city} date={date} weekday={weekday} />}
-    </div>
+        {/* Hero Form */}
+        <div className="hero-form">
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            fetchMuhuratData(city, date);
+          }}>
+            <div className="form-group-inline">
+              <div className="input-wrapper">
+                <label className="input-label">Location</label>
+                <CityAutocomplete
+                  value={city}
+                  onSelect={handleCitySelect}
+                  placeholder="Select city..."
+                />
+              </div>
+
+              <div className="input-wrapper">
+                <label className="input-label">Date</label>
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="date-input-hero"
+                />
+              </div>
+            </div>
+
+            <div className="form-options-inline">
+              <label className="checkbox-wrapper">
+                <input
+                  type="checkbox"
+                  checked={showNonBlue}
+                  onChange={(e) => setShowNonBlue(e.target.checked)}
+                />
+                <span className="checkbox-label">Good Timings Only</span>
+              </label>
+            </div>
+
+            <button
+              type="submit"
+              className="get-panchang-btn-hero"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <span className="spinner-small"></span>
+                  Gatrhering Data...
+                </>
+              ) : (
+                <>
+                  <span className="btn-icon">✨</span>
+                  Generate Combined View
+                </>
+              )}
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div className="results-section">
+        {error && (
+          <div className="error-box-hero">
+            <span>⚠️</span>
+            {error}
+          </div>
+        )}
+
+        {loading && (
+          <div className="loading-spinner">
+            <div className="spinner"></div>
+          </div>
+        )}
+
+        <div id="tableToCapture">
+          {/* Live Period Tracker */}
+          {bharagvData && Array.isArray(bharagvData) && bharagvData.length > 0 && (
+            <div className="section-margin">
+              <LivePeriodTracker data={bharagvData} selectedDate={date} />
+            </div>
+          )}
+
+          {combinedData && !loading && (
+            <div className="table-section">
+              <div className="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Type</th>
+                      <th>Description</th>
+                      <th>Time & Interval</th>
+                      <th>Weekday Availability</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {combinedData.map((row, index) => (
+                      <tr key={index}>
+                        <td>{row.sno}</td>
+                        <td style={{ fontWeight: 700 }}>{row.type}</td>
+                        <td>{row.description}</td>
+                        <td className="time-cell">{row.timeInterval}</td>
+                        <td>
+                          {row.weekdays && row.weekdays.length > 0 ? (
+                            <div className="mini-weekday-list">
+                              {row.weekdays.map((wd, subIndex) => (
+                                <div key={subIndex} className="mini-weekday-item">
+                                  <strong>{wd.weekday}</strong>: {wd.time}
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="dim-text">-</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="table-footer-actions">
+                <TableScreenshot tableId="tableToCapture" city={city} date={date} weekday={weekday} />
+              </div>
+
+              <div className="information">
+                <span className="info-icon">ℹ️</span>
+                <p className="info">This combined view merges drik-panchang muhurats with Bhargava astrological calculations for a more complete picture of the day's quality.</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

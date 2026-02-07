@@ -3,29 +3,24 @@ import { Section } from '../components/layout';
 import { CityAutocomplete } from '../components/forms';
 import { useAuth } from '../context/AuthContext';
 import { saveProfile, getProfile, getAllProfiles } from '../utils/profileStorage';
-import './DashaPage.css';
+import './SadeSatiPage.css';
 
-const DashaPage = () => {
+const SadeSatiPage = () => {
     const { setCityAndDate } = useAuth();
     const [name, setName] = useState('');
     const [cityName, setCityName] = useState(() => localStorage.getItem('selectedCity') || '');
-    const [currentDate, setCurrentDate] = useState(new Date().toISOString().substring(0, 10));
-    const [dashaData, setDashaData] = useState(null);
+    const [birthDate, setBirthDate] = useState('1990-01-01');
+    const [birthTime, setBirthTime] = useState('12:00');
+    const [sadeSatiData, setSadeSatiData] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [birthTime, setBirthTime] = useState('12:00');
-    const [expandedDasha, setExpandedDasha] = useState(null);
     const [savedProfiles, setSavedProfiles] = useState([]);
 
     useEffect(() => {
         setSavedProfiles(getAllProfiles());
     }, []);
 
-    const toggleDasha = (idx) => {
-        setExpandedDasha(expandedDasha === idx ? null : idx);
-    };
-
-    const fetchDashaData = async (city, date) => {
+    const fetchSadeSatiData = async (city, date) => {
         setIsLoading(true);
         setError(null);
         try {
@@ -36,7 +31,7 @@ const DashaPage = () => {
             if (!geoResponse.ok) throw new Error('Could not find city');
             const coords = await geoResponse.json();
 
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/dasha/vimshottari`, {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/planetary/sade-sati`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -48,9 +43,9 @@ const DashaPage = () => {
                 })
             });
 
-            if (!response.ok) throw new Error('Failed to fetch Dasha data');
+            if (!response.ok) throw new Error('Failed to fetch Sade Sati data');
             const data = await response.json();
-            setDashaData(data);
+            setSadeSatiData(data);
             setCityAndDate(city, date);
         } catch (err) {
             setError(err.message);
@@ -71,7 +66,7 @@ const DashaPage = () => {
         const profile = getProfile(value);
         if (profile) {
             setCityName(profile.cityName);
-            setCurrentDate(profile.birthDate);
+            setBirthDate(profile.birthDate);
             setBirthTime(profile.birthTime);
         }
     };
@@ -79,32 +74,27 @@ const DashaPage = () => {
     const loadProfile = (profile) => {
         setName(profile.name);
         setCityName(profile.cityName);
-        setCurrentDate(profile.birthDate);
+        setBirthDate(profile.birthDate);
         setBirthTime(profile.birthTime);
     };
 
     const formatDate = (dateStr) => {
-        if (!dateStr) return 'N/A';
-        try {
-            return new Date(dateStr).toLocaleDateString('en-IN', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-            });
-        } catch (e) {
-            return dateStr;
-        }
+        return new Date(dateStr).toLocaleDateString('en-IN', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
     };
 
     return (
         <div className="content">
             {/* Hero Section */}
-            <div className="hero-section">
+            <div className="hero-section ss-hero">
                 <div className="hero-content">
-                    <div className="hero-icon">⏳</div>
-                    <h1 className="hero-title">Vimshottari Dasha</h1>
+                    <div className="hero-icon">🪐</div>
+                    <h1 className="hero-title">Sade Sati Timeline</h1>
                     <p className="hero-subtitle">
-                        Explore your life's timeline through the 120-year planetary period system
+                        Analyze the 7.5-year transit periods of Saturn and their impact on your life
                     </p>
                 </div>
 
@@ -112,8 +102,8 @@ const DashaPage = () => {
                 <div className="hero-form">
                     <form onSubmit={(e) => {
                         e.preventDefault();
-                        if (cityName && currentDate) {
-                            fetchDashaData(cityName, currentDate);
+                        if (cityName && birthDate) {
+                            fetchSadeSatiData(cityName, birthDate);
                         }
                     }}>
                         <div className="form-group-inline">
@@ -136,7 +126,7 @@ const DashaPage = () => {
                             </div>
 
                             <div className="input-wrapper">
-                                <label className="input-label">City Search</label>
+                                <label className="input-label">Birth City</label>
                                 <CityAutocomplete
                                     value={cityName}
                                     onSelect={handleCitySelect}
@@ -149,14 +139,14 @@ const DashaPage = () => {
                                 <label className="input-label">Birth Date</label>
                                 <input
                                     type="date"
-                                    value={currentDate}
-                                    onChange={(e) => setCurrentDate(e.target.value)}
+                                    value={birthDate}
+                                    onChange={(e) => setBirthDate(e.target.value)}
                                     className="date-input-hero"
                                 />
                             </div>
 
                             <div className="input-wrapper">
-                                <label className="input-label">Birth Time</label>
+                                <label className="input-label">Time</label>
                                 <input
                                     type="time"
                                     value={birthTime}
@@ -174,12 +164,12 @@ const DashaPage = () => {
                             {isLoading ? (
                                 <>
                                     <span className="spinner-small"></span>
-                                    Calculating...
+                                    Analyzing Transit...
                                 </>
                             ) : (
                                 <>
                                     <span className="btn-icon">✨</span>
-                                    View Timeline
+                                    Calculate Sade Sati
                                 </>
                             )}
                         </button>
@@ -202,7 +192,7 @@ const DashaPage = () => {
                 )}
 
                 {/* Saved Profiles Quick Select */}
-                {savedProfiles.length > 0 && !dashaData && !isLoading && (
+                {savedProfiles.length > 0 && !sadeSatiData && !isLoading && (
                     <div className="floating-section">
                         <Section title="Quick Load Profile" icon="👥">
                             <div className="profile-pills">
@@ -221,73 +211,57 @@ const DashaPage = () => {
                     </div>
                 )}
 
-                {dashaData && dashaData.mahadashas && (
-                    <div className="floating-section">
-                        <Section title="Vimshottari Dasha Timeline" icon="🗓️">
-                            <div className="table-wrapper">
-                                <table className="dasha-table-modern">
-                                    <thead>
-                                        <tr>
-                                            <th>Planet Period</th>
-                                            <th>Starts On</th>
-                                            <th>Ends On</th>
-                                            <th>Duration</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {dashaData.mahadashas.map((dasha, idx) => {
-                                            const now = new Date();
-                                            const startDate = new Date(dasha.start);
-                                            const endDate = new Date(dasha.end);
-                                            const isCurrent = now >= startDate && now <= endDate;
-                                            const isExpanded = expandedDasha === idx;
-
-                                            return (
-                                                <React.Fragment key={idx}>
-                                                    <tr
-                                                        className={`mahadasha-row ${isCurrent ? 'current-period-row' : ''} ${isExpanded ? 'active-expansion' : ''}`}
-                                                        onClick={() => toggleDasha(idx)}
-                                                        style={{ cursor: 'pointer' }}
-                                                    >
-                                                        <td style={{ fontWeight: 700, color: 'var(--color-primary)' }}>
-                                                            <span className={`expand-icon ${isExpanded ? 'rotated' : ''}`}>▶</span>
-                                                            {dasha.lord}
-                                                            {isCurrent && <span className="current-badge">Current</span>}
-                                                        </td>
-                                                        <td>{formatDate(dasha.start)}</td>
-                                                        <td>{formatDate(dasha.end)}</td>
-                                                        <td>{dasha.years} years</td>
-                                                    </tr>
-                                                    {isExpanded && dasha.antardashas && dasha.antardashas.map((sub, sIdx) => {
-                                                        const subStart = new Date(sub.start);
-                                                        const subEnd = new Date(sub.end);
-                                                        const isSubCurrent = now >= subStart && now <= subEnd;
-
-                                                        return (
-                                                            <tr key={`sub-${idx}-${sIdx}`} className={`antardasha-row ${isSubCurrent ? 'current-sub-period' : ''}`}>
-                                                                <td className="sub-lord-cell">
-                                                                    <span className="sub-dash-connector">└─</span>
-                                                                    {sub.lord}
-                                                                    {isSubCurrent && <span className="sub-current-badge">Current Sub</span>}
-                                                                </td>
-                                                                <td>{formatDate(sub.start)}</td>
-                                                                <td>{formatDate(sub.end)}</td>
-                                                                <td>{sub.years} y</td>
-                                                            </tr>
-                                                        );
-                                                    })}
-                                                </React.Fragment>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <div className="information">
-                                <span className="info-icon">ℹ️</span>
-                                <p className="info">Vimshottari Dasha periods indicate the major planetary influences throughout your lifetime based on the Moon's position at birth. Click on any Mahadasha to see its sub-periods (Antardashas).</p>
+                {sadeSatiData && (
+                    <div className="sadesati-results">
+                        <Section title="Natal Moon Details" icon="🌙">
+                            <div className="natal-moon-card">
+                                <div className="moon-sign">
+                                    <span className="rashi-label">Natal Moon Sign:</span>
+                                    <span className="rashi-value">{sadeSatiData.natalMoonSign}</span>
+                                </div>
+                                <p className="moon-info">Sade Sati is calculated based on Saturn's transit through the 12th, 1st, and 2nd houses from this sign.</p>
                             </div>
                         </Section>
+
+                        <Section title="Transit Timeline" icon="📅">
+                            <div className="timeline-container">
+                                {sadeSatiData.periods.map((period, idx) => {
+                                    const now = new Date();
+                                    const start = new Date(period.start);
+                                    const end = new Date(period.end);
+                                    const isActive = now >= start && now <= end;
+
+                                    return (
+                                        <div key={idx} className={`timeline-item ${period.type} ${isActive ? 'active-transit' : ''}`}>
+                                            <div className="timeline-marker"></div>
+                                            <div className="timeline-content">
+                                                <div className="period-header">
+                                                    <span className={`period-badge ${period.type}`}>
+                                                        {period.type === 'sadeSati' ? 'Sade Sati' : 'Dhaiya'}
+                                                    </span>
+                                                    {isActive && <span className="active-badge">Currently Active</span>}
+                                                    <span className="period-phase">{period.phase}</span>
+                                                </div>
+                                                <div className="period-dates">
+                                                    {formatDate(period.start)} — {formatDate(period.end)}
+                                                </div>
+                                                <div className="period-rashi">
+                                                    Saturn in <strong>{period.rashi}</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </Section>
+
+                        <div className="information">
+                            <span className="info-icon">ℹ️</span>
+                            <div className="info-text">
+                                <p><strong>Sade Sati:</strong> A 7.5-year period when Saturn transits the 12th, 1st, and 2nd houses from your natal Moon.</p>
+                                <p><strong>Dhaiya:</strong> A 2.5-year period when Saturn transits the 4th or 8th house from your natal Moon.</p>
+                            </div>
+                        </div>
                     </div>
                 )}
             </div>
@@ -295,4 +269,4 @@ const DashaPage = () => {
     );
 };
 
-export default DashaPage;
+export default SadeSatiPage;

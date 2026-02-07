@@ -133,10 +133,41 @@ body {
   font-size: var(--text-base);
   line-height: 1.6;
   color: var(--color-dark);
-  background-color: var(--color-light);
+  background: #fad7a0;
+  /* Requested complete background */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* Global Content Container - Unified White Box Layout */
+.app-container {
+  width: 92%;
+  max-width: 1400px;
+  margin: 3rem auto;
+  background: #ffffff;
+  padding: 3.5rem;
+  border-radius: 2.5rem;
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.05);
+  min-height: calc(100vh - 10rem);
+  position: relative;
+}
+
+/* Floating Section style - cleaned up to remove 'box-in-box' look */
+.floating-section {
+  padding: var(--space-4) 0;
+  margin-bottom: var(--space-8);
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .app-container {
+    width: 96%;
+    padding: 1.5rem;
+    margin: 1rem auto;
+    border-radius: 1.25rem;
+  }
 }
 
 /* Better text rendering */
@@ -197,6 +228,18 @@ code {
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-sm);
   font-size: 0.9em;
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  text-align: left;
+  font-weight: var(--font-bold);
+  color: var(--color-dark);
 }
 
 /* Images & Media */

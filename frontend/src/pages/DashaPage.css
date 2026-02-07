@@ -96,3 +96,106 @@
     font-size: var(--font-size-sm);
   }
 }
+
+/* Current Period Highlighting */
+.current-period-row {
+  background-color: rgba(255, 153, 51, 0.08) !important;
+  border-left: 4px solid var(--saffron-gold, #ff9933);
+}
+
+.current-badge {
+  display: inline-block;
+  background: var(--saffron-gold, #ff9933);
+  color: white;
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+  margin-left: 8px;
+  vertical-align: middle;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 800;
+}
+
+/* Expandable Rows */
+.mahadasha-row {
+  transition: background-color 0.2s;
+}
+
+.mahadasha-row:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.expand-icon {
+  display: inline-block;
+  font-size: 0.6rem;
+  margin-right: 12px;
+  transition: transform 0.3s ease;
+  color: #ccc;
+}
+
+.expand-icon.rotated {
+  transform: rotate(90deg);
+  color: var(--saffron-gold, #ff9933);
+}
+
+.active-expansion {
+  background-color: rgba(255, 153, 51, 0.03) !important;
+}
+
+/* Antardasha (Sub-period) Styling */
+.antardasha-row {
+  background-color: #fcfcfc;
+  font-size: 0.95rem;
+}
+
+.sub-lord-cell {
+  padding-left: 2rem !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sub-dash-connector {
+  color: #ddd;
+  font-family: monospace;
+}
+
+.current-sub-period {
+  background-color: rgba(255, 153, 51, 0.05) !important;
+}
+
+.sub-current-badge {
+  display: inline-block;
+  background: #fff;
+  color: var(--saffron-gold, #ff9933);
+  border: 1px solid var(--saffron-gold, #ff9933);
+  font-size: 0.65rem;
+  padding: 1px 6px;
+  border-radius: 10px;
+  margin-left: 8px;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.dasha-table-modern {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.dasha-table-modern th {
+  text-align: left;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-bottom: 2px solid #eee;
+  color: #495057;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.5px;
+}
+
+.dasha-table-modern td {
+  padding: 1rem;
+  border-bottom: 1px solid #f0f0f0;
+}

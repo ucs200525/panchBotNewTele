@@ -60,6 +60,27 @@ class PlanetaryPositions extends BaseCalculator {
     }
 
     /**
+     * Get single planet position
+     */
+    getPlanetPosition(date, planetId) {
+        const jd = this.getJD(date);
+        const ayanamsa = this.getAyanamsa(jd);
+        const result = this.swisseph.swe_calc_ut(jd, planetId, this.swisseph.SEFLG_SWIEPH);
+        let siderealLong = (result.longitude - ayanamsa + 360) % 360;
+        const rashiIndex = Math.floor(siderealLong / 30);
+        const degrees = siderealLong % 30;
+
+        return {
+            longitude: result.longitude,
+            siderealLongitude: siderealLong,
+            rashiIndex: rashiIndex,
+            rashi: RASHIS[rashiIndex],
+            degrees: degrees,
+            isRetrograde: result.longitudeSpeed < 0
+        };
+    }
+
+    /**
      * Format degrees into Deg° Min' Sec"
      */
     formatDegrees(deg) {

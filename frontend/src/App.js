@@ -30,39 +30,36 @@ import PachangamForm from './pages/PachangamForm';
 import PanchakaMuhurth from './pages/PanchakaMuhurth';
 import Combine from './pages/Combine';
 import Navbar from './components/Navbar';
-import DownloadImage from './pages/DownloadImage';
-import DrikTableImage from './pages/DrikTableImage';
-import BhargavTableImage from './pages/BhargavTableImage';
 import AdminLogs from './pages/AdminLogs';
-import PanchangPage from './pages/PanchangPage';
 import PlanetaryPage from './pages/PlanetaryPage';
 import ChartsPage from './pages/ChartsPage';
 import DashaPage from './pages/DashaPage';
 import AstronomicalPage from './pages/AstronomicalPage';
 import LagnaPage from './pages/LagnaPage';
 import HoraPage from './pages/HoraPage';
+import SadeSatiPage from './pages/SadeSatiPage';
 
 function App() {
   return (
     <BrowserRouter>
       <Navbar />
-      <Routes>
-        <Route path="/" element={<PachangamForm />} />
-        <Route path="/panchaka" element={<PanchakaMuhurth />} />
-        {/* <Route path="/panchang" element={<PanchangPage />} />
-        <Route path="/planetary" element={<PlanetaryPage />} />
-        <Route path="/charts" element={<ChartsPage />} />
-        <Route path="/dasha" element={<DashaPage />} />
-        <Route path="/astronomical" element={<AstronomicalPage />} />
-        <Route path="/lagna" element={<LagnaPage />} />
-        <Route path="/hora" element={<HoraPage />} /> */}
-        <Route path="/combine" element={<Combine />} />
-        {/* <Route path="/DownloadImage" element={<DownloadImage />} />
-        <Route path="/drik-table-image" element={<DrikTableImage />} />
-        <Route path="/bhargav-table-image" element={<BhargavTableImage />} /> */}
-        <Route path="/admin" element={<AdminLogs />} />
-        {/* Add more routes here if needed */}
-      </Routes>
+      <div className="app-container">
+        <Routes>
+          <Route path="/" element={<PachangamForm />} />
+          <Route path="/panchaka" element={<PanchakaMuhurth />} />
+          <Route path="/panchang" element={<PachangamForm />} />
+          <Route path="/planetary" element={<PlanetaryPage />} />
+          <Route path="/charts" element={<ChartsPage />} />
+          <Route path="/dasha" element={<DashaPage />} />
+          <Route path="/sadesati" element={<SadeSatiPage />} />
+          <Route path="/astronomical" element={<AstronomicalPage />} />
+          <Route path="/lagna" element={<LagnaPage />} />
+          <Route path="/hora" element={<HoraPage />} />
+          <Route path="/combine" element={<Combine />} />
+          <Route path="/admin" element={<AdminLogs />} />
+          {/* Add more routes here if needed */}
+        </Routes>
+      </div>
     </BrowserRouter>
   );
 }

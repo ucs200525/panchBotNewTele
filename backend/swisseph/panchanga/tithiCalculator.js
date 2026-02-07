@@ -3,7 +3,7 @@
  * Calculates Tithi (lunar day) transitions during a day
  */
 
-const swisseph = require('swisseph');
+const { swisseph, useNative } = require('../core/config');
 const BaseCalculator = require('../core/baseCalculator');
 const julianDay = require('../core/julianDay');
 
