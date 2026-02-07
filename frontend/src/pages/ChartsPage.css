@@ -42,6 +42,13 @@
     .time-input {
         font-size: var(--font-size-sm);
     }
+
+    .chart-card {
+        padding: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+    }
 }
 
 .profile-pills {

@@ -13,7 +13,6 @@ h2 {
     margin-top: 20px;
     text-align: center;
 }
-
 /* Form Section */
 label {
     font-weight: bold;
@@ -170,28 +169,35 @@ tr:hover {
         max-width: none;
     }
 
-    table {
-        width: 100%;
-        display: block;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-
-    th,
-    td {
-        font-size: 0.9rem;
-        white-space: nowrap;
-    }
-
     .PanchakaMuhurthContent {
         padding-top: 75px;
-        padding-left: 15px;
-        padding-right: 15px;
+        padding-left: 0;
+        padding-right: 0;
     }
 
     #muhurats-table {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
+        width: 100%;
+        overflow-x: hidden;
+    }
+
+    /* Force full width on mobile */
+    table {
+        width: 100% !important;
+        margin: 0 !important;
+        box-shadow: none; /* Remove shadow to save space */
+    }
+
+    th, td {
+        padding: 0.6rem 0.4rem !important;
+        font-size: 0.75rem;
+    }
+
+    th:first-child, td:first-child {
+        padding-left: 1rem !important;
+    }
+
+    th:last-child, td:last-child {
+        padding-right: 1rem !important;
     }
 }
 

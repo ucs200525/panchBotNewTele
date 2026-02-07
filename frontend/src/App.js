@@ -38,6 +38,7 @@ import AstronomicalPage from './pages/AstronomicalPage';
 import LagnaPage from './pages/LagnaPage';
 import HoraPage from './pages/HoraPage';
 import SadeSatiPage from './pages/SadeSatiPage';
+import DailyPanchang from './pages/DailyPanchang';
 
 function App() {
   return (
@@ -47,12 +48,12 @@ function App() {
         <Routes>
           <Route path="/" element={<PachangamForm />} />
           <Route path="/panchaka" element={<PanchakaMuhurth />} />
-          <Route path="/panchang" element={<PachangamForm />} />
+          <Route path="/panchang" element={<DailyPanchang />} />
           <Route path="/planetary" element={<PlanetaryPage />} />
           <Route path="/charts" element={<ChartsPage />} />
           <Route path="/dasha" element={<DashaPage />} />
           <Route path="/sadesati" element={<SadeSatiPage />} />
-          <Route path="/astronomical" element={<AstronomicalPage />} />
+          {/* <Route path="/astronomical" element={<AstronomicalPage />} /> */}
           <Route path="/lagna" element={<LagnaPage />} />
           <Route path="/hora" element={<HoraPage />} />
           <Route path="/combine" element={<Combine />} />

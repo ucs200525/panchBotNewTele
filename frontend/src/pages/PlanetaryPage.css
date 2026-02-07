@@ -540,7 +540,7 @@
     overflow-x: auto;
     border-radius: 12px;
     background: white;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     margin: 1rem 0;
 }
 
@@ -565,9 +565,20 @@
     color: #334155;
 }
 
-.dignity-cell.exalted { color: #b45309; font-weight: 700; }
-.dignity-cell.debilitated { color: #b91c1c; font-weight: 700; }
-.dignity-cell.own-sign { color: #15803d; font-weight: 700; }
+.dignity-cell.exalted {
+    color: #b45309;
+    font-weight: 700;
+}
+
+.dignity-cell.debilitated {
+    color: #b91c1c;
+    font-weight: 700;
+}
+
+.dignity-cell.own-sign {
+    color: #15803d;
+    font-weight: 700;
+}
 
 /* Responsive Design */
 @media (max-width: 768px) {
@@ -593,6 +604,26 @@
 
     .input-section {
         margin: -1.5rem auto 2rem;
+    }
+
+    /* Mobile Table Fixes */
+    .table-wrapper {
+        margin: 0 -1rem !important;
+        /* Counteract 1rem parent padding */
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        width: calc(100% + 2rem) !important;
+        padding: 0 !important;
+    }
+
+    .ss-table {
+        width: 100% !important;
+    }
+
+    .ss-table th,
+    .ss-table td {
+        padding: 0.5rem 0.25rem !important;
+        font-size: 0.75rem !important;
     }
 }
 

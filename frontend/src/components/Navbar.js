@@ -19,6 +19,15 @@ const Navbar = () => {
   return (
     <nav className="modern-navbar">
       <div className="navbar-container">
+        {/* Hamburger Menu (Mobile Only) */}
+        <button 
+          className="hamburger-btn"
+          onClick={() => setOpenDropdown(openDropdown === 'mobile-menu' ? null : 'mobile-menu')}
+          aria-label="Toggle Menu"
+        >
+          <span className="hamburger-icon">☰</span>
+        </button>
+
         {/* Logo/Brand */}
         <div className="navbar-brand">
           <Link to="/" className="brand-link" onClick={closeDropdowns}>
@@ -30,8 +39,8 @@ const Navbar = () => {
           </Link>
         </div>
 
-        {/* Navigation Links */}
-        <div className="navbar-menu">
+        {/* Desktop Navigation Links */}
+        <div className="navbar-menu desktop-menu">
           <Link
             to="/"
             className={`nav-link ${isActive('/') ? 'active' : ''}`}
@@ -53,7 +62,7 @@ const Navbar = () => {
           {/* Panchang Dropdown */}
           <div className="nav-dropdown">
             <button
-              className={`nav-link dropdown-trigger ${['/panchang', '/lagna', '/hora', '/astronomical'].includes(location.pathname) ? 'active' : ''
+              className={`nav-link dropdown-trigger ${['/panchang', '/lagna', '/hora'].includes(location.pathname) ? 'active' : ''
                 }`}
               onClick={() => toggleDropdown('panchang')}
             >
@@ -83,13 +92,6 @@ const Navbar = () => {
                   onClick={closeDropdowns}
                 >
                   ⌛ Hora
-                </Link>
-                <Link
-                  to="/astronomical"
-                  className="dropdown-item"
-                  onClick={closeDropdowns}
-                >
-                  🌌 Astronomical
                 </Link>
               </div>
             )}
@@ -149,6 +151,41 @@ const Navbar = () => {
             <span className="nav-text">Good Timings</span>
           </Link>
         </div>
+
+        {/* Mobile Sidebar */}
+        <div className={`sidebar-overlay ${openDropdown === 'mobile-menu' ? 'active' : ''}`} onClick={closeDropdowns}></div>
+        <div className={`mobile-sidebar ${openDropdown === 'mobile-menu' ? 'active' : ''}`}>
+           <div className="sidebar-header">
+              <span className="brand-title" style={{color: 'var(--color-primary)'}}>Menu</span>
+              <button className="close-btn" onClick={closeDropdowns}>×</button>
+           </div>
+           
+           <div className="sidebar-links">
+              <Link to="/" className={`sidebar-link ${isActive('/') ? 'active' : ''}`} onClick={closeDropdowns}>
+                 <span className="nav-icon">🏠</span> Home
+              </Link>
+              <Link to="/panchaka" className={`sidebar-link ${isActive('/panchaka') ? 'active' : ''}`} onClick={closeDropdowns}>
+                 <span className="nav-icon">⏰</span> Bhargava
+              </Link>
+              
+              <div className="sidebar-divider">Panchang</div>
+              <Link to="/panchang" className="sidebar-link" onClick={closeDropdowns}>📅 Daily Panchang</Link>
+              <Link to="/lagna" className="sidebar-link" onClick={closeDropdowns}>🌅 Lagna Times</Link>
+              <Link to="/hora" className="sidebar-link" onClick={closeDropdowns}>⌛ Hora</Link>
+
+              <div className="sidebar-divider">Charts & Astrology</div>
+              <Link to="/charts" className="sidebar-link" onClick={closeDropdowns}>📊 Birth Charts</Link>
+              <Link to="/dasha" className="sidebar-link" onClick={closeDropdowns}>⏳ Vimshottari Dasha</Link>
+              <Link to="/planetary" className="sidebar-link" onClick={closeDropdowns}>🪐 Planetary Positions</Link>
+              <Link to="/sadesati" className="sidebar-link" onClick={closeDropdowns}>🪐 Sade Sati</Link>
+
+              <div className="sidebar-divider">Tools</div>
+              <Link to="/combine" className={`sidebar-link ${isActive('/combine') ? 'active' : ''}`} onClick={closeDropdowns}>
+                 <span className="nav-icon">⭐</span> Good Timings
+              </Link>
+           </div>
+        </div>
+
       </div>
     </nav>
   );

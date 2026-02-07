@@ -65,4 +65,11 @@
   .lagna-time {
     font-size: var(--font-size-sm);
   }
+
+  .lagna-table {
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    box-shadow: none;
+  }
 }

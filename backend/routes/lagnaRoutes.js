@@ -90,7 +90,7 @@ router.post('/hora', async (req, res) => {
         }
         
         // Calculate hora timings
-        const horas = lagna.Hora.calculate(dateObj, sunriseData.date, sunsetData.date, nextSunriseData.date);
+        const horas = lagna.Hora.calculate(dateObj.getDay(), sunriseData.date, sunsetData.date, nextSunriseData.date);
         
         res.json({
             success: true,
