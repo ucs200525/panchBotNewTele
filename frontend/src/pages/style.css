@@ -169,7 +169,7 @@ button:disabled {
 .navbar {
   background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
   color: var(--color-white);
-  padding: var(--space-4) var(--space-6);
+  padding: 0.5rem 1.5rem; /* Compact navbar */
   box-shadow: var(--shadow-lg);
   position: sticky;
   top: 0;
@@ -205,15 +205,16 @@ table {
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
-  border: 1px solid var(--color-light-gray);
+  border: 1px solid #cbd5e1; /* Stronger outer border */
 }
 
 th,
 td {
   padding: var(--space-4);
   text-align: left;
-  border-bottom: 1px solid var(--color-light-gray);
-  border-right: 1px solid var(--color-light-gray);
+  border-bottom: 1px solid #e2e8f0; /* Clear grid line */
+  border-right: 1px solid #e2e8f0; /* Clear grid line */
+  white-space: nowrap; /* Prevent line breaking globally */
 }
 
 th:last-child,
@@ -222,12 +223,13 @@ td:last-child {
 }
 
 th {
-  background-color: #F8FAFC;
-  color: var(--color-primary);
+  background-color: #F1F5F9; /* Distinct header bg */
+  color: #1e293b;
   font-weight: 700;
   text-transform: uppercase;
   font-size: 0.8rem;
   letter-spacing: 0.05em;
+  border-bottom: 2px solid #cbd5e1; /* Strong header separator */
 }
 
 td {
@@ -446,21 +448,21 @@ th {
 /* Headings - Premium Vedic Style */
 h1 {
   font-family: var(--font-serif);
-  font-size: 2.5rem;
+  font-size: clamp(1.8rem, 5vw, 2.5rem);
   font-weight: 800;
   color: var(--color-primary) !important;
   text-align: center;
-  margin: var(--space-8) 0 var(--space-4);
+  margin: 1.5rem 0 1rem;
   letter-spacing: -0.01em;
 }
 
 h2 {
   font-family: var(--font-serif);
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: var(--color-gray) !important;
   text-align: center;
-  margin: var(--space-6) 0 var(--space-3);
+  margin: 1.25rem 0 0.75rem;
 }
 
 h3 {
@@ -667,43 +669,35 @@ div[style*="margin: 20px"] {
     box-sizing: border-box;
   }
 
-  /* Full bleed tables */
+  /* Full bleed tables & No-wrap handling */
   .table-wrapper {
-    width: calc(100% + 2rem) !important;
-    /* Stretch beyond padded container */
-    max-width: none !important;
-    margin: 0 -1rem !important;
-    /* Counteract 1rem parent padding */
+    width: 100% !important;
+    max-width: 100vw !important;
+    margin: 1rem 0 !important;
     padding: 0 !important;
     border-radius: 0 !important;
+    overflow-x: auto !important; /* Enable horizontal scroll */
+    -webkit-overflow-scrolling: touch;
     border-left: none !important;
     border-right: none !important;
   }
 
   /* Table fit handling */
   .table-wrapper table {
-    width: 100% !important;
+    width: auto !important; /* Allow table to expand naturally */
+    min-width: 100% !important;
     table-layout: auto;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     border-collapse: collapse;
     margin: 0 !important;
   }
 
   th,
   td {
-    padding: 0.6rem 0.4rem;
-    white-space: normal;
-    word-break: break-word;
-  }
-
-  th:first-child,
-  td:first-child {
-    padding-left: 1rem !important;
-  }
-
-  th:last-child,
-  td:last-child {
-    padding-right: 1rem !important;
+    padding: 0.75rem 1rem !important;
+    white-space: nowrap !important; /* NO LINE WRAP */
+    word-break: normal !important;
+    overflow-wrap: normal !important;
   }
 
 

@@ -9,123 +9,61 @@ const TableScreenshot = ({ tableId, city }) => {
       return null;
     }
 
-    // Store original styles
-    const originalStyles = {
-      height: element.style.height,
-      maxHeight: element.style.maxHeight,
-      overflow: element.style.overflow,
-      position: element.style.position,
-    };
-
-    // Find all parent containers and store their styles
-    const parents = [];
-    let parent = element.parentElement;
-    while (parent) {
-      parents.push({
-        element: parent,
-        height: parent.style.height,
-        maxHeight: parent.style.maxHeight,
-        overflow: parent.style.overflow,
-      });
-      parent = parent.parentElement;
-    }
-
+    // Capture with enhanced options
     try {
-      // Temporarily modify styles for full capture
-      element.style.height = 'auto';
-      element.style.maxHeight = 'none';
-      element.style.overflow = 'visible';
-      element.style.position = 'relative';
-
-      // Modify parent containers
-      parents.forEach(p => {
-        p.element.style.height = 'auto';
-        p.element.style.maxHeight = 'none';
-        p.element.style.overflow = 'visible';
-      });
-
-      // Find all tables within the element and expand them
-      const tables = element.getElementsByTagName('table');
-      const tableStyles = [];
-      for (let table of tables) {
-        tableStyles.push({
-          element: table,
-          height: table.style.height,
-          maxHeight: table.style.maxHeight,
-          overflow: table.style.overflow,
-        });
-        table.style.height = 'auto';
-        table.style.maxHeight = 'none';
-        table.style.overflow = 'visible';
-      }
-
-      // Wait a moment for layout to settle
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      // Capture with enhanced options
       const canvas = await html2canvas(element, {
         scale: 2,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
         logging: false,
-        width: element.scrollWidth,
-        height: element.scrollHeight,
-        windowWidth: element.scrollWidth,
-        windowHeight: element.scrollHeight,
-        x: 0,
-        y: 0,
-        scrollX: -window.scrollX,
-        scrollY: -window.scrollY,
         onclone: (clonedDoc) => {
-          // Ensure tables are fully expanded in the clone
           const clonedElement = clonedDoc.getElementById(tableId);
           if (clonedElement) {
-            clonedElement.style.height = 'auto';
-            clonedElement.style.maxHeight = 'none';
-            clonedElement.style.overflow = 'visible';
-            
-            const clonedTables = clonedElement.getElementsByTagName('table');
-            for (let table of clonedTables) {
-              table.style.height = 'auto';
-              table.style.maxHeight = 'none';
+            // 1. Hide unwanted UI elements from the screenshot
+            const toHide = clonedElement.querySelectorAll('.download-button-container, .download-button, .table-footer-actions, .information, .floating-section button, .secondary-btn-hero');
+            toHide.forEach(el => el.style.display = 'none');
+
+            // 2. Add professional Branding Header (Ultra Compact Thin Bar)
+            const branding = clonedDoc.createElement('div');
+            branding.innerHTML = `
+              <div style="background: #0f172a; color: white; padding: 8px 16px; display: flex; justify-content: space-between; align-items: center; border-radius: 12px 12px 0 0; font-family: 'Outfit', sans-serif;">
+                <span style="font-size: 14px; font-weight: 800; letter-spacing: 1px;">PANCHANGAM.AI</span>
+                <span style="font-size: 11px; opacity: 0.7;">${city || 'Vedic Astrology'} • ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
+              </div>
+            `;
+            clonedElement.prepend(branding);
+
+            // 3. Ensure full width capture for no-wrap tables
+            clonedElement.style.width = 'max-content';
+            clonedElement.style.minWidth = '800px';
+            clonedElement.style.margin = '0 auto';
+            clonedElement.style.padding = '20px'; /* Add some breathing room around the table */
+            clonedElement.style.background = '#ffffff';
+            clonedElement.style.borderRadius = '12px';
+
+            // Ensure tables are fully expanded
+            const tables = clonedElement.getElementsByTagName('table');
+            for (let table of tables) {
+              table.style.width = '100%';
+              table.style.fontSize = '14px';
+              table.style.margin = '0';
             }
+
+            // Fix full-bleed issues in capture
+            const wrappers = clonedElement.querySelectorAll('.table-wrapper');
+            wrappers.forEach(w => {
+              w.style.width = '100%';
+              w.style.margin = '0';
+              w.style.borderRadius = '0';
+            });
           }
         }
       });
 
-      // Restore original styles
-      element.style.height = originalStyles.height;
-      element.style.maxHeight = originalStyles.maxHeight;
-      element.style.overflow = originalStyles.overflow;
-      element.style.position = originalStyles.position;
-
-      parents.forEach(p => {
-        p.element.style.height = p.height;
-        p.element.style.maxHeight = p.maxHeight;
-        p.element.style.overflow = p.overflow;
-      });
-
-      tableStyles.forEach(t => {
-        t.element.style.height = t.height;
-        t.element.style.maxHeight = t.maxHeight;
-        t.element.style.overflow = t.overflow;
-      });
-
       return canvas;
     } catch (error) {
-      // Restore styles even if capture fails
-      element.style.height = originalStyles.height;
-      element.style.maxHeight = originalStyles.maxHeight;
-      element.style.overflow = originalStyles.overflow;
-      element.style.position = originalStyles.position;
-
-      parents.forEach(p => {
-        p.element.style.height = p.height;
-        p.element.style.maxHeight = p.maxHeight;
-        p.element.style.overflow = p.overflow;
-      });
-
+      console.error('Capture failed:', error);
       throw error;
     }
   };
@@ -135,11 +73,12 @@ const TableScreenshot = ({ tableId, city }) => {
       const canvas = await captureTable();
       if (!canvas) return;
 
-      const img = canvas.toDataURL('image/png', 1.0);
+      // Convert to JPEG as requested
+      const img = canvas.toDataURL('image/jpeg', 0.9);
 
       const link = document.createElement('a');
       link.href = img;
-      link.download = `${city || 'Panchangam'}_${new Date().toISOString().split('T')[0]}.png`;
+      link.download = `Panchanga_${city || 'Report'}_${new Date().toISOString().split('T')[0]}.jpg`;
       link.click();
     } catch (error) {
       console.error('Error downloading image:', error);
@@ -152,37 +91,65 @@ const TableScreenshot = ({ tableId, city }) => {
       const canvas = await captureTable();
       if (!canvas) return;
 
-      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png', 1.0));
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
 
-      if (navigator.share && navigator.canShare && navigator.canShare({ files: [new File([blob], 'test.png', { type: 'image/png' })] })) {
-        const file = new File([blob], `${city || 'Panchangam'}_${new Date().toISOString().split('T')[0]}.png`, { type: 'image/png' });
-        
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [new File([blob], 'panchang.jpg', { type: 'image/jpeg' })] })) {
+        const file = new File([blob], `Panchanga_${city || 'Report'}.jpg`, { type: 'image/jpeg' });
+
         await navigator.share({
           files: [file],
-          title: `${city || 'Panchangam'} Table`,
-          text: 'Check out this Panchang table!',
+          title: `Panchangam Report - ${city}`,
+          text: 'Sharing my daily Vedic timings from Panchangam.ai',
         });
       } else {
-        alert('Sharing not supported. Downloading instead...');
+        alert('Sharing not supported on this browser. Downloading instead...');
         await handleDownload();
       }
     } catch (error) {
       if (error.name === 'AbortError') {
         console.log('Share cancelled');
       } else {
-        console.error('Error sharing the image:', error);
+        console.error('Error sharing image:', error);
         alert('Failed to share. Please try downloading instead.');
       }
     }
   };
 
   return (
-    <div className="download-button">
-      <button className="share-button" onClick={handleDownload} title="Download Complete Table">
-        <i className="fa-solid fa-download"></i>
+    <div className="download-button-container" style={{ display: 'flex', gap: '10px', justifyContent: 'center', margin: '20px 0' }}>
+      <button
+        onClick={handleDownload}
+        style={{
+          background: '#3b82f6',
+          color: 'white',
+          border: 'none',
+          padding: '10px 20px',
+          borderRadius: '8px',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          fontWeight: '600'
+        }}
+      >
+        <i className="fa-solid fa-download"></i> Download JPG
       </button>
-      <button className="share-button" onClick={handleShare} title="Share Complete Table">
-        <i className="far fa-share-square"></i>
+      <button
+        onClick={handleShare}
+        style={{
+          background: '#10b981',
+          color: 'white',
+          border: 'none',
+          padding: '10px 20px',
+          borderRadius: '8px',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          fontWeight: '600'
+        }}
+      >
+        <i className="far fa-share-square"></i> Share
       </button>
     </div>
   );

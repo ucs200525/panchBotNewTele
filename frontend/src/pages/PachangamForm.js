@@ -9,7 +9,7 @@ import './hero-styles.css';
 
 const TimeConverterApp = () => {
   const { setCityAndDate } = useAuth();
-  
+
   // Load city from localStorage on mount, fallback to empty string
   const [cityName, setCityName] = useState(() => {
     return localStorage.getItem('selectedCity') || '';
@@ -123,47 +123,48 @@ const TimeConverterApp = () => {
   return (
     <div className="content">
       {/* Hero Section */}
+      {/* Hero Section */}
       <div className="hero-section">
         <div className="hero-content">
-          <h1 className="hero-title">
-            <span className="hero-icon">🕉️</span>
-            Bhargava Panchang
-          </h1>
+          <div className="hero-icon">🌞</div>
+          <h1 className="hero-title">Bhargava Panchang</h1>
           <p className="hero-subtitle">
-            Discover auspicious timings based on ancient Vedic 24-minute periods
+            Ancient Vedic wisdom for modern living. Find your auspicious moments based on 24-minute precise periods.
           </p>
 
           {!hasData && (
-            <form className="hero-form" onSubmit={handleGetPanchang}>
-              <div className="form-group-inline">
-                <div className="input-wrapper" style={{ flex: 2 }}>
-                  <label className="input-label">City</label>
-                  <CityAutocomplete
-                    value={cityName}
-                    onChange={setCityName}
-                    onSelect={handleCitySelect}
-                    placeholder="Search city (e.g., Delhi, Mumbai)"
-                    showGeolocation={true}
-                  />
+            <div className="hero-form-wrapper">
+              <form className="hero-form" onSubmit={handleGetPanchang}>
+                <div className="form-group-inline">
+                  <div className="input-wrapper" style={{ flex: 2 }}>
+                    <label className="input-label">Select City</label>
+                    <CityAutocomplete
+                      value={cityName}
+                      onChange={setCityName}
+                      onSelect={handleCitySelect}
+                      placeholder="Delhi, Mumbai, New York..."
+                      showGeolocation={true}
+                    />
+                  </div>
+
+                  <div className="input-wrapper" style={{ flex: 1 }}>
+                    <label className="input-label">Select Date</label>
+                    <input
+                      type="date"
+                      className="date-input-hero"
+                      value={currentDate}
+                      onChange={(e) => setCurrentDate(e.target.value)}
+                      required
+                    />
+                  </div>
                 </div>
 
-                <div className="input-wrapper" style={{ flex: 1 }}>
-                  <label className="input-label">Date</label>
-                  <input
-                    type="date"
-                    className="date-input-hero"
-                    value={currentDate}
-                    onChange={(e) => setCurrentDate(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-
-              <button type="submit" className="get-panchang-btn-hero" disabled={!cityName}>
-                <span className="btn-icon">📅</span>
-                Get Bhargava Panchang
-              </button>
-            </form>
+                <button type="submit" className="get-panchang-btn-hero" disabled={!cityName}>
+                  <span className="btn-icon">✨</span>
+                  Calculate Timings
+                </button>
+              </form>
+            </div>
           )}
 
           {error && (
@@ -179,13 +180,12 @@ const TimeConverterApp = () => {
       {/* Results Section */}
       {hasData && data.length > 0 && (
         <div className="results-section">
-          {/* Quick Info Cards */}
           <div className="floating-section">
             <div className="info-cards">
               <div className="info-card">
                 <div className="card-icon">📍</div>
                 <div className="card-content">
-                  <div className="card-label">City</div>
+                  <div className="card-label">Location</div>
                   <div className="card-value">{cityName}</div>
                 </div>
               </div>
@@ -193,13 +193,13 @@ const TimeConverterApp = () => {
               <div className="info-card">
                 <div className="card-icon">📅</div>
                 <div className="card-content">
-                  <div className="card-label">Date</div>
+                  <div className="card-label">Selected Date</div>
                   <div className="card-value">{currentDate}</div>
                 </div>
               </div>
 
               <div className="info-card">
-                <div className="card-icon">🌅</div>
+                <div className="card-icon">🎭</div>
                 <div className="card-content">
                   <div className="card-label">Weekday</div>
                   <div className="card-value">{weekday}</div>
@@ -207,10 +207,10 @@ const TimeConverterApp = () => {
               </div>
 
               <div className="info-card">
-                <div className="card-icon">☀️</div>
+                <div className="card-icon">🌅</div>
                 <div className="card-content">
-                  <div className="card-label">Sunrise / Sunset</div>
-                  <div className="card-value">{sunriseToday} / {sunsetToday}</div>
+                  <div className="card-label">Sunrise & Sunset</div>
+                  <div className="card-value">{sunriseToday} - {sunsetToday}</div>
                 </div>
               </div>
             </div>
@@ -223,14 +223,17 @@ const TimeConverterApp = () => {
           <div className="controls-section">
             <button
               className="control-btn"
-              onClick={() => {
-                setIs12HourFormat(!is12HourFormat);
-              }}
+              onClick={() => setIs12HourFormat(!is12HourFormat)}
             >
-              {is12HourFormat ? "Switch to 24-hour" : "Switch to 12-hour"}
+              <i className={`fas fa-clock`}></i>
+              {is12HourFormat ? "Use 24h Format" : "Use 12h Format"}
             </button>
-            <button className="control-btn" onClick={toggleShowNonBlue}>
-              {showNonBlue ? "Show All Rows" : "Show Good Timings Only"}
+            <button
+              className={`control-btn ${showNonBlue ? 'active' : ''}`}
+              onClick={toggleShowNonBlue}
+            >
+              <i className="fas fa-filter"></i>
+              {showNonBlue ? "Show All Rows" : "Show Best Timings"}
             </button>
             <button
               className="control-btn secondary"
@@ -238,30 +241,34 @@ const TimeConverterApp = () => {
                 setHasData(false);
                 setData([]);
                 setCityName('');
-                // Clear from localStorage when user wants new search
                 localStorage.removeItem('selectedCity');
               }}
             >
-              🔄 New Search
+              <i className="fas fa-sync-alt"></i>
+              New Search
             </button>
           </div>
 
           <div className="floating-section">
             <div className="info-note">
-              <strong>Note:</strong> Cells with dark blue background (
-              <span className="color-box"></span>
-              ) are considered <strong>ashubh</strong> (inauspicious).
+              <span className="info-icon">💡</span>
+              <div className="info-text-wrapper">
+                <strong>Inauspicious Timing:</strong>
+                <span> Cells with a dark blue background (</span>
+                <span className="color-box"></span>
+                <span>) are considered <strong>ashubh</strong>. Avoid starting new ventures during these periods.</span>
+              </div>
             </div>
 
             {/* Table Section */}
             <div id="tableToCapture">
               <div className="table-wrapper">
-                <table>
+                <table className="panchang-table">
                   <thead>
                     <tr>
                       <th>Start 1</th>
                       <th>End 1</th>
-                      <th>{weekday}</th>
+                      <th className="weekday-th">{weekday}</th>
                       <th>Start 2</th>
                       <th>End 2</th>
                       <th>S.No</th>
@@ -296,10 +303,11 @@ const TimeConverterApp = () => {
                   </tbody>
                 </table>
               </div>
+              <div className="table-footer-actions">
+                <TableScreenshot tableId="tableToCapture" city={cityName} />
+              </div>
             </div>
           </div>
-
-          <TableScreenshot tableId="tableToCapture" city={cityName} />
         </div>
       )}
     </div>
