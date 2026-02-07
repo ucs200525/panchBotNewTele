@@ -223,35 +223,59 @@ const SadeSatiPage = () => {
                             </div>
                         </Section>
 
-                        <Section title="Transit Timeline" icon="📅">
-                            <div className="timeline-container">
-                                {sadeSatiData.periods.map((period, idx) => {
-                                    const now = new Date();
-                                    const start = new Date(period.start);
-                                    const end = new Date(period.end);
-                                    const isActive = now >= start && now <= end;
+                        <Section title="Lifetime Transit Table" icon="📊">
+                            <div className="table-wrapper">
+                                <table className="panchang-table ss-table">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Phase / Transit</th>
+                                            <th>Start Date</th>
+                                            <th>End Date</th>
+                                            <th>Saturn Rashi</th>
+                                            <th>Impact</th>
+                                            <th>Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {sadeSatiData.periods.map((period, idx) => {
+                                            const now = new Date();
+                                            const start = new Date(period.start);
+                                            const end = new Date(period.end);
+                                            const isActive = now >= start && now <= end;
 
-                                    return (
-                                        <div key={idx} className={`timeline-item ${period.type} ${isActive ? 'active-transit' : ''}`}>
-                                            <div className="timeline-marker"></div>
-                                            <div className="timeline-content">
-                                                <div className="period-header">
-                                                    <span className={`period-badge ${period.type}`}>
-                                                        {period.type === 'sadeSati' ? 'Sade Sati' : 'Dhaiya'}
-                                                    </span>
-                                                    {isActive && <span className="active-badge">Currently Active</span>}
-                                                    <span className="period-phase">{period.phase}</span>
-                                                </div>
-                                                <div className="period-dates">
-                                                    {formatDate(period.start)} — {formatDate(period.end)}
-                                                </div>
-                                                <div className="period-rashi">
-                                                    Saturn in <strong>{period.rashi}</strong>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
+                                            return (
+                                                <tr key={idx} className={`${isActive ? 'row-active' : ''} ${period.type}`}>
+                                                    <td>{idx + 1}</td>
+                                                    <td>
+                                                        <div className="phase-cell">
+                                                            <span className={`type-tag ${period.type}`}>
+                                                                {period.type === 'sadeSati' ? 'Sade Sati' : 'Dhaiya'}
+                                                            </span>
+                                                            <div className="phase-name">{period.phase}</div>
+                                                            {isActive && <div className="now-badge">ACTUAL</div>}
+                                                        </div>
+                                                    </td>
+                                                    <td>{formatDate(period.start)}</td>
+                                                    <td>{formatDate(period.end)}</td>
+                                                    <td>
+                                                        <div className="transit-details">
+                                                            <strong>{period.rashi}</strong>
+                                                            <div className="sub-detail">Nak: {period.nakshatra}</div>
+                                                            {period.isRetrograde && <span className="retro-tag">Retrograde</span>}
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <span className={`impact-tag ${period.impact?.toLowerCase()}`}>
+                                                            {period.impact}
+                                                        </span>
+                                                    </td>
+                                                    <td className="desc-cell">{period.description}</td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
                             </div>
                         </Section>
 

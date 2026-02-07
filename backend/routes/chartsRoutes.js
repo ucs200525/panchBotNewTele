@@ -2,6 +2,42 @@ const express = require('express');
 const router = express.Router();
 const { planetary, lagna, charts } = require('../swisseph');
 const logger = require('../utils/logger');
+const { getUTCFromLocal } = require('../utils/dateUtils');
+const config = require('../swisseph/core/config');
+
+/**
+ * Helper to calculate Navamsa Rashi Index
+ */
+function getNavamsaRashi(siderealLong) {
+    const rashiIdx = Math.floor(siderealLong / 30);
+    const degInRashi = siderealLong % 30;
+    const navPoint = Math.floor(degInRashi / (30 / 9));
+
+    let navRashiIdx;
+    if ([0, 4, 8].includes(rashiIdx)) navRashiIdx = (0 + navPoint) % 12; // Fire: Mesha
+    else if ([1, 5, 9].includes(rashiIdx)) navRashiIdx = (9 + navPoint) % 12; // Earth: Makara
+    else if ([2, 6, 10].includes(rashiIdx)) navRashiIdx = (6 + navPoint) % 12; // Air: Tula
+    else navRashiIdx = (3 + navPoint) % 12; // Water: Karka
+
+    return navRashiIdx;
+}
+
+/**
+ * Helper to calculate Dasamsa Rashi Index
+ */
+function getDasamsaRashi(siderealLong) {
+    const rashiIdx = Math.floor(siderealLong / 30);
+    const degInRashi = siderealLong % 30;
+    const dasaPoint = Math.floor(degInRashi / 3); // 30/10 = 3 deg each
+
+    let dasaRashiIdx;
+    if (rashiIdx % 2 === 0) { // Odd Sign (1, 3, 5...) - indexed 0, 2, 4...
+        dasaRashiIdx = (rashiIdx + dasaPoint) % 12;
+    } else { // Even Sign (2, 4, 6...) - indexed 1, 3, 5...
+        dasaRashiIdx = (rashiIdx + 8 + dasaPoint) % 12; // Start from 9th from it
+    }
+    return dasaRashiIdx;
+}
 
 /**
  * POST /api/charts/details
@@ -9,22 +45,20 @@ const logger = require('../utils/logger');
  */
 router.post('/details', async (req, res) => {
     try {
-        const { date, time = '12:00', lat, lng } = req.body;
+        let { date, time = '12:00', lat, lng, tzone = 'Asia/Kolkata' } = req.body;
         logger.info({ message: 'Charts requested', date, time, lat, lng });
 
         if (!date || lat === undefined || lng === undefined) {
             return res.status(400).json({ error: 'Date, latitude, and longitude are required' });
         }
 
-        const [year, month, day] = date.split('-').map(Number);
-        const [hour, minute] = (time || '12:00').split(':').map(Number);
-        const dateObj = new Date(year, month - 1, day, hour, minute, 0);
+        const utcDate = getUTCFromLocal(date, time, tzone);
 
         // 1. Get all planets positions
-        const planets = planetary.getAllPlanetDetails(dateObj);
+        const planets = planetary.getAllPlanetDetails(utcDate);
 
         // 2. Get Lagna at birth time
-        const lagnaInfo = lagna.getLagnaAtTime(dateObj, lat, lng);
+        const lagnaInfo = lagna.getLagnaAtTime(utcDate, lat, lng);
         const lagnaIdx = lagnaInfo.index;
 
         // 3. Calculate D1, D9, and D10
@@ -35,13 +69,13 @@ router.post('/details', async (req, res) => {
         // 4. Get House layout for charts
         const d1Houses = charts.getHouses(lagnaIdx, d1Planets);
 
-        // For D9, calculate navamsa lagna
-        const d9LagnaIdx = Math.floor(((lagnaInfo.longitude % 30) * 9) / 30) + ((lagnaIdx % 3) * 3);
-        const d9Houses = charts.getHouses(d9LagnaIdx % 12, d9Planets);
+        // For D9, calculate navamsa lagna correctly
+        const d9LagnaIdx = getNavamsaRashi(lagnaInfo.longitude);
+        const d9Houses = charts.getHouses(d9LagnaIdx, d9Planets);
 
-        // For D10, calculate dasamsa lagna
-        const d10LagnaIdx = Math.floor(((lagnaInfo.longitude % 30) * 10) / 30);
-        const d10Houses = charts.getHouses(d10LagnaIdx % 12, d10Planets);
+        // For D10, calculate dasamsa lagna correctly
+        const d10LagnaIdx = getDasamsaRashi(lagnaInfo.longitude);
+        const d10Houses = charts.getHouses(d10LagnaIdx, d10Planets);
 
         res.json({
             success: true,
@@ -51,22 +85,22 @@ router.post('/details', async (req, res) => {
             rasiChart: {
                 houses: d1Houses,
                 planets: d1Planets,
-                lagnaRashi: lagnaInfo.rashi
+                lagnaRashi: lagnaInfo.name
             },
             navamsaChart: {
                 houses: d9Houses,
                 planets: d9Planets,
-                lagnaRashi: d9LagnaIdx
+                lagnaRashi: config.RASHIS[d9LagnaIdx]
             },
-            dasamsaChart: {
+            dasamsa: { // Matching frontend expects 'dasamsa' key usually
                 houses: d10Houses,
                 planets: d10Planets,
-                lagnaRashi: d10LagnaIdx
-            }
+                lagnaRashi: config.RASHIS[d10LagnaIdx]
+            },
+            planetDetails: planets // Extra feature: provide detailed positions for tables
         });
     } catch (error) {
         logger.error({ message: 'Charts API Error', error: error.message, stack: error.stack });
-        console.error('Charts API Error:', error);
         res.status(500).json({ error: error.message });
     }
 });

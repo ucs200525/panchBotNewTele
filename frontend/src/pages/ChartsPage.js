@@ -40,7 +40,8 @@ const ChartsPage = () => {
                     date,
                     time: birthTime,
                     lat: coords.lat,
-                    lng: coords.lng
+                    lng: coords.lng,
+                    tzone: coords.timeZone
                 })
             });
 

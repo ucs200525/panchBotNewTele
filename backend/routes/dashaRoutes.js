@@ -103,11 +103,19 @@ function calculateVimshottari(moonLongitude, birthDate) {
  */
 router.post('/vimshottari', async (req, res) => {
     try {
-        const { date, time = '12:00', lat, lng, tzone } = req.body;
+        let { date, time = '12:00', lat, lng, tzone } = req.body;
         logger.info({ message: 'Vimshottari Dasha requested (Professional)', date, time, lat, lng, tzone });
 
         if (!date) {
             return res.status(400).json({ error: 'Date is required' });
+        }
+
+        // Handle AM/PM time if provided
+        if (time.toLowerCase().includes('pm') || time.toLowerCase().includes('am')) {
+            let [h, m] = time.replace(/[ap]m/i, '').trim().split(':').map(Number);
+            if (time.toLowerCase().includes('pm') && h < 12) h += 12;
+            if (time.toLowerCase().includes('am') && h === 12) h = 0;
+            time = `${String(h).padStart(2, '0')}:${String(m || 0).padStart(2, '0')}`;
         }
 
         const dateObj = getUTCFromLocal(date, time, tzone);
@@ -126,14 +134,38 @@ router.post('/vimshottari', async (req, res) => {
             'Purva Bhadrapada', 'Uttara Bhadrapada', 'Revati'
         ];
         
+        const rashiNames = ['Mesha', 'Vrishabha', 'Mithuna', 'Karka', 'Simha', 'Kanya', 
+                           'Tula', 'Vrishchika', 'Dhanu', 'Makara', 'Kumbha', 'Meena'];
+        
         const nakshatraIndex = Math.floor(moonSidereal / (360/27));
+        const nakshatraSpan = 360/27; // 13.333...°
+        const positionInNakshatra = (moonSidereal % nakshatraSpan) / nakshatraSpan;
+        const pada = Math.floor(positionInNakshatra * 4) + 1; // 1-4
+        const moonRashi = Math.floor(moonSidereal / 30);
+
+        // Calculate dasha balance at birth
+        const dashaLords = ['Ketu', 'Venus', 'Sun', 'Moon', 'Mars', 'Rahu', 'Jupiter', 'Saturn', 'Mercury'];
+        const dashaYears = [7, 20, 6, 10, 7, 18, 16, 19, 17];
+        const startDashaIdx = nakshatraIndex % 9;
+        const totalYears = dashaYears[startDashaIdx];
+        const elapsedYears = totalYears * positionInNakshatra;
+        const balanceAtBirth = totalYears - elapsedYears;
 
         res.json({
             success: true,
             mahadashas: dashaData || [],
-            moonLongitude: parseFloat(moonSidereal.toFixed(4)),
-            moonNakshatra: nakshatraIndex,
-            nakshatraName: nakshatraNames[nakshatraIndex % 27]
+            birthDetails: {
+                moonLongitude: parseFloat(moonSidereal.toFixed(4)),
+                moonRashi: rashiNames[moonRashi],
+                birthStar: nakshatraNames[nakshatraIndex % 27],
+                pada: pada,
+                dashaLord: dashaLords[startDashaIdx],
+                balanceOfDasha: {
+                    years: Math.floor(balanceAtBirth),
+                    months: Math.floor((balanceAtBirth % 1) * 12),
+                    days: Math.floor(((balanceAtBirth % 1) * 12 % 1) * 30)
+                }
+            }
         });
     } catch (error) {
         logger.error({ message: 'Dasha API Error', error: error.message, stack: error.stack });

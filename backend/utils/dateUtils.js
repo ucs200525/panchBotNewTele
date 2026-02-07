@@ -10,8 +10,15 @@
  * @returns {Date} UTC Date object
  */
 function getUTCFromLocal(date, time, tzone) {
-    // Treat as UTC initially
-    const dateObj = new Date(`${date}T${time}:00Z`);
+    let cleanTime = time || '12:00';
+    if (cleanTime.toLowerCase().includes('pm') || cleanTime.toLowerCase().includes('am')) {
+        let [h, m] = cleanTime.replace(/[ap]m/i, '').trim().split(':').map(Number);
+        if (cleanTime.toLowerCase().includes('pm') && h < 12) h += 12;
+        if (cleanTime.toLowerCase().includes('am') && h === 12) h = 0;
+        cleanTime = `${String(h).padStart(2, '0')}:${String(m || 0).padStart(2, '0')}`;
+    }
+
+    const dateObj = new Date(`${date}T${cleanTime}:00Z`);
 
     if (!tzone) return dateObj; // Fallback to UTC if no tzone
 

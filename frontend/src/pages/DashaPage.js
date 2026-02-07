@@ -221,6 +221,44 @@ const DashaPage = () => {
                     </div>
                 )}
 
+                {dashaData && dashaData.birthDetails && (
+                    <div className="floating-section">
+                        <Section title="Birth Chart Details" icon="🌙">
+                            <div className="data-grid" style={{gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1rem'}}>
+                                <div className="data-card">
+                                    <div className="data-card-label">Birth Star (Nakshatra)</div>
+                                    <div className="data-card-value">
+                                        {dashaData.birthDetails.birthStar}
+                                        <span style={{fontSize: '0.85rem', color: '#888', marginLeft: '0.5rem'}}>
+                                            Pada {dashaData.birthDetails.pada}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="data-card">
+                                    <div className="data-card-label">Moon's Rashi</div>
+                                    <div className="data-card-value">{dashaData.birthDetails.moonRashi}</div>
+                                    <div className="data-card-sub">
+                                        {dashaData.birthDetails.moonLongitude.toFixed(2)}° sidereal
+                                    </div>
+                                </div>
+
+                                <div className="data-card">
+                                    <div className="data-card-label">Birth Dasha Lord</div>
+                                    <div className="data-card-value">{dashaData.birthDetails.dashaLord}</div>
+                                </div>
+
+                                <div className="data-card">
+                                    <div className="data-card-label">Dasha Balance at Birth</div>
+                                    <div className="data-card-value">
+                                        {dashaData.birthDetails.balanceOfDasha.years}y {dashaData.birthDetails.balanceOfDasha.months}m {dashaData.birthDetails.balanceOfDasha.days}d
+                                    </div>
+                                </div>
+                            </div>
+                        </Section>
+                    </div>
+                )}
+
                 {dashaData && dashaData.mahadashas && (
                     <div className="floating-section">
                         <Section title="Vimshottari Dasha Timeline" icon="🗓️">

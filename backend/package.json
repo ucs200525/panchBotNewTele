@@ -20,7 +20,7 @@
     "morgan": "^1.10.0",
     "node-fetch": "^2.7.0",
     "puppeteer": "^24.10.1",
-    "swisseph": "npm:sweph@2.10.3-4",
+    "swisseph": "npm:sweph@^2.10.3-4",
     "winston": "^3.15.0",
     "winston-daily-rotate-file": "^5.0.0",
     "winston-mongodb": "^7.0.1"

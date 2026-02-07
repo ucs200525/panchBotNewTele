@@ -1,11 +1,25 @@
+/* Sade Sati Premium Table Styling */
+
 .natal-moon-card {
     background: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%);
     color: white;
-    padding: 2rem;
-    border-radius: 16px;
+    padding: 2.5rem;
+    border-radius: 20px;
     text-align: center;
-    margin-bottom: 2rem;
-    box-shadow: 0 10px 30px rgba(13, 71, 161, 0.2);
+    margin-bottom: 2.5rem;
+    box-shadow: 0 15px 35px rgba(13, 71, 161, 0.25);
+    position: relative;
+    overflow: hidden;
+}
+
+.natal-moon-card::before {
+    content: '🪐';
+    position: absolute;
+    right: -20px;
+    bottom: -20px;
+    font-size: 8rem;
+    opacity: 0.1;
+    transform: rotate(-15deg);
 }
 
 .moon-sign {
@@ -13,189 +27,168 @@
     flex-direction: column;
     gap: 0.5rem;
     margin-bottom: 1rem;
+    position: relative;
+    z-index: 1;
 }
 
 .rashi-label {
-    font-size: 0.9rem;
+    font-size: 1rem;
     opacity: 0.8;
     text-transform: uppercase;
-    letter-spacing: 2px;
+    letter-spacing: 3px;
+    font-weight: 600;
 }
 
 .rashi-value {
-    font-size: 2.5rem;
-    font-weight: 800;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    font-size: 3.5rem;
+    font-weight: 900;
+    text-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    background: linear-gradient(to bottom, #fff, #bbdefb);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .moon-info {
-    font-size: 0.95rem;
-    opacity: 0.9;
-    max-width: 500px;
+    font-size: 1.1rem;
+    opacity: 0.95;
+    max-width: 600px;
     margin: 0 auto;
-    line-height: 1.6;
-}
-
-/* Timeline */
-.timeline-container {
+    line-height: 1.8;
     position: relative;
-    padding: 2rem 0;
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-.timeline-container::before {
-    content: '';
-    position: absolute;
-    left: 31px;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: #eee;
-}
-
-.timeline-item {
-    position: relative;
-    padding-left: 80px;
-    margin-bottom: 3rem;
-}
-
-.timeline-marker {
-    position: absolute;
-    left: 20px;
-    top: 0;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: white;
-    border: 4px solid #ddd;
     z-index: 1;
-    transition: all 0.3s ease;
 }
 
-.timeline-item.sadeSati .timeline-marker {
-    border-color: #f44336;
-}
-
-.timeline-item.dhaiya .timeline-marker {
-    border-color: #ff9800;
-}
-
-.timeline-item.active-transit .timeline-marker {
-    transform: scale(1.3);
-    box-shadow: 0 0 15px rgba(244, 67, 54, 0.4);
-}
-
-.timeline-content {
+/* Table Styles */
+.table-wrapper {
+    overflow-x: auto;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
     background: white;
-    padding: 1.5rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-    border-left: 4px solid #ddd;
-    transition: transform 0.3s ease;
+    margin-top: 1rem;
 }
 
-.timeline-item.sadeSati .timeline-content {
-    border-left-color: #f44336;
+.ss-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
 }
 
-.timeline-item.dhaiya .timeline-content {
-    border-left-color: #ff9800;
+.ss-table th {
+    background: #f8fafc;
+    color: #475569;
+    padding: 1.2rem;
+    font-weight: 700;
+    text-align: left;
+    border-bottom: 2px solid #e2e8f0;
+    white-space: nowrap;
 }
 
-.active-transit .timeline-content {
-    background: #fff9f9;
-    transform: translateX(10px);
-    box-shadow: 0 8px 25px rgba(244, 67, 54, 0.1);
+.ss-table td {
+    padding: 1.2rem;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
 }
 
-.period-header {
+.row-active {
+    background-color: #f0f7ff !important;
+}
+
+.row-active td {
+    border-bottom: 2px solid #3b82f6 !important;
+}
+
+.phase-cell {
     display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 0.8rem;
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 180px;
 }
 
-.period-badge {
-    padding: 4px 10px;
+.transit-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.sub-detail {
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+.retro-tag {
+    font-size: 0.6rem;
+    background: #fef2f2;
+    color: #dc2626;
+    padding: 1px 6px;
     border-radius: 4px;
+    width: fit-content;
+    font-weight: 700;
+}
+
+.type-tag {
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    display: inline-block;
+}
+
+.type-tag.sadeSati {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+.type-tag.dhaiya {
+    background: #ffedd5;
+    color: #f97316;
+}
+
+.phase-name {
+    font-weight: 700;
+    color: #1e293b;
+    font-size: 1rem;
+}
+
+.now-badge {
+    background: #10b981;
+    color: white;
+    font-size: 0.6rem;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: 900;
+    width: fit-content;
+    animation: flash 2s infinite;
+}
+
+.impact-tag {
     font-size: 0.75rem;
     font-weight: 700;
-    text-transform: uppercase;
-    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    text-transform: capitalize;
 }
 
-.period-badge.sadeSati {
-    background: #f44336;
+.impact-tag.intense { background: #fee2e2; color: #b91c1c; }
+.impact-tag.challenging { background: #ffedd5; color: #c2410c; }
+.impact-tag.average { background: #f1f5f9; color: #334155; }
+
+.desc-cell {
+    font-size: 0.85rem;
+    color: #64748b;
+    line-height: 1.5;
+    max-width: 300px;
 }
 
-.period-badge.dhaiya {
-    background: #ff9800;
+@keyframes flash {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
 }
 
-.active-badge {
-    background: #4caf50;
-    color: white;
-    font-size: 0.65rem;
-    padding: 3px 8px;
-    border-radius: 10px;
-    font-weight: 800;
-    text-transform: uppercase;
-    animation: pulse-green 2s infinite;
-}
-
-.period-phase {
-    font-weight: 700;
-    color: #333;
-    margin-left: auto;
-}
-
-.period-dates {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    color: #2c3e50;
-}
-
-.period-rashi {
-    font-size: 0.9rem;
-    color: #666;
-}
-
-@keyframes pulse-green {
-    0% {
-        opacity: 0.7;
-    }
-
-    50% {
-        opacity: 1;
-    }
-
-    100% {
-        opacity: 0.7;
-    }
-}
-
-@media (max-width: 600px) {
-    .timeline-container::before {
-        left: 11px;
-    }
-
-    .timeline-item {
-        padding-left: 40px;
-    }
-
-    .timeline-marker {
-        left: 0;
-    }
-
-    .rashi-value {
-        font-size: 1.8rem;
-    }
-
-    .period-phase {
-        width: 100%;
-        margin-top: 5px;
+@media (max-width: 900px) {
+    .desc-cell {
+        min-width: 250px;
     }
 }

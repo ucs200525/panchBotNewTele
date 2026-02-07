@@ -24,18 +24,22 @@ class KaranaCalculator extends BaseCalculator {
         let elongation = moonLong - sunLong;
         if (elongation < 0) elongation += 360;
 
-        // Karana number (0-59, but only 0-10 are used cyclically)
-        const karanaNumber = Math.floor(elongation / 6) % 60;
+        // Karana number (0-59, 2 per Tithi)
+        const karanaNumber = Math.floor(elongation / 6);
         const percentage = (elongation % 6) / 6;
 
-        // First 4 Karanas (Shakuni, Chatushpada, Naga, Kimstughna) are fixed
-        // Remaining 7 Karanas repeat 8 times
+        // Karana Logic:
+        // 0: Kimstughna (Fixed)
+        // 1-56: Bava, Balava, Kaulava, Taitila, Gara, Vanija, Vishti (7 repeating 8 times)
+        // 57: Shakuni (Fixed)
+        // 58: Chatushpada (Fixed)
+        // 59: Naga (Fixed)
         let karanaIndex;
-        if (karanaNumber === 0) karanaIndex = 7; // Shakuni
-        else if (karanaNumber === 57) karanaIndex = 8; // Chatushpada
-        else if (karanaNumber === 58) karanaIndex = 9; // Naga
-        else if (karanaNumber === 59) karanaIndex = 10; // Kimstughna
-        else karanaIndex = (karanaNumber - 1) % 7; // Bava to Vishti cycle
+        if (karanaNumber === 0) karanaIndex = 10; // Kimstughna
+        else if (karanaNumber === 57) karanaIndex = 7; // Shakuni
+        else if (karanaNumber === 58) karanaIndex = 8; // Chatushpada
+        else if (karanaNumber === 59) karanaIndex = 9; // Naga
+        else karanaIndex = (karanaNumber - 1) % 7; // Bava to Vishti cycle 
 
         return {
             number: karanaNumber,

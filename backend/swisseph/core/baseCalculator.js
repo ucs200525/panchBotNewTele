@@ -35,7 +35,7 @@ class BaseCalculator {
         const min = Math.floor(minDec);
         const sec = Math.floor((minDec - min) * 60);
         
-        return new Date(date.year, date.month - 1, date.day, hour, min, sec);
+        return new Date(Date.UTC(date.year, date.month - 1, date.day, hour, min, sec));
     }
 
     /**

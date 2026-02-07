@@ -10,6 +10,7 @@ const PlanetaryPage = () => {
   const [date, setDate] = useState(new Date().toISOString().substring(0, 10));
   const [time, setTime] = useState('12:00');
   const [planetaryData, setPlanetaryData] = useState(null);
+  const [birthDetails, setBirthDetails] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [savedProfiles, setSavedProfiles] = useState([]);
@@ -60,25 +61,41 @@ const PlanetaryPage = () => {
       if (!geoResponse.ok) throw new Error('Could not find city details');
       const coords = await geoResponse.json();
 
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/planetary/positions`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          city: selectedCity.name,
-          lat: coords.lat,
-          lng: coords.lng,
-          tzone: coords.timeZone,
-          date,
-          time
+      const [planetsResponse, birthResponse] = await Promise.all([
+        fetch(`${process.env.REACT_APP_API_URL}/api/planetary/positions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            city: selectedCity.name,
+            lat: coords.lat,
+            lng: coords.lng,
+            tzone: coords.timeZone,
+            date,
+            time
+          })
+        }),
+        fetch(`${process.env.REACT_APP_API_URL}/api/planetary/birth-details`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            date,
+            time,
+            lat: coords.lat,
+            lng: coords.lng,
+            tzone: coords.timeZone
+          })
         })
-      });
+      ]);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch planetary data');
+      if (!planetsResponse.ok || !birthResponse.ok) {
+        throw new Error('Failed to fetch complete birth data');
       }
-      const data = await response.json();
-      setPlanetaryData(data);
+
+      const pData = await planetsResponse.json();
+      const bData = await birthResponse.json();
+
+      setPlanetaryData(pData);
+      setBirthDetails(bData);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -226,12 +243,51 @@ const PlanetaryPage = () => {
 
         {planetaryData && !isLoading && (
           <div className="planetary-results">
+            {birthDetails && (
+              <Section title="Birth Panchanga Details" icon="🕉️">
+                <div className="birth-panchang-grid">
+                  <div className="panchang-item">
+                    <span className="panchang-label">Tithi</span>
+                    <span className="panchang-value">{birthDetails.tithi?.name}</span>
+                    <span className="panchang-meta">{birthDetails.tithi?.paksha}</span>
+                  </div>
+                  <div className="panchang-item">
+                    <span className="panchang-label">Nakshatra</span>
+                    <span className="panchang-value">{birthDetails.nakshatra?.name}</span>
+                    <span className="panchang-meta">Pada {birthDetails.nakshatra?.pada} ({birthDetails.nakshatra?.lord})</span>
+                  </div>
+                  <div className="panchang-item">
+                    <span className="panchang-label">Yoga</span>
+                    <span className="panchang-value">{birthDetails.yoga?.name}</span>
+                  </div>
+                  <div className="panchang-item">
+                    <span className="panchang-label">Karana</span>
+                    <span className="panchang-value">{birthDetails.karana?.name}</span>
+                  </div>
+                  <div className="panchang-item highlight">
+                    <span className="panchang-label">Birth Hora</span>
+                    <span className="panchang-value">{birthDetails.hora?.lord}</span>
+                  </div>
+                </div>
+              </Section>
+            )}
+
             <div className="planets-grid">
               {planetaryData.planets?.map((planet, idx) => (
-                <div key={idx} className="planet-card">
+                <div key={idx} className={`planet-card ${planet.dignity?.toLowerCase().replace(' ', '-')}`}>
                   <div className="planet-header">
                     <div className="planet-icon">{getPlanetIcon(planet.name)}</div>
-                    <h3 className="planet-name">{planet.name}</h3>
+                    <div>
+                      <h3 className="planet-name">{planet.name}</h3>
+                      <div className="planet-status-tags">
+                        {planet.dignity !== 'Neutral' && (
+                          <span className={`status-tag ${planet.dignity.toLowerCase().replace(' ', '-')}`}>
+                            {planet.dignity}
+                          </span>
+                        )}
+                        {planet.isCombust && <span className="status-tag combust">Combust</span>}
+                      </div>
+                    </div>
                   </div>
 
                   <div className="planet-details">
@@ -245,11 +301,12 @@ const PlanetaryPage = () => {
                       <span className="detail-value">{planet.formatted}</span>
                     </div>
 
-                    {planet.isRetrograde && (
-                      <div className="retrograde-badge">
-                        ↩️ Retrograde
-                      </div>
-                    )}
+                    <div className="detail-row">
+                      <span className="detail-label">Status</span>
+                      <span className="detail-value">
+                        {planet.isRetrograde ? 'Retrograde ↩️' : 'Forward ➡️'}
+                      </span>
+                    </div>
                   </div>
 
                   <div className="degree-bar">
@@ -262,9 +319,46 @@ const PlanetaryPage = () => {
               ))}
             </div>
 
+            {/* Detailed Table for Professionals */}
+            <Section title="Detailed Planetary Metadata" icon="📋">
+              <div className="table-wrapper">
+                <table className="ss-table">
+                  <thead>
+                    <tr>
+                      <th>Planet</th>
+                      <th>Rashi</th>
+                      <th>Degree</th>
+                      <th>Status</th>
+                      <th>Dignity</th>
+                      <th>Combust</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {planetaryData.planets?.map((planet, idx) => (
+                      <tr key={idx}>
+                        <td>{planet.name}</td>
+                        <td>{planet.rashi}</td>
+                        <td>{planet.formatted}</td>
+                        <td>{planet.isRetrograde ? 'Vakri (R)' : 'Marga'}</td>
+                        <td className={`dignity-cell ${planet.dignity?.toLowerCase()}`}>{planet.dignity}</td>
+                        <td>{planet.isCombust ? 'Yes 🌋' : 'No'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Section>
+
             <div className="info-note">
               <div className="note-icon">ℹ️</div>
-              <p>All positions are calculated using the sidereal zodiac (Lahiri ayanamsa). Degrees shown are within the current rashi.</p>
+              <div>
+                <p>All positions are calculated using the <strong>Sidereal Zodiac</strong> with high-accuracy Swiss Ephemeris algorithms.</p>
+                {planetaryData.planets?.[0] && (
+                  <p className="ayanamsa-meta">
+                    Current Ayanamsa: <strong>{planetaryData.ayanamsa || '24° 0\' 0"'}</strong> (Lahiri)
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         )}
