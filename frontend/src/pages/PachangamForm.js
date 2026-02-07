@@ -8,9 +8,8 @@ import { findCurrentPeriod } from '../utils/periodHelpers';
 import './hero-styles.css';
 
 const TimeConverterApp = () => {
-  const { localCity, localDate, setCityAndDate } = useAuth();
-  const [selectedCity, setSelectedCity] = useState(null);
-
+  const { setCityAndDate } = useAuth();
+  
   // Load city from localStorage on mount, fallback to empty string
   const [cityName, setCityName] = useState(() => {
     return localStorage.getItem('selectedCity') || '';
@@ -77,7 +76,7 @@ const TimeConverterApp = () => {
     }
   };
 
-  const fetchTableData = async (sunrise, sunset, sunriseTm, wd) => {
+  const fetchTableData = useCallback(async (sunrise, sunset, sunriseTm, wd) => {
     const response = await fetch(`${process.env.REACT_APP_API_URL}/api/update-table`, {
       method: 'POST',
       headers: {
@@ -96,10 +95,9 @@ const TimeConverterApp = () => {
 
     const data1 = await response.json();
     setData(data1.newTableData || []);
-  };
+  }, [currentDate, is12HourFormat, showNonBlue]);
 
   const handleCitySelect = (city) => {
-    setSelectedCity(city);
     setCityName(city.name);
     // Save to localStorage for persistence
     localStorage.setItem('selectedCity', city.name);
@@ -120,7 +118,7 @@ const TimeConverterApp = () => {
     if (hasData) {
       fetchTableData(sunriseToday, sunsetToday, sunriseTmrw, weekday);
     }
-  }, [showNonBlue, is12HourFormat]);
+  }, [showNonBlue, is12HourFormat, hasData, sunriseToday, sunsetToday, sunriseTmrw, weekday, fetchTableData]);
 
   return (
     <div className="content">

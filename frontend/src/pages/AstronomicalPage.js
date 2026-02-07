@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 const AstronomicalPage = () => {
@@ -8,7 +8,7 @@ const AstronomicalPage = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    const fetchEventData = async () => {
+    const fetchEventData = useCallback(async () => {
         setIsLoading(true);
         setError(null);
         try {
@@ -29,11 +29,11 @@ const AstronomicalPage = () => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [currentDate]);
 
     useEffect(() => {
         fetchEventData();
-    }, [currentDate]);
+    }, [fetchEventData]);
 
     return (
         <div className="content">

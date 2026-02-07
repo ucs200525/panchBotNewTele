@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 const AdminLogs = () => {
   const [logs, setLogs] = useState([]);
@@ -11,29 +11,14 @@ const AdminLogs = () => {
 
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchLogs();
-    }
-  }, [page, isAuthenticated]);
-
-  const handleLogin = (e) => {
-    e.preventDefault();
-    if (secret) {
-      localStorage.setItem('adminSecret', secret);
-      setIsAuthenticated(true);
-      fetchLogs();
-    }
-  };
-
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     localStorage.removeItem('adminSecret');
     setSecret('');
     setIsAuthenticated(false);
     setLogs([]);
-  };
+  }, []);
 
-  const fetchLogs = async () => {
+  const fetchLogs = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -61,6 +46,20 @@ const AdminLogs = () => {
       setError('Failed to fetch logs. DB might be disconnected.');
     } finally {
       setLoading(false);
+    }
+  }, [API_URL, page, secret, handleLogout]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchLogs();
+    }
+  }, [isAuthenticated, fetchLogs]);
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if (secret) {
+      localStorage.setItem('adminSecret', secret);
+      setIsAuthenticated(true);
     }
   };
 

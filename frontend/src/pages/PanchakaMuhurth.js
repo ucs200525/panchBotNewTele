@@ -17,46 +17,11 @@ const PanchakaMuhurth = () => {
   const [showAll, setShowAll] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [fetchCity, setfetchCity] = useState(false);
 
   useEffect(() => {
     sessionStorage.setItem('filteredData', JSON.stringify(filteredData));
   }, [filteredData]);
 
-  const createDummyTable = useCallback(() => {
-    if (!filteredData.length) return;
-    const dummyTable = filteredData.map((row) => {
-      const [startTime, endTime] = row.time.split(" to ");
-      let endTimeWithoutDate, endDatePart;
-
-      if (endTime.includes(", ")) {
-        [endTimeWithoutDate, endDatePart] = endTime.split(", ");
-      } else {
-        endTimeWithoutDate = endTime;
-        endDatePart = null;
-      }
-
-      let adjustedStartTime = startTime.includes("PM")
-        ? `${startTime}`
-        : startTime.includes("AM") && endTime.includes(",")
-          ? `${endDatePart} , ${startTime}`
-          : startTime;
-
-      let adjustedEndTime = endTime.includes("AM") && endTime.includes(",")
-        ? `${endDatePart} , ${endTimeWithoutDate}`
-        : endTime.includes("PM")
-          ? `${endTimeWithoutDate}`
-          : endTime;
-
-      return {
-        category: row.category,
-        muhurat: row.muhurat,
-        time: `${adjustedStartTime} to ${adjustedEndTime}`,
-      };
-    });
-
-    sessionStorage.setItem("muhurats", JSON.stringify(dummyTable));
-  }, [filteredData]);
 
   const getMuhuratData = async (cityName, dateValue) => {
     if (!cityName || !dateValue) return;

@@ -13,13 +13,12 @@ const CombinePage = () => {
     return storedData ? JSON.parse(storedData) : null;
   });
 
-  const [muhurthaData, setMuhurthaData] = useState(null);
   const [bharagvData, setBharagvData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [weekday, setWeekday] = useState(() => sessionStorage.getItem('weekday') || '');
   const [showNonBlue, setShowNonBlue] = useState(true);
-  const [is12HourFormat, setIs12HourFormat] = useState(true);
+  const [is12HourFormat] = useState(true);
 
   useEffect(() => {
     sessionStorage.setItem('combinedData', JSON.stringify(combinedData));
@@ -52,7 +51,6 @@ const CombinePage = () => {
       const mData = await muhurthaResponse.json();
       const bData = await bharagvResponse.json();
 
-      setMuhurthaData(mData);
       setBharagvData(bData);
 
       const combinedResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/combine`, {
