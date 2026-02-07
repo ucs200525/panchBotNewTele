@@ -131,6 +131,13 @@ router.post('/sade-sati', async (req, res) => {
             }
         }
 
+        // 3. Push the last active period if it exists
+        if (activePeriod) {
+            const endDate = new Date(birthDate.getTime() + (maxYears * 365.25) * 24 * 60 * 60 * 1000);
+            activePeriod.end = endDate.toISOString().split('T')[0];
+            sadeSatiPeriods.push(activePeriod);
+        }
+
         res.json({
             success: true,
             natalMoonRashi: natalMoonRashi,

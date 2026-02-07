@@ -4,7 +4,7 @@
  */
 
 const BaseCalculator = require('../core/baseCalculator');
-const { PLANETS } = require('../core/config');
+const config = require('../core/config');
 
 class PlanetaryCalculator extends BaseCalculator {
     /**
@@ -30,7 +30,11 @@ class PlanetaryCalculator extends BaseCalculator {
             );
 
             if (result && result.transitTime) {
-                return this.julianDayToDate(result.transitTime);
+                const rsDate = this.julianDayToDate(result.transitTime);
+                return {
+                    date: rsDate,
+                    time: this.formatTime(rsDate)
+                };
             }
             
             // Swiss Ephemeris may fail if ephemeris files are missing
@@ -46,19 +50,19 @@ class PlanetaryCalculator extends BaseCalculator {
     }
 
     getMoonrise(date, lat, lng) {
-        return this.calculateRiseSet(date, lat, lng, PLANETS.MOON, true);
+        return this.calculateRiseSet(date, lat, lng, config.PLANETS.MOON, true);
     }
 
     getMoonset(date, lat, lng) {
-        return this.calculateRiseSet(date, lat, lng, PLANETS.MOON, false);
+        return this.calculateRiseSet(date, lat, lng, config.PLANETS.MOON, false);
     }
 
     getSunrise(date, lat, lng) {
-        return this.calculateRiseSet(date, lat, lng, PLANETS.SUN, true);
+        return this.calculateRiseSet(date, lat, lng, config.PLANETS.SUN, true);
     }
 
     getSunset(date, lat, lng) {
-        return this.calculateRiseSet(date, lat, lng, PLANETS.SUN, false);
+        return this.calculateRiseSet(date, lat, lng, config.PLANETS.SUN, false);
     }
 }
 

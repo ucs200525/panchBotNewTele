@@ -3,7 +3,7 @@
  * Calculates Nakshatra (lunar mansion) transitions during a day
  */
 
-const { swisseph, useNative } = require('../core/config');
+const config = require('../core/config');
 const BaseCalculator = require('../core/baseCalculator');
 const julianDay = require('../core/julianDay');
 
@@ -50,9 +50,9 @@ class NakshatraCalculator extends BaseCalculator {
      */
     getNakshatraAtTime(date) {
         const jd = julianDay.dateToJulianDay(date);
-        const ayanamsa = swisseph.swe_get_ayanamsa_ut(jd);
+        const ayanamsa = config.swisseph.swe_get_ayanamsa_ut(jd);
 
-        const moonResult = swisseph.swe_calc_ut(jd, swisseph.SE_MOON, swisseph.SEFLG_SWIEPH);
+        const moonResult = config.swisseph.swe_calc_ut(jd, config.swisseph.SE_MOON, config.swisseph.SEFLG_SWIEPH);
         const moonSidereal = (moonResult.longitude - ayanamsa + 360) % 360;
 
         return this.calculateNakshatra(moonSidereal);

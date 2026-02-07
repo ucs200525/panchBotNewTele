@@ -35,9 +35,28 @@ async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr
             });
         };
 
-        // Parse sunrise/sunset times
-        const [sunriseHour, sunriseMin, sunriseSec = 0] = sunriseStr.split(':').map(Number);
-        const [sunsetHour, sunsetMin, sunsetSec = 0] = sunsetStr.split(':').map(Number);
+        // Parse sunrise/sunset times safely
+        const parseTime = (str) => {
+            const clean = str.toLowerCase().replace(/[ap]m/, '').trim();
+            const parts = clean.split(':').map(Number);
+            let h = parts[0];
+            const m = parts[1] || 0;
+            const s = parts[2] || 0;
+            if (str.toLowerCase().includes('pm') && h < 12) h += 12;
+            if (str.toLowerCase().includes('am') && h === 12) h = 0;
+            return { h, m, s };
+        };
+
+        const sunr = parseTime(sunriseStr);
+        const suns = parseTime(sunsetStr);
+
+        const sunriseHour = sunr.h;
+        const sunriseMin = sunr.m;
+        const sunriseSec = sunr.s;
+
+        const sunsetHour = suns.h;
+        const sunsetMin = suns.m;
+        const sunsetSec = suns.s;
 
         const formatProvidedTime = (hour, min, sec) => {
             const d = new Date();

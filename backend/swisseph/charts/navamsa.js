@@ -3,7 +3,7 @@
  */
 
 const DivisionalCharts = require('./divisional');
-const { RASHIS } = require('../core/config');
+const config = require('../core/config');
 
 class NavamsaChart extends DivisionalCharts {
     calculate(planetDetails) {
@@ -29,7 +29,7 @@ class NavamsaChart extends DivisionalCharts {
 
             return {
                 name: p.name,
-                rashi: RASHIS[navRashiIndex],
+                rashi: config.RASHIS[navRashiIndex],
                 rashiIndex: navRashiIndex,
                 navPoint: navPoint + 1
             };

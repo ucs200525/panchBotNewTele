@@ -3,7 +3,7 @@
  */
 
 const BaseCalculator = require('../core/baseCalculator');
-const { RASHIS } = require('../core/config');
+const config = require('../core/config');
 
 class DivisionalCharts extends BaseCalculator {
     /**
@@ -19,7 +19,7 @@ class DivisionalCharts extends BaseCalculator {
         const houses = Array.from({ length: 12 }, (_, i) => ({
             number: i + 1,
             rashiIndex: (lagnaRashiIndex + i) % 12,
-            rashi: RASHIS[(lagnaRashiIndex + i) % 12],
+            rashi: config.RASHIS[(lagnaRashiIndex + i) % 12],
             planets: []
         }));
 

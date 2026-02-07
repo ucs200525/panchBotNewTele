@@ -34,13 +34,13 @@ router.post('/details', async (req, res) => {
 
         // 4. Get House layout for charts
         const d1Houses = charts.getHouses(lagnaIdx, d1Planets);
-        
+
         // For D9, calculate navamsa lagna
-        const d9LagnaIdx = Math.floor(((lagnaInfo.degree % 30) * 9) / 30) + ((lagnaIdx % 3) * 3);
+        const d9LagnaIdx = Math.floor(((lagnaInfo.longitude % 30) * 9) / 30) + ((lagnaIdx % 3) * 3);
         const d9Houses = charts.getHouses(d9LagnaIdx % 12, d9Planets);
-        
+
         // For D10, calculate dasamsa lagna
-        const d10LagnaIdx = Math.floor(((lagnaInfo.degree % 30) * 10) / 30);
+        const d10LagnaIdx = Math.floor(((lagnaInfo.longitude % 30) * 10) / 30);
         const d10Houses = charts.getHouses(d10LagnaIdx % 12, d10Planets);
 
         res.json({
@@ -48,20 +48,20 @@ router.post('/details', async (req, res) => {
             date,
             time,
             lagna: lagnaInfo,
-            rasiChart: { 
-                houses: d1Houses, 
+            rasiChart: {
+                houses: d1Houses,
                 planets: d1Planets,
-                lagnaRashi: lagnaInfo.rashi 
+                lagnaRashi: lagnaInfo.rashi
             },
-            navamsaChart: { 
-                houses: d9Houses, 
+            navamsaChart: {
+                houses: d9Houses,
                 planets: d9Planets,
-                lagnaRashi: d9LagnaIdx 
+                lagnaRashi: d9LagnaIdx
             },
-            dasamsaChart: { 
-                houses: d10Houses, 
+            dasamsaChart: {
+                houses: d10Houses,
                 planets: d10Planets,
-                lagnaRashi: d10LagnaIdx 
+                lagnaRashi: d10LagnaIdx
             }
         });
     } catch (error) {

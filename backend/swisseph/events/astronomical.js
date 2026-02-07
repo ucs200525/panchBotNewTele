@@ -4,7 +4,7 @@
  */
 
 const BaseCalculator = require('../core/baseCalculator');
-const { PLANETS } = require('../core/config');
+const config = require('../core/config');
 
 class AstronomicalEvents extends BaseCalculator {
     /**

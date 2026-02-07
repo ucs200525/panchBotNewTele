@@ -4,7 +4,7 @@
  */
 
 const BaseCalculator = require('../core/baseCalculator');
-const { PLANETS, RASHIS } = require('../core/config');
+const config = require('../core/config');
 
 class PlanetaryPositions extends BaseCalculator {
     /**
@@ -15,15 +15,15 @@ class PlanetaryPositions extends BaseCalculator {
         const ayanamsa = this.getAyanamsa(jd);
 
         const bodies = [
-            { id: PLANETS.SUN, name: 'Sun' },
-            { id: PLANETS.MOON, name: 'Moon' },
-            { id: PLANETS.MARS, name: 'Mars' },
-            { id: PLANETS.MERCURY, name: 'Mercury' },
-            { id: PLANETS.JUPITER, name: 'Jupiter' },
-            { id: PLANETS.VENUS, name: 'Venus' },
-            { id: PLANETS.SATURN, name: 'Saturn' },
-            { id: PLANETS.RAHU, name: 'Rahu' },
-            { id: PLANETS.KETU, name: 'Ketu' }
+            { id: config.PLANETS.SUN, name: 'Sun' },
+            { id: config.PLANETS.MOON, name: 'Moon' },
+            { id: config.PLANETS.MARS, name: 'Mars' },
+            { id: config.PLANETS.MERCURY, name: 'Mercury' },
+            { id: config.PLANETS.JUPITER, name: 'Jupiter' },
+            { id: config.PLANETS.VENUS, name: 'Venus' },
+            { id: config.PLANETS.SATURN, name: 'Saturn' },
+            { id: config.PLANETS.RAHU, name: 'Rahu' },
+            { id: config.PLANETS.KETU, name: 'Ketu' }
         ];
 
         return bodies.map(body => {
@@ -33,11 +33,8 @@ class PlanetaryPositions extends BaseCalculator {
             let siderealLong = (result.longitude - ayanamsa + 360) % 360;
 
             // Ketu is always 180 degrees from Rahu
-            if (body.id === PLANETS.KETU) {
-                // Swiss Ephemeris technically doesn't have Ketu ID, it's Rahu + 180
-                // but some implementations might. If using Rahu + 180:
-                // let rahuResult = this.swisseph.swe_calc_ut(jd, PLANETS.RAHU, this.swisseph.SEFLG_SWIEPH);
-                // siderealLong = (rahuResult.longitude - ayanamsa + 180 + 360) % 360;
+            if (body.id === config.PLANETS.KETU) {
+                siderealLong = (siderealLong + 180) % 360;
             }
 
             const rashiIndex = Math.floor(siderealLong / 30);
@@ -51,7 +48,7 @@ class PlanetaryPositions extends BaseCalculator {
                 distance: result.distance,
                 speed: result.longitudeSpeed,
                 isRetrograde: result.longitudeSpeed < 0,
-                rashi: RASHIS[rashiIndex],
+                rashi: config.RASHIS[rashiIndex],
                 rashiIndex: rashiIndex,
                 degrees: degrees,
                 formatted: this.formatDegrees(degrees)
@@ -74,7 +71,7 @@ class PlanetaryPositions extends BaseCalculator {
             longitude: result.longitude,
             siderealLongitude: siderealLong,
             rashiIndex: rashiIndex,
-            rashi: RASHIS[rashiIndex],
+            rashi: config.RASHIS[rashiIndex],
             degrees: degrees,
             isRetrograde: result.longitudeSpeed < 0
         };

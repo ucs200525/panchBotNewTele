@@ -3,7 +3,7 @@
  */
 
 const DivisionalCharts = require('./divisional');
-const { RASHIS } = require('../core/config');
+const config = require('../core/config');
 
 class DasamsaChart extends DivisionalCharts {
     calculate(planetDetails) {
@@ -25,7 +25,7 @@ class DasamsaChart extends DivisionalCharts {
 
             return {
                 name: p.name,
-                rashi: RASHIS[d10Index],
+                rashi: config.RASHIS[d10Index],
                 rashiIndex: d10Index,
                 part: part + 1
             };

@@ -3,12 +3,12 @@
  * Parent class for all Swiss Ephemeris calculators
  */
 
-const { swisseph } = require('./config');
+const config = require('./config');
 const { dateToJulianDay } = require('./julianDay');
 
 class BaseCalculator {
     constructor() {
-        this.swisseph = swisseph;
+        this.swisseph = config.swisseph;
     }
 
     /**
@@ -44,7 +44,7 @@ class BaseCalculator {
      * @returns {number} Ayanamsa in degrees
      */
     getAyanamsa(jd) {
-        return swisseph.swe_get_ayanamsa_ut(jd);
+        return config.swisseph.swe_get_ayanamsa_ut(jd);
     }
 
     /**

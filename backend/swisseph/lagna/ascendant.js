@@ -4,7 +4,7 @@
  */
 
 const BaseCalculator = require('../core/baseCalculator');
-const { RASHIS, RASHI_SYMBOLS } = require('../core/config');
+const config = require('../core/config');
 
 class LagnaCalculator extends BaseCalculator {
     /**
@@ -28,10 +28,10 @@ class LagnaCalculator extends BaseCalculator {
         const lagnaIndex = Math.floor(siderealAsc / 30) % 12;
 
         return {
-            name: RASHIS[lagnaIndex],
+            name: config.RASHIS[lagnaIndex],
             index: lagnaIndex,
             longitude: siderealAsc,
-            symbol: RASHI_SYMBOLS[RASHIS[lagnaIndex]],
+            symbol: config.RASHI_SYMBOLS[config.RASHIS[lagnaIndex]],
             tropicalLongitude: tropicalAsc,
             ayanamsa: ayanamsa
         };
@@ -52,10 +52,20 @@ class LagnaCalculator extends BaseCalculator {
         const lagnas = [];
 
         try {
-            // Parse sunrise time
-            const [hour, min, sec = 0] = sunriseStr.split(':').map(Number);
+            // Clean time string (remove am/pm and trim)
+            const cleanTime = sunriseStr.toLowerCase().replace(/[ap]m/, '').trim();
+            const parts = cleanTime.split(':').map(Number);
+            const hour = parts[0];
+            const min = parts[1] || 0;
+            const sec = parts[2] || 0;
+
             const sunriseDate = new Date(date);
-            sunriseDate.setHours(hour, min, sec || 0, 0);
+            sunriseDate.setHours(hour, min, sec, 0);
+
+            // Adjust for PM if original string had it (though sunrise usually isn't PM)
+            if (sunriseStr.toLowerCase().includes('pm') && hour < 12) sunriseDate.setHours(hour + 12);
+            if (sunriseStr.toLowerCase().includes('am') && hour === 12) sunriseDate.setHours(0);
+
             console.log(`  🌅 Sunrise: ${this.formatTime(sunriseDate, timezone)}`);
 
             const endTime = new Date(sunriseDate);

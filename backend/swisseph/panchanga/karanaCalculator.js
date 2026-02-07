@@ -3,7 +3,7 @@
  * Calculates Karana transitions during a day
  */
 
-const { swisseph, useNative } = require('../core/config');
+const config = require('../core/config');
 const BaseCalculator = require('../core/baseCalculator');
 const julianDay = require('../core/julianDay');
 
@@ -49,10 +49,10 @@ class KaranaCalculator extends BaseCalculator {
      */
     getKaranaAtTime(date) {
         const jd = julianDay.dateToJulianDay(date);
-        const ayanamsa = swisseph.swe_get_ayanamsa_ut(jd);
+        const ayanamsa = config.swisseph.swe_get_ayanamsa_ut(jd);
 
-        const moonResult = swisseph.swe_calc_ut(jd, swisseph.SE_MOON, swisseph.SEFLG_SWIEPH);
-        const sunResult = swisseph.swe_calc_ut(jd, swisseph.SE_SUN, swisseph.SEFLG_SWIEPH);
+        const moonResult = config.swisseph.swe_calc_ut(jd, config.swisseph.SE_MOON, config.swisseph.SEFLG_SWIEPH);
+        const sunResult = config.swisseph.swe_calc_ut(jd, config.swisseph.SE_SUN, config.swisseph.SEFLG_SWIEPH);
 
         const moonSidereal = (moonResult.longitude - ayanamsa + 360) % 360;
         const sunSidereal = (sunResult.longitude - ayanamsa + 360) % 360;

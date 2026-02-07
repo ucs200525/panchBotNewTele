@@ -1,6 +1,32 @@
 const express = require('express');
 const router = express.Router();
+const { events } = require('../swisseph');
 const logger = require('../utils/logger');
+
+/**
+ * POST /api/astronomical/eclipses
+ * Get upcoming solar and lunar eclipses
+ */
+router.post('/eclipses', async (req, res) => {
+    try {
+        const { date } = req.body;
+        if (!date) return res.status(400).json({ error: 'Date is required' });
+
+        const [year, month, day] = date.split('-').map(Number);
+        const dateObj = new Date(year, month - 1, day, 12, 0, 0);
+
+        const eclipseData = events.getEclipses(dateObj);
+
+        res.json({
+            success: true,
+            date,
+            ...eclipseData
+        });
+    } catch (error) {
+        logger.error({ message: 'Eclipse API Error', error: error.message });
+        res.status(500).json({ error: error.message });
+    }
+});
 
 // JavaScript-based Julian Day calculation
 function dateToJulianDay(date) {

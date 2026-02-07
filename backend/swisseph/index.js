@@ -34,6 +34,7 @@ module.exports = {
     events,
 
     // Quick access to commonly used items
+    PLANETS: config.PLANETS,
     RASHIS: config.RASHIS,
     RASHI_SYMBOLS: config.RASHI_SYMBOLS,
     NAKSHATRAS: config.NAKSHATRAS,

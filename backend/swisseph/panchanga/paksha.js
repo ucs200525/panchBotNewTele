@@ -4,7 +4,7 @@
  */
 
 const BaseCalculator = require('../core/baseCalculator');
-const { PLANETS } = require('../core/config');
+const config = require('../core/config');
 
 class PakshaCalculator extends BaseCalculator {
     /**
@@ -13,8 +13,8 @@ class PakshaCalculator extends BaseCalculator {
     getPakshaAtTime(date) {
         const jd = this.getJD(date);
 
-        const sunResult = this.swisseph.swe_calc_ut(jd, PLANETS.SUN, this.swisseph.SEFLG_SWIEPH);
-        const moonResult = this.swisseph.swe_calc_ut(jd, PLANETS.MOON, this.swisseph.SEFLG_SWIEPH);
+        const sunResult = this.swisseph.swe_calc_ut(jd, config.PLANETS.SUN, this.swisseph.SEFLG_SWIEPH);
+        const moonResult = this.swisseph.swe_calc_ut(jd, config.PLANETS.MOON, this.swisseph.SEFLG_SWIEPH);
 
         const diff = (moonResult.longitude - sunResult.longitude + 360) % 360;
 
