@@ -30,7 +30,6 @@ import PachangamForm from './pages/PachangamForm';
 import PanchakaMuhurth from './pages/PanchakaMuhurth';
 import Combine from './pages/Combine';
 import Navbar from './components/Navbar';
-import AdminLogs from './pages/AdminLogs';
 import PlanetaryPage from './pages/PlanetaryPage';
 import ChartsPage from './pages/ChartsPage';
 import DashaPage from './pages/DashaPage';
@@ -39,6 +38,7 @@ import LagnaPage from './pages/LagnaPage';
 import HoraPage from './pages/HoraPage';
 import SadeSatiPage from './pages/SadeSatiPage';
 import DailyPanchang from './pages/DailyPanchang';
+import GoodTimingsPage from './pages/GoodTimingsPage';
 
 function App() {
   return (
@@ -49,6 +49,7 @@ function App() {
           <Route path="/" element={<PachangamForm />} />
           <Route path="/panchaka" element={<PanchakaMuhurth />} />
           <Route path="/panchang" element={<DailyPanchang />} />
+          <Route path="/good-timings" element={<GoodTimingsPage />} />
           <Route path="/planetary" element={<PlanetaryPage />} />
           <Route path="/charts" element={<ChartsPage />} />
           <Route path="/dasha" element={<DashaPage />} />
@@ -57,7 +58,6 @@ function App() {
           <Route path="/lagna" element={<LagnaPage />} />
           <Route path="/hora" element={<HoraPage />} />
           <Route path="/combine" element={<Combine />} />
-          <Route path="/admin" element={<AdminLogs />} />
           {/* Add more routes here if needed */}
         </Routes>
       </div>

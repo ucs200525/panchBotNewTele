@@ -1,0 +1,596 @@
+/* Daily Panchang Premium Styling */
+
+.panchang-hero {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.panchang-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><text x="10" y="50" font-size="40" opacity="0.05">🕉️</text></svg>') repeat;
+    opacity: 0.3;
+}
+
+.panchang-results {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+/* Info Cards Grid */
+.info-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.info-card-grid.three-col {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.info-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.3s ease;
+}
+
+.info-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
+}
+
+.info-card .card-icon {
+    font-size: 3rem;
+    line-height: 1;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.info-card .card-content {
+    flex: 1;
+}
+
+.info-card .card-content h3 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #64748b;
+    margin: 0 0 0.5rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-card .card-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+.info-card .card-subtext {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin: 0.25rem 0 0 0;
+}
+
+.info-card.compact {
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    padding: 1.25rem;
+}
+
+.info-card.compact .card-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+}
+
+.info-card.compact .card-value {
+    font-size: 1.25rem;
+}
+
+/* Specific Card Colors */
+.sun-card {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+}
+
+.moon-card {
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+}
+
+.vara-card {
+    background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+}
+
+.phase-card {
+    background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+}
+
+/* Section Styling */
+.panchang-section {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.section-header {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 0.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.header-icon {
+    font-size: 2rem;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.section-subtitle {
+    color: #64748b;
+    font-size: 0.95rem;
+    margin: 0 0 1.5rem 0;
+}
+
+/* Panchanga Elements Grid */
+.elements-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.element-card {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: center;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.element-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 16px;
+    padding: 2px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.element-card:hover::before {
+    opacity: 1;
+}
+
+.element-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+
+.element-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.element-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+}
+
+.element-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.element-detail {
+    font-size: 0.875rem;
+    color: #64748b;
+}
+
+/* Lagna Times Grid */
+.lagna-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1.25rem;
+}
+
+.lagna-card {
+    background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+    border-radius: 16px;
+    padding: 1.25rem;
+    text-align: center;
+    border: 2px solid #a78bfa;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.lagna-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #8b5cf6 0%, #6366f1 100%);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.lagna-card:hover::before {
+    transform: scaleX(1);
+}
+
+.lagna-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 32px rgba(139, 92, 246, 0.2);
+    border-color: #8b5cf6;
+}
+
+.lagna-symbol {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.lagna-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #5b21b6;
+    margin-bottom: 0.25rem;
+}
+
+.lagna-number {
+    font-size: 0.875rem;
+    color: #7c3aed;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+.lagna-time {
+    font-size: 0.875rem;
+    color: #6b21a8;
+    font-weight: 500;
+    background: rgba(139, 92, 246, 0.1);
+    padding: 0.5rem;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+}
+
+/* Timings Grid */
+.timings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.25rem;
+}
+
+.timing-card {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-radius: 16px;
+    padding: 1.25rem;
+    border-left: 4px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.timing-card.shubh {
+    border-left-color: #10b981;
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+}
+
+.timing-card.ashubh {
+    border-left-color: #ef4444;
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+}
+
+.timing-card:hover {
+    transform: translateX(5px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.timing-icon {
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+}
+
+.timing-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.timing-time {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 0.5rem;
+}
+
+.timing-desc {
+    font-size: 0.875rem;
+    color: #64748b;
+}
+
+/* Pancha Rahita Grid */
+.rahita-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.25rem;
+}
+
+.rahita-card {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 2px solid #fbbf24;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.rahita-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 12px 32px rgba(251, 191, 36, 0.3);
+}
+
+.rahita-number {
+    position: absolute;
+    top: -12px;
+    right: -12px;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: white;
+    font-size: 1.125rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.rahita-time {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #78350f;
+}
+
+.rahita-time .separator {
+    color: #f59e0b;
+    font-weight: 700;
+}
+
+.rahita-duration {
+    font-size: 0.875rem;
+    color: #92400e;
+    font-weight: 600;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.5);
+    padding: 0.5rem;
+    border-radius: 8px;
+}
+
+/* Choghadiya Grid */
+.choghadiya-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+}
+
+.chog-card {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.chog-card.good {
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+    border-color: #10b981;
+}
+
+.chog-card.bad {
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+    border-color: #ef4444;
+}
+
+.chog-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.chog-badge {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.chog-name {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.chog-time {
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+/* Transitions List */
+.transitions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.transition-item {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    gap: 1rem;
+    align-items: center;
+    border-left: 4px solid #667eea;
+    transition: all 0.3s ease;
+}
+
+.transition-item:hover {
+    transform: translateX(5px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.trans-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.trans-times {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.95rem;
+    color: #475569;
+    justify-content: center;
+}
+
+.trans-arrow {
+    color: #667eea;
+    font-weight: 700;
+}
+
+.trans-paksha {
+    font-size: 0.875rem;
+    color: #64748b;
+    text-align: right;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .info-card-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .elements-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .timings-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .choghadiya-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .transition-item {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+        text-align: center;
+    }
+    
+    .trans-times {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .trans-paksha {
+        text-align: center;
+    }
+    
+    .panchang-section {
+        padding: 1.5rem;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .hero-section,
+    .get-panchang-btn-hero {
+        display: none;
+    }
+    
+    .panchang-section {
+        page-break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #e2e8f0;
+    }
+}
+
+/* Smooth Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.panchang-section {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.info-card,
+.element-card,
+.timing-card,
+.chog-card,
+.rahita-card {
+    animation: fadeInUp 0.4s ease-out;
+}
+
+/* Loading State */
+.panchang-results.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}

@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Analytics & Logs</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 2.5rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 1.5rem;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #475569;
+        }
+        
+        tr:hover {
+            background: #f8fafc;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        
+        .badge-native {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .badge-js {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .badge-top {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .badge-error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .badge-warn {
+            background: #fed7aa;
+            color: #9a3412;
+        }
+        
+        .badge-info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #64748b;
+        }
+        
+        .refresh-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: block;
+            margin: 0 auto 2rem auto;
+        }
+        
+        .refresh-btn:hover {
+            opacity: 0.9;
+        }
+        
+        /* Admin Auth Modal */
+        .auth-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .auth-modal.hidden {
+            display: none;
+        }
+        
+        .auth-box {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+        
+        .auth-box h2 {
+            margin-bottom: 1.5rem;
+            color: #1e293b;
+        }
+        
+        .auth-box input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .auth-box button {
+            width: 100%;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .error-msg {
+            color: #dc2626;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        /* Cleanup Controls */
+        .cleanup-section {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+        
+        .cleanup-btns {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+        
+        .cleanup-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .cleanup-btn.danger {
+            background: #dc2626;
+            color: white;
+        }
+        
+        .cleanup-btn.warning {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .cleanup-btn:hover {
+            opacity: 0.8;
+            transform: translateY(-2px);
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid white;
+            padding-bottom: 1rem;
+        }
+        
+        .tab {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px 8px 0 0;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            background: white;
+            color: #667eea;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Admin Authentication Modal -->
+    <div id="auth-modal" class="auth-modal">
+        <div class="auth-box">
+            <h2>🔐 Admin Access Required</h2>
+            <p style="margin-bottom: 1rem; color: #64748b;">Enter admin password</p>
+            <input type="password" id="admin-password" placeholder="Admin Secret" onkeypress="if(event.key==='Enter') login()">
+            <button onclick="login()">Access Dashboard</button>
+            <div id="auth-error" class="error-msg"></div>
+        </div>
+    </div>
+    
+    <div class="container" id="dashboard-content" style="display: none;">
+        <h1>📊 Admin Dashboard - Analytics & Logs</h1>
+        
+        <button class="refresh-btn" onclick="refreshCurrentTab()">🔄 Refresh Data</button>
+        
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('analytics')">📊 Analytics</button>
+            <button class="tab" onclick="switchTab('logs')">📝 Application Logs</button>
+        </div>
+        
+        <!-- ANALYTICS TAB -->
+        <div id="analytics-tab" class="tab-content active">
+            <!-- Space Management & Cleanup -->
+            <div class="cleanup-section">
+                <h3 style="margin-bottom: 0.5rem;">🗑️ Space Management</h3>
+                <p style="color: #92400e; margin-bottom: 1rem;" id="space-info">Loading space statistics...</p>
+                <div class="cleanup-btns">
+                    <button class="cleanup-btn warning" onclick="cleanupOldAnalytics()">
+                        Delete Analytics > 90 Days
+                    </button>
+                    <button class="cleanup-btn warning" onclick="cleanupOldLogs()">
+                        Delete Logs > 30 Days
+                    </button>
+                    <button class="cleanup-btn danger" onclick="cleanupAllData()">
+                        ⚠️ Delete ALL Data
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Overall Stats -->
+            <div class="stats-grid" id="overall-stats">
+                <div class="stat-card">
+                    <div class="stat-label">Total Requests</div>
+                    <div class="stat-value" id="total-requests">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Today's Requests</div>
+                    <div class="stat-value" id="today-requests">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Unique Users</div>
+                    <div class="stat-value" id="unique-users">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Avg Response Time</div>
+                    <div class="stat-value" id="avg-response">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Error Rate</div>
+                    <div class="stat-value" id="error-rate">-</div>
+                </div>
+            </div>
+            
+            <!-- Engine Usage -->
+            <div class="section">
+                <h2 class="section-title">⚡ Engine Usage (Native vs Fallback)</h2>
+                <table id="engine-table">
+                    <thead>
+                        <tr>
+                            <th>Engine</th>
+                            <th>Request Count</th>
+                            <th>Avg Response Time</th>
+                            <th>Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            
+            <!-- Third-Party Services -->
+            <div class="section">
+                <h2 class="section-title">🌐 Third-Party Services Usage</h2>
+                <div style="margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 1.125rem; margin-bottom: 0.75rem;">OpenCage Geocoding API</h3>
+                    <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                        <div class="stat-card">
+                            <div class="stat-label">Daily Limit</div>
+                            <div class="stat-value" style="font-size: 1.5rem;" id="opencage-limit">2500</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Used Today</div>
+                            <div class="stat-value" style="font-size: 1.5rem;" id="opencage-used">-</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Remaining</div>
+                            <div class="stat-value" style="font-size: 1.5rem;" id="opencage-remaining">-</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Usage %</div>
+                            <div class="stat-value" style="font-size: 1.5rem;" id="opencage-percentage">-</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <div style="background: #f1f5f9; padding: 0.75rem; border-radius: 8px; margin-bottom: 0.5rem;">
+                            <strong>Geocode Requests (City → Coordinates):</strong> <span id="opencage-geocode">0</span>
+                        </div>
+                        <div style="background: #f1f5f9; padding: 0.75rem; border-radius: 8px;">
+                            <strong>Reverse Geocode (Coordinates → City):</strong> <span id="opencage-reverse">0</span>
+                        </div>
+                        <div id="opencage-status" style="margin-top: 1rem; padding: 1rem; border-radius: 8px; font-weight: 600; text-align: center;">
+                            Loading...
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Popular Endpoints -->
+            <div class="section">
+                <h2 class="section-title">🔥 Most Used Pages/Endpoints</h2>
+                <table id="endpoints-table">
+                    <thead>
+                        <tr>
+                            <th>Endpoint</th>
+                            <th>Requests</th>
+                            <th>Avg Response</th>
+                            <th>Error Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            
+            <!-- Popular Cities -->
+            <div class="section">
+                <h2 class="section-title">🌍 Most Requested Cities</h2>
+                <table id="cities-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>City</th>
+                            <th>Total Requests</th>
+                            <th>Unique Users</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            
+            <!-- User Geography -->
+            <div class="section">
+                <h2 class="section-title">📍 User Locations (Where Users Are From)</h2>
+                <p style="color: #64748b; margin-bottom: 1rem;"><em>Note: Localhost testing shows "Unknown". Real users from internet will show actual countries.</em></p>
+                <table id="geography-table">
+                    <thead>
+                        <tr>
+                            <th>Country</th>
+                            <th>Total Requests</th>
+                            <th>Cities Count</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            
+            <!-- Top Users -->
+            <div class="section">
+                <h2 class="section-title">👥 Top Active Users</h2>
+                <table id="users-table">
+                    <thead>
+                        <tr>
+                            <th>Session ID</th>
+                            <th>Requests</th>
+                            <th>Last Seen</th>
+                            <th>Location</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- LOGS TAB -->
+        <div id="logs-tab" class="tab-content">
+            <div class="section">
+                <h2 class="section-title">📝 Application Logs</h2>
+                <div style="margin-bottom: 1rem; display: flex; gap: 1rem; align-items: center;">
+                    <select id="log-level" onchange="loadLogs()" style="padding: 0.5rem; border-radius: 6px; border: 2px solid #e2e8f0;">
+                        <option value="">All Levels</option>
+                        <option value="error">Error</option>
+                        <option value="warn">Warn</option>
+                        <option value="info">Info</option>
+                    </select>
+                    <input type="text" id="log-search" placeholder="Search logs..." style="flex: 1; padding: 0.5rem; border-radius: 6px; border: 2px solid #e2e8f0;">
+                    <button onclick="loadLogs()" class="cleanup-btn warning">Search</button>
+                </div>
+                <div style="margin-bottom: 1rem; color: #64748b;">
+                    Showing <span id="log-count">0</span> logs (Page <span id="log-page">1</span> of <span id="log-total-pages">1</span>)
+                </div>
+                <table id="logs-table">
+                    <thead>
+                        <tr>
+                            <th>Level</th>
+                            <th>Timestamp</th>
+                            <th>Message</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <div style="margin-top: 1rem; display: flex; gap: 1rem; justify-content: center;">
+                    <button onclick="loadLogs(currentLogPage - 1)" class="cleanup-btn warning" id="prev-logs">← Previous</button>
+                    <button onclick="loadLogs(currentLogPage + 1)" class="cleanup-btn warning" id="next-logs">Next →</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE = window.location.origin;
+        let ADMIN_SECRET = '';
+        let currentTab = 'analytics';
+       let currentLogPage = 1;
+        
+        // Tab switching
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tab + '-tab').classList.add('active');
+            
+            if (tab === 'analytics') {
+                loadAllData();
+                loadSpaceStats();
+            } else if (tab === 'logs') {
+                loadLogs();
+            }
+        }
+        
+        function refreshCurrentTab() {
+            if (currentTab === 'analytics') {
+                loadAllData();
+                loadSpaceStats();
+            } else if (currentTab === 'logs') {
+                loadLogs();
+            }
+        }
+        
+        // Login function
+        function login() {
+            const password = document.getElementById('admin-password').value;
+            const errorEl = document.getElementById('auth-error');
+            
+            if (!password) {
+                errorEl.textContent = 'Please enter admin password';
+                return;
+            }
+            
+            ADMIN_SECRET = password;
+            
+            // Test authentication
+            fetch(`${API_BASE}/api/analytics/stats/overall`, {
+                headers: { 'x-admin-secret': ADMIN_SECRET }
+            })
+            .then(res => {
+                if (res.ok) {
+                    document.getElementById('auth-modal').classList.add('hidden');
+                    document.getElementById('dashboard-content').style.display = 'block';
+                    loadAllData();
+                    loadSpaceStats();
+                } else {
+                    errorEl.textContent = 'Invalid password';
+                    ADMIN_SECRET = '';
+                }
+            })
+            .catch(err => {
+                errorEl.textContent = 'Connection error';
+            });
+        }
+        
+        // Load space statistics
+        async function loadSpaceStats() {
+            try {
+                const res = await fetch(`${API_BASE}/api/analytics/stats/space`, {
+                    headers: { 'x-admin-secret': ADMIN_SECRET }
+                });
+                const data = await res.json();
+                
+                let info = `Analytics: ${data.analytics.estimatedSize} (${data.analytics.count.toLocaleString()} records) | `;
+                info += `Logs: ${data.logs.estimatedSize} (${data.logs.count.toLocaleString()} records) | `;
+                info += `Total: ${data.total.estimatedSize}`;
+                
+                if (data.recommendations && data.recommendations.length > 0) {
+                    const highSeverity = data.recommendations.filter(r => r.severity === 'high');
+                    if (highSeverity.length > 0) {
+                        info += ` | ⚠️ ${highSeverity[0].message}`;
+                    }
+                }
+                
+                document.getElementById('space-info').textContent = info;
+            } catch (error) {
+                console.error('Error loading space stats:', error);
+            }
+        }
+        
+        // Cleanup functions
+        async function cleanupOldAnalytics() {
+            if (!confirm('Delete all analytics data older than 90 days?')) return;
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/analytics/cleanup/analytics?olderThanDays=90`, {
+                    method: 'DELETE',
+                    headers: { 'x-admin-secret': ADMIN_SECRET }
+                });
+                const data = await res.json();
+                
+                alert(`Success! Deleted ${data.deletedCount} analytics records`);
+                loadSpaceStats();
+                loadAllData();
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+        
+        async function cleanupOldLogs() {
+            if (!confirm('Delete all logs older than 30 days?')) return;
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/analytics/cleanup/logs?olderThanDays=30`, {
+                    method: 'DELETE',
+                    headers: { 'x-admin-secret': ADMIN_SECRET }
+                });
+                const data = await res.json();
+                
+                alert(`Success! Deleted ${data.deletedCount} log records`);
+                loadSpaceStats();
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+        
+        async function cleanupAllData() {
+            const confirmed = confirm('⚠️ WARNING: This will delete ALL analytics and logs!\n\nAre you absolutely sure?');
+            if (!confirmed) return;
+            
+            const doubleConfirm = prompt('Type "DELETE ALL" to confirm:');
+            if (doubleConfirm !== 'DELETE ALL') {
+                alert('Cancelled');
+                return;
+            }
+            
+            try {
+                await Promise.all([
+                    fetch(`${API_BASE}/api/analytics/cleanup/analytics/all`, {
+                        method: 'DELETE',
+                        headers: { 'x-admin-secret': ADMIN_SECRET }
+                    }),
+                    fetch(`${API_BASE}/api/analytics/cleanup/logs/all`, {
+                        method: 'DELETE',
+                        headers: { 'x-admin-secret': ADMIN_SECRET }
+                    })
+                ]);
+                
+                alert('All data deleted successfully');
+                loadSpaceStats();
+                loadAllData();
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+        
+        async function loadAllData() {
+            await Promise.all([
+                loadOverallStats(),
+                loadEngineStats(),
+                loadThirdPartyServices(),
+                loadPopularEndpoints(),
+                loadPopularCities(),
+                loadUserGeography(),
+                loadTopUsers()
+            ]);
+        }
+        
+        async function loadOverallStats() {
+            try {
+                const res = await fetch(`${API_BASE}/api/analytics/stats/overall`, {
+                    headers: { 'x-admin-secret': ADMIN_SECRET }
+                });
+                const data = await res.json();
+                
+                document.getElementById('total-requests').textContent = data.totalRequests.toLocaleString();
+                document.getElementById('today-requests').textContent = data.todayRequests.toLocaleString();
+                document.getElementById('unique-users').textContent = data.uniqueUsers.toLocaleString();
+                document.getElementById('avg-response').textContent = data.avgResponseTime + ' ms';
+                document.getElementById('error-rate').textContent = data.errorRate + '%';
+            } catch (error) {
+                console.error('Error loading overall stats:', error);
+            }
+        }
+        
+        async function loadEngineStats() {
+            try {
+                const res = await fetch(`${API_BASE}/api/analytics/stats/engine-usage`, {
+                    headers: { 'x-admin-secret': ADMIN_SECRET }
+                });
+                const data = await res.json();
+                
+                const tbody = document.querySelector('#engine-table tbody');
+                tbody.innerHTML = '';
+                
+                const total = data.overall.reduce((sum, item) => sum + item.count, 0);
+                
+                data.overall.forEach(item => {
+                    const percentage = ((item.count / total) * 100).toFixed(1);
+                    const badgeClass = item._id === 'native' ? 'badge-native' : 'badge-js';
+                    
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><span class="badge ${badgeClass}">${item._id.toUpperCase()}</span></td>
+                            <td>${item.count.toLocaleString()}</td>
+                            <td>${Math.round(item.avgResponseTime)} ms</td>
+                            <td>${percentage}%</td>
+                        </tr>
+                    `;
+                });
+            } catch (error) {
+                console.error('Error loading engine stats:', error);
+            }
+        }
+        
+        async function loadThirdPartyServices() {
+            try {
+                const res = await fetch(`${API_BASE}/api/analytics/stats/third-party`, {
+                    headers: { 'x-admin-secret': ADMIN_SECRET }
+                });
+                const data = await res.json();
+                const opencage = data.openCage;
+                
+                document.getElementById('opencage-limit').textContent = opencage.dailyLimit.toLocaleString();
+                document.getElementById('opencage-used').textContent = opencage.used.toLocaleString();
+                document.getElementById('opencage-remaining').textContent = opencage.remaining.toLocaleString();
+                document.getElementById('opencage-percentage').textContent = opencage.percentage + '%';
+                document.getElementById('opencage-geocode').textContent = opencage.breakdown.geocode.toLocaleString();
+                document.getElementById('opencage-reverse').textContent = opencage.breakdown.reverseGeocode.toLocaleString();
+                
+                // Status indicator with colors
+                const statusEl = document.getElementById('opencage-status');
+                if (opencage.status === 'healthy') {
+                    statusEl.style.background = '#dcfce7';
+                    statusEl.style.color = '#166534';
+                    statusEl.textContent = '✅ API Quota Healthy - ' + opencage.remaining + ' requests remaining';
+                } else if (opencage.status === 'warning') {
+                    statusEl.style.background = '#fed7aa';
+                    statusEl.style.color = '#9a3412';
+                    statusEl.textContent = '⚠️ API Quota Warning - ' + opencage.remaining + ' requests remaining';
+                } else {
+                    statusEl.style.background = '#fee2e2';
+                    statusEl.style.color = '#991b1b';
+                    statusEl.textContent = '🚨 API Quota Critical - Only ' + opencage.remaining + ' requests left!';
+                }
+            } catch (error) {
+                console.error('Error loading third-party services:', error);
+            }
+        }
+        
+        async function loadPopularEndpoints() {
+            try {
+                const res = await fetch(`${API_BASE}/api/analytics/stats/popular-endpoints?limit=15`, {
+                    headers: { 'x-admin-secret': ADMIN_SECRET }
+                });
+                const data = await res.json();
+                
+                const tbody = document.querySelector('#endpoints-table tbody');
+                tbody.innerHTML = '';
+                
+                data.forEach((item, idx) => {
+                    const topBadge = idx < 3 ? '<span class="badge badge-top">TOP</span> ' : '';
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${topBadge}${item.endpoint}</td>
+                            <td>${item.count.toLocaleString()}</td>
+                            <td>${item.avgResponseTime} ms</td>
+                            <td>${item.errorRate}%</td>
+                        </tr>
+                    `;
+                });
+            } catch (error) {
+                console.error('Error loading endpoints:', error);
+            }
+        }
+        
+        async function loadPopularCities() {
+            try {
+                const res = await fetch(`${API_BASE}/api/analytics/stats/popular-cities?limit=20`, {
+                    headers: { 'x-admin-secret': ADMIN_SECRET }
+                });
+                const data = await res.json();
+                
+                const tbody = document.querySelector('#cities-table tbody');
+                tbody.innerHTML = '';
+                
+                data.forEach((item, idx) => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${idx + 1}</td>
+                            <td>${item.city}</td>
+                            <td>${item.requestCount.toLocaleString()}</td>
+                            <td>${item.uniqueUsers.toLocaleString()}</td>
+                        </tr>
+                    `;
+                });
+            } catch (error) {
+                console.error('Error loading cities:', error);
+            }
+        }
+        
+        async function loadUserGeography() {
+            try {
+                const res = await fetch(`${API_BASE}/api/analytics/stats/user-geography`, {
+                    headers: { 'x-admin-secret': ADMIN_SECRET }
+                });
+                const data = await res.json();
+                
+                const tbody = document.querySelector('#geography-table tbody');
+                tbody.innerHTML = '';
+                
+                if (data.byCountry && data.byCountry.length > 0) {
+                    data.byCountry.forEach(item => {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td>${item._id || 'Unknown'}</td>
+                                <td>${item.count.toLocaleString()}</td>
+                                <td>${item.cities.length}</td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #64748b;">No geographic data yet (localhost shows as Unknown)</td></tr>';
+                }
+            } catch (error) {
+                console.error('Error loading geography:', error);
+            }
+        }
+        
+        async function loadTopUsers() {
+            try {
+                const res = await fetch(`${API_BASE}/api/analytics/stats/per-user?limit=20`, {
+                    headers: { 'x-admin-secret': ADMIN_SECRET }
+                });
+                const data = await res.json();
+                
+                const tbody = document.querySelector('#users-table tbody');
+                tbody.innerHTML = '';
+                
+                data.forEach(item => {
+                    const lastSeen = new Date(item.lastSeen).toLocaleString();
+                    const location = item.location?.city ? `${item.location.city}, ${item.location.country}` : 'Unknown';
+                    
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${item.sessionId.substring(0, 8)}...</td>
+                            <td>${item.requestCount.toLocaleString()}</td>
+                            <td>${lastSeen}</td>
+                            <td>${location}</td>
+                        </tr>
+                    `;
+                });
+            } catch (error) {
+                console.error('Error loading users:', error);
+            }
+        }
+        
+        // Load application logs
+        async function loadLogs(page = 1) {
+            try {
+                currentLogPage = page;
+                const level = document.getElementById('log-level').value;
+                const search = document.getElementById('log-search').value;
+                
+                let url = `${API_BASE}/admin/logs?page=${page}&limit=50`;
+                if (level) url += `&level=${level}`;
+                if (search) url += `&search=${encodeURIComponent(search)}`;
+                
+                const res = await fetch(url, {
+                    headers: { 'x-admin-secret': ADMIN_SECRET }
+                });
+                const data = await res.json();
+                
+                const tbody = document.querySelector('#logs-table tbody');
+                tbody.innerHTML = '';
+                
+                if (data.logs && data.logs.length > 0) {
+                    data.logs.forEach(log => {
+                        const levelBadge = getLevelBadge(log.level);
+                        const message = typeof log.message === 'string' ? log.message : JSON.stringify(log.message);
+                        const timestamp = new Date(log.timestamp).toLocaleString();
+                        
+                        tbody.innerHTML += `
+                            <tr>
+                                <td><span class="badge ${levelBadge.class}">${log.level.toUpperCase()}</span></td>
+                                <td>${timestamp}</td>
+                                <td>${message}</td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #64748b;">No logs found</td></tr>';
+                }
+                
+                document.getElementById('log-count').textContent = data.totalLogs || 0;
+                document.getElementById('log-page').textContent = data.currentPage || 1;
+                document.getElementById('log-total-pages').textContent = data.totalPages || 1;
+                
+                // Disable/enable pagination buttons
+                document.getElementById('prev-logs').disabled = page <= 1;
+                document.getElementById('next-logs').disabled = page >= (data.totalPages || 1);
+            } catch (error) {
+                console.error('Error loading logs:', error);
+            }
+        }
+        
+        function getLevelBadge(level) {
+            switch(level) {
+                case 'error': return { class: 'badge-error' };
+                case 'warn': return { class: 'badge-warn' };
+                default: return { class: 'badge-info' };
+            }
+        }
+        
+        // Auto-refresh every 30 seconds
+        setInterval(() => {
+            if (!document.getElementById('auth-modal').classList.contains('hidden')) return;
+            refreshCurrentTab();
+            loadSpaceStats();
+        }, 30000);
+    </script>
+</body>
+</html>

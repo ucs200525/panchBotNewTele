@@ -143,12 +143,21 @@ const Navbar = () => {
           </div>
 
           <Link
-            to="/combine"
-            className={`nav-link ${isActive('/combine') ? 'active' : ''}`}
+            to="/good-timings"
+            className={`nav-link ${isActive('/good-timings') ? 'active' : ''}`}
             onClick={closeDropdowns}
           >
             <span className="nav-icon">⭐</span>
             <span className="nav-text">Good Timings</span>
+          </Link>
+
+          <Link
+            to="/combine"
+            className={`nav-link ${isActive('/combine') ? 'active' : ''}`}
+            onClick={closeDropdowns}
+          >
+            <span className="nav-icon">🔮</span>
+            <span className="nav-text">Combine</span>
           </Link>
         </div>
 
@@ -180,8 +189,11 @@ const Navbar = () => {
               <Link to="/sadesati" className="sidebar-link" onClick={closeDropdowns}>🪐 Sade Sati</Link>
 
               <div className="sidebar-divider">Tools</div>
-              <Link to="/combine" className={`sidebar-link ${isActive('/combine') ? 'active' : ''}`} onClick={closeDropdowns}>
+              <Link to="/good-timings" className={`sidebar-link ${isActive('/good-timings') ? 'active' : ''}`} onClick={closeDropdowns}>
                  <span className="nav-icon">⭐</span> Good Timings
+              </Link>
+              <Link to="/combine" className={`sidebar-link ${isActive('/combine') ? 'active' : ''}`} onClick={closeDropdowns}>
+                 Combine
               </Link>
            </div>
         </div>

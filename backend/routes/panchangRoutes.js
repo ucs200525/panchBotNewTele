@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router(); // Use express.Router() instead of express()
 const logger = require('../utils/logger.js');
+const { trackOpenCageRequest } = require('../utils/thirdPartyTracker');
 
 const fetch = require('node-fetch'); // Make sure to install node-fetch if you haven't already
 const axios = require('axios');
@@ -22,6 +23,12 @@ async function fetchCoordinates(city) {
         if (data.results.length > 0) {
             const { limit, remaining, reset } = data.rate;
             logger.info({ message: 'OpenCage Rate Limit', limit, remaining, reset });
+            
+            // Track OpenCage usage
+            trackOpenCageRequest('geocode', { limit, remaining, reset }).catch(err => 
+                logger.error({ message: 'Error tracking OpenCage', error: err.message })
+            );
+            
             const { lat, lng } = data.results[0].geometry;
             const timeZone = data.results[0].annotations.timezone.name;
             logger.info({ message: 'Coordinates fetched', city, lat, lng, timeZone });
@@ -49,6 +56,12 @@ async function fetchCityName(lat, lng) {
 
             const { limit, remaining, reset } = data.rate;
             logger.info({ message: 'OpenCage Rate Limit', limit, remaining, reset });
+            
+            // Track OpenCage usage (reverse geocode)
+            trackOpenCageRequest('reverse_geocode', { limit, remaining, reset }).catch(err =>
+                logger.error({ message: 'Error tracking OpenCage', error: err.message })
+            );
+            
             const components = data.results[0].components;
             const city = components.city || components.town || components.village || 'Unknown city';
             const timeZone = data.results[0].annotations.timezone.name;
