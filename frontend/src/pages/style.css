@@ -50,11 +50,10 @@ body {
   font-family: var(--font-sans);
   margin: 0;
   padding: 0;
-  background-color: #fad7a0 !important;
-  /* Unified parchment background */
+  background-color: var(--color-bg-primary, #f8fafc) !important;
   color: var(--color-primary);
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  -moz-osx-osx-font-smoothing: grayscale;
 }
 
 /* ========================================
@@ -112,26 +111,23 @@ button,
 .fetch-btn,
 .btn {
   padding: 0.75rem 1.5rem;
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: #ffffff;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  background: #3b82f6;
   border: none;
-  border-radius: 0.5rem;
+  border-radius: 0.375rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
 }
 
 button:hover,
 .fetch-btn:hover {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+  background: #2563eb;
 }
 
 button:active {
-  transform: translateY(0);
+  background: #1d4ed8;
 }
 
 button:disabled {
@@ -167,29 +163,35 @@ button:disabled {
    Navbar
    ======================================== */
 .navbar {
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-  color: var(--color-white);
-  padding: 0.5rem 1.5rem; /* Compact navbar */
-  box-shadow: var(--shadow-lg);
+  background: #ffffff;
+  color: #1e293b;
+  padding: 0.4rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
   position: sticky;
   top: 0;
-  z-index: var(--z-sticky);
+  z-index: 1000;
 }
 
 .navbar a {
-  color: var(--color-white);
+  color: #475569;
   text-decoration: none;
-  padding: var(--space-3) var(--space-5);
-  display: inline-block;
-  border-radius: var(--radius-md);
-  transition: all var(--transition-fast);
-  font-weight: var(--font-medium);
+  padding: 0.35rem 0.85rem; /* Compact link padding */
+  margin: 0 0.25rem;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  font-size: 0.875rem;
 }
 
 .navbar a:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: var(--color-accent-light);
-  transform: translateY(-1px);
+  background-color: #f1f5f9;
+  color: #2563eb;
+}
+
+.navbar a.active {
+  background-color: #eff6ff;
+  color: #2563eb;
+  font-weight: 600;
 }
 
 /* ========================================
@@ -197,43 +199,35 @@ button:disabled {
    ======================================== */
 table {
   width: 100%;
-  max-width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  margin: var(--space-8) auto;
-  background-color: var(--color-white);
-  border-radius: var(--radius-lg);
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
   overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
-  border: 1px solid #cbd5e1; /* Stronger outer border */
 }
 
 th,
 td {
-  padding: var(--space-4);
+  padding: 0.4rem 0.6rem;
+  /* Tighter space between columns */
   text-align: left;
-  border-bottom: 1px solid #e2e8f0; /* Clear grid line */
-  border-right: 1px solid #e2e8f0; /* Clear grid line */
-  white-space: nowrap; /* Prevent line breaking globally */
-}
-
-th:last-child,
-td:last-child {
-  border-right: none;
+  border-bottom: 1px solid #f1f5f9;
 }
 
 th {
-  background-color: #F1F5F9; /* Distinct header bg */
-  color: #1e293b;
+  background-color: #f8fafc;
+  color: #64748b;
   font-weight: 700;
   text-transform: uppercase;
-  font-size: 0.8rem;
-  letter-spacing: 0.05em;
-  border-bottom: 2px solid #cbd5e1; /* Strong header separator */
+  letter-spacing: 0.025em;
+  font-size: 0.9rem;
+  /* Increased for better visibility at 67% zoom */
 }
 
 td {
-  font-size: 0.95rem;
+  font-size: 1.15rem;
+  /* Increased for better visibility at 67% zoom */
   color: var(--color-primary);
   background-color: var(--color-white);
 }
@@ -300,30 +294,16 @@ th {
 }
 
 .data-card {
-  background: var(--color-white);
-  border: 1px solid var(--color-light-gray);
-  border-radius: var(--radius-lg);
-  padding: var(--space-6);
-  box-shadow: var(--shadow-sm);
-  transition: all var(--transition-base);
-  position: relative;
-  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  transition: all 0.2s ease;
 }
 
 .data-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--color-accent-light);
-}
-
-.data-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
-  background: var(--color-accent);
+  border-color: #3b82f6;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
 .data-card-label {
@@ -676,7 +656,8 @@ div[style*="margin: 20px"] {
     margin: 1rem 0 !important;
     padding: 0 !important;
     border-radius: 0 !important;
-    overflow-x: auto !important; /* Enable horizontal scroll */
+    overflow-x: auto !important;
+    /* Enable horizontal scroll */
     -webkit-overflow-scrolling: touch;
     border-left: none !important;
     border-right: none !important;
@@ -684,7 +665,8 @@ div[style*="margin: 20px"] {
 
   /* Table fit handling */
   .table-wrapper table {
-    width: auto !important; /* Allow table to expand naturally */
+    width: auto !important;
+    /* Allow table to expand naturally */
     min-width: 100% !important;
     table-layout: auto;
     font-size: 0.8rem;
@@ -695,7 +677,8 @@ div[style*="margin: 20px"] {
   th,
   td {
     padding: 0.75rem 1rem !important;
-    white-space: nowrap !important; /* NO LINE WRAP */
+    white-space: nowrap !important;
+    /* NO LINE WRAP */
     word-break: normal !important;
     overflow-wrap: normal !important;
   }

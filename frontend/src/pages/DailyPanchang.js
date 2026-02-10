@@ -43,7 +43,6 @@ const DailyPanchang = () => {
             <div className="hero-section panchang-hero">
                 <div className="hero-content">
                     <h1 className="hero-title">
-                        <span className="hero-icon">�️</span>
                         Daily Panchang
                     </h1>
                     <p className="hero-subtitle">
@@ -53,7 +52,7 @@ const DailyPanchang = () => {
                     <form className="hero-form" onSubmit={handleGetPanchang}>
                         <div className="form-group-inline">
                             <div className="input-wrapper" style={{ flex: 2 }}>
-                                <label className="input-label">📍 City</label>
+                                <label className="input-label">City</label>
                                 <CityAutocomplete
                                     value={cityName}
                                     onChange={setCityName}
@@ -62,7 +61,7 @@ const DailyPanchang = () => {
                                 />
                             </div>
                             <div className="input-wrapper" style={{ flex: 1 }}>
-                                <label className="input-label">📅 Date</label>
+                                <label className="input-label">Date</label>
                                 <input
                                     type="date"
                                     className="date-input-hero"
@@ -73,7 +72,7 @@ const DailyPanchang = () => {
                             </div>
                         </div>
                         <button type="submit" className="get-panchang-btn-hero" disabled={!cityName}>
-                            <span>✨</span> Calculate Panchang
+                            Calculate Panchang
                         </button>
                     </form>
                 </div>
@@ -84,25 +83,22 @@ const DailyPanchang = () => {
 
             {panchangData && (
                 <div className="results-section panchang-results">
-                    
+
                     {/* Sun & Moon Info Card */}
                     <div className="info-card-grid">
                         <div className="info-card sun-card">
-                            <div className="card-icon">☀️</div>
                             <div className="card-content">
                                 <h3>Sunrise</h3>
                                 <p className="card-value">{panchangData.sunrise}</p>
                             </div>
                         </div>
                         <div className="info-card moon-card">
-                            <div className="card-icon">🌙</div>
                             <div className="card-content">
                                 <h3>Sunset</h3>
                                 <p className="card-value">{panchangData.sunset}</p>
                             </div>
                         </div>
                         <div className="info-card vara-card">
-                            <div className="card-icon">📆</div>
                             <div className="card-content">
                                 <h3>Weekday (Vara)</h3>
                                 <p className="card-value">{panchangData.weekday}</p>
@@ -113,7 +109,6 @@ const DailyPanchang = () => {
                         </div>
                         {panchangData.moonPhase && (
                             <div className="info-card phase-card">
-                                <div className="card-icon">{panchangData.moonPhase.emoji}</div>
                                 <div className="card-content">
                                     <h3>Moon Phase</h3>
                                     <p className="card-value">{panchangData.moonPhase.name}</p>
@@ -127,7 +122,6 @@ const DailyPanchang = () => {
                     {(panchangData.masa || panchangData.samvatsara || panchangData.rtu) && (
                         <div className="panchang-section calendar-section">
                             <h2 className="section-header">
-                                <span className="header-icon">📜</span>
                                 Vedic Calendar
                             </h2>
                             <div className="info-card-grid three-col">
@@ -159,30 +153,25 @@ const DailyPanchang = () => {
                     {/* Core Panchanga Elements */}
                     <div className="panchang-section core-section">
                         <h2 className="section-header">
-                            <span className="header-icon">🕉️</span>
                             Panchanga Elements
                         </h2>
                         <div className="elements-grid">
                             <div className="element-card tithi-card">
-                                <div className="element-icon">🌘</div>
                                 <div className="element-name">Tithi</div>
                                 <div className="element-value">{panchangData.tithi.name}</div>
                                 <div className="element-detail">#{panchangData.tithi.number} • {panchangData.paksha}</div>
                             </div>
                             <div className="element-card nakshatra-card">
-                                <div className="element-icon">⭐</div>
                                 <div className="element-name">Nakshatra</div>
                                 <div className="element-value">{panchangData.nakshatra.name}</div>
                                 <div className="element-detail">#{panchangData.nakshatra.number}</div>
                             </div>
                             <div className="element-card yoga-card">
-                                <div className="element-icon">🔗</div>
                                 <div className="element-name">Yoga</div>
                                 <div className="element-value">{panchangData.yoga.name}</div>
                                 <div className="element-detail">#{panchangData.yoga.number}</div>
                             </div>
                             <div className="element-card karana-card">
-                                <div className="element-icon">⚡</div>
                                 <div className="element-name">Karana</div>
                                 <div className="element-value">{panchangData.karana.name}</div>
                                 <div className="element-detail">#{panchangData.karana.number}</div>
@@ -193,13 +182,11 @@ const DailyPanchang = () => {
                     {/* Auspicious Timings */}
                     <div className="panchang-section auspicious-section">
                         <h2 className="section-header">
-                            <span className="header-icon">✨</span>
                             Auspicious Timings
                         </h2>
                         <div className="timings-grid">
                             {panchangData.abhijitMuhurat && (
                                 <div className="timing-card shubh">
-                                    <div className="timing-icon">☀️</div>
                                     <div className="timing-name">Abhijit Muhurat</div>
                                     <div className="timing-time">
                                         {panchangData.abhijitMuhurat.start} - {panchangData.abhijitMuhurat.end}
@@ -209,7 +196,6 @@ const DailyPanchang = () => {
                             )}
                             {panchangData.brahmaMuhurat && (
                                 <div className="timing-card shubh">
-                                    <div className="timing-icon">🌅</div>
                                     <div className="timing-name">Brahma Muhurat</div>
                                     <div className="timing-time">
                                         {panchangData.brahmaMuhurat.start} - {panchangData.brahmaMuhurat.end}
@@ -219,7 +205,6 @@ const DailyPanchang = () => {
                             )}
                             {panchangData.abhijitLagna && panchangData.abhijitLagna.start !== 'N/A' && (
                                 <div className="timing-card shubh">
-                                    <div className="timing-icon">♋</div>
                                     <div className="timing-name">Abhijit Lagna</div>
                                     <div className="timing-time">
                                         {panchangData.abhijitLagna.start} - {panchangData.abhijitLagna.end}
@@ -234,7 +219,6 @@ const DailyPanchang = () => {
                     {panchangData.panchaRahitaMuhurat && panchangData.panchaRahitaMuhurat.length > 0 && (
                         <div className="panchang-section rahita-section">
                             <h2 className="section-header">
-                                <span className="header-icon">🌟</span>
                                 Pancha Rahita Muhurat
                             </h2>
                             <p className="section-subtitle">
@@ -259,13 +243,11 @@ const DailyPanchang = () => {
                     {/* Inauspicious Timings */}
                     <div className="panchang-section inauspicious-section">
                         <h2 className="section-header">
-                            <span className="header-icon">⚠️</span>
                             Inauspicious Timings (Avoid)
                         </h2>
                         <div className="timings-grid">
                             {panchangData.rahuKaal && panchangData.rahuKaal.start && (
                                 <div className="timing-card ashubh">
-                                    <div className="timing-icon">🔴</div>
                                     <div className="timing-name">Rahu Kaal</div>
                                     <div className="timing-time">
                                         {panchangData.rahuKaal.start} - {panchangData.rahuKaal.end}
@@ -274,7 +256,6 @@ const DailyPanchang = () => {
                             )}
                             {panchangData.yamaganda && panchangData.yamaganda.start && (
                                 <div className="timing-card ashubh">
-                                    <div className="timing-icon">⚫</div>
                                     <div className="timing-name">Yamaganda</div>
                                     <div className="timing-time">
                                         {panchangData.yamaganda.start} - {panchangData.yamaganda.end}
@@ -283,7 +264,6 @@ const DailyPanchang = () => {
                             )}
                             {panchangData.gulika && panchangData.gulika.start && (
                                 <div className="timing-card ashubh">
-                                    <div className="timing-icon">🟤</div>
                                     <div className="timing-name">Gulika Kalam</div>
                                     <div className="timing-time">
                                         {panchangData.gulika.start} - {panchangData.gulika.end}
@@ -292,7 +272,6 @@ const DailyPanchang = () => {
                             )}
                             {panchangData.varjyam && panchangData.varjyam.start && (
                                 <div className="timing-card ashubh">
-                                    <div className="timing-icon">🟠</div>
                                     <div className="timing-name">Varjyam</div>
                                     <div className="timing-time">
                                         {panchangData.varjyam.start} - {panchangData.varjyam.end}
@@ -302,7 +281,6 @@ const DailyPanchang = () => {
                             )}
                             {panchangData.durMuhurat && panchangData.durMuhurat.map((dur, idx) => (
                                 <div key={idx} className="timing-card ashubh">
-                                    <div className="timing-icon">⛔</div>
                                     <div className="timing-name">{dur.name}</div>
                                     <div className="timing-time">
                                         {dur.start} - {dur.end}
@@ -316,7 +294,6 @@ const DailyPanchang = () => {
                     {panchangData.choghadiya && panchangData.choghadiya.day && panchangData.choghadiya.day.length > 0 && (
                         <div className="panchang-section choghadiya-section">
                             <h2 className="section-header">
-                                <span className="header-icon">☀️</span>
                                 Choghadiya (Day)
                             </h2>
                             <div className="choghadiya-grid">
@@ -335,13 +312,11 @@ const DailyPanchang = () => {
                     {panchangData.choghadiya && panchangData.choghadiya.night && panchangData.choghadiya.night.length > 0 && (
                         <div className="panchang-section choghadiya-section">
                             <h2 className="section-header">
-                                <span className="header-icon">🌙</span>
                                 Choghadiya (Night)
                             </h2>
                             <div className="choghadiya-grid">
                                 {panchangData.choghadiya.night.map((chog, idx) => (
                                     <div key={idx} className={`chog-card ${chog.type.toLowerCase()}`}>
-                                        <div className="chog-badge">{chog.type === 'Good' ? '✅' : '❌'}</div>
                                         <div className="chog-name">{chog.name}</div>
                                         <div className="chog-time">{chog.start} - {chog.end}</div>
                                     </div>
@@ -354,7 +329,6 @@ const DailyPanchang = () => {
                     {panchangData.lagnas && panchangData.lagnas.length > 0 && (
                         <div className="panchang-section lagna-section">
                             <h2 className="section-header">
-                                <span className="header-icon">🔮</span>
                                 Lagna Times (Ascendant Changes)
                             </h2>
                             <p className="section-subtitle">
@@ -363,7 +337,6 @@ const DailyPanchang = () => {
                             <div className="lagna-grid">
                                 {panchangData.lagnas.map((lagna, idx) => (
                                     <div key={idx} className="lagna-card">
-                                        <div className="lagna-symbol">{lagna.symbol}</div>
                                         <div className="lagna-name">{lagna.name}</div>
                                         <div className="lagna-number">#{lagna.number}</div>
                                         <div className="lagna-time">
@@ -378,7 +351,6 @@ const DailyPanchang = () => {
                     {panchangData.tithis && panchangData.tithis.length > 1 && (
                         <div className="panchang-section transitions-section">
                             <h2 className="section-header">
-                                <span className="header-icon">🔄</span>
                                 Tithi Transitions
                             </h2>
                             <div className="transitions-list">
@@ -400,7 +372,6 @@ const DailyPanchang = () => {
                     {panchangData.nakshatras && panchangData.nakshatras.length > 1 && (
                         <div className="panchang-section transitions-section">
                             <h2 className="section-header">
-                                <span className="header-icon">⭐</span>
                                 Nakshatra Transitions
                             </h2>
                             <div className="transitions-list">

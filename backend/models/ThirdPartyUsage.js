@@ -4,8 +4,7 @@ const mongoose = require('mongoose');
 const openCageUsageSchema = new mongoose.Schema({
     date: {
         type: Date,
-        required: true,
-        index: true
+        required: true
     },
     
     // Rate Limit Info from OpenCage

@@ -86,7 +86,6 @@ const ChartsPage = () => {
             {/* Hero Section */}
             <div className="hero-section">
                 <div className="hero-content">
-                    <div className="hero-icon">📊</div>
                     <h1 className="hero-title">Divisional Charts</h1>
                     <p className="hero-subtitle">
                         Comprehensive Vedic astrology charts including Rasi (D1), Navamsa (D9), and Dasamsa (D10)
@@ -162,10 +161,7 @@ const ChartsPage = () => {
                                     Calculating...
                                 </>
                             ) : (
-                                <>
-                                    <span className="btn-icon">✨</span>
-                                    Generate Charts
-                                </>
+                                "Generate Charts"
                             )}
                         </button>
                     </form>
@@ -175,7 +171,6 @@ const ChartsPage = () => {
             <div className="results-section">
                 {error && (
                     <div className="error-box-hero">
-                        <span>⚠️</span>
                         {error}
                     </div>
                 )}
@@ -189,7 +184,7 @@ const ChartsPage = () => {
                 {/* Saved Profiles Quick Select */}
                 {savedProfiles.length > 0 && !chartData && !isLoading && (
                     <div className="floating-section">
-                        <Section title="Quick Load Profile" icon="👥">
+                        <Section title="Quick Load Profile">
                             <div className="profile-pills">
                                 {savedProfiles.slice(0, 5).map((p, i) => (
                                     <button
@@ -208,7 +203,7 @@ const ChartsPage = () => {
 
                 {chartData && !isLoading && (
                     <div className="charts-view">
-                        <Section title="Rasi Chart (D1)" icon="🔮">
+                        <Section title="Rasi Chart (D1)">
                             <div className="chart-card">
                                 <ChartWheel
                                     houses={chartData.rasiChart?.houses}
@@ -218,7 +213,7 @@ const ChartsPage = () => {
                             </div>
                         </Section>
 
-                        <Section title="Navamsa Chart (D9)" icon="✨">
+                        <Section title="Navamsa Chart (D9)">
                             <div className="chart-card">
                                 <ChartWheel
                                     houses={chartData.navamsaChart?.houses}
@@ -229,7 +224,7 @@ const ChartsPage = () => {
                         </Section>
 
                         {chartData.dasamsa && (
-                            <Section title="Dasamsa Chart (D10)" icon="💼">
+                            <Section title="Dasamsa Chart (D10)">
                                 <div className="chart-card">
                                     <ChartWheel
                                         houses={chartData.dasamsa?.houses}
@@ -241,7 +236,6 @@ const ChartsPage = () => {
                         )}
 
                         <div className="information">
-                            <span className="info-icon">ℹ️</span>
                             <p className="info">Charts are presented in the North Indian style. Numbers represent the Rashi (Zodiac Sign) in each house.</p>
                         </div>
                     </div>

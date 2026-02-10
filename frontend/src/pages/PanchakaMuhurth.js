@@ -80,7 +80,6 @@ const PanchakaMuhurth = () => {
       {/* Hero Section */}
       <div className="hero-section">
         <div className="hero-content">
-          <div className="hero-icon">🔱</div>
           <h1 className="hero-title">Panchaka Muhurat</h1>
           <p className="hero-subtitle">
             Comprehensive daily guide to auspicious and inauspicious time intervals
@@ -126,10 +125,7 @@ const PanchakaMuhurth = () => {
                     Calculating...
                   </>
                 ) : (
-                  <>
-                    <span className="btn-icon">✨</span>
-                    Find Muhurats
-                  </>
+                  'Find Muhurats'
                 )}
               </button>
 
@@ -150,64 +146,66 @@ const PanchakaMuhurth = () => {
       <div className="results-section">
         {error && (
           <div className="error-box-hero">
-            <span>⚠️</span>
             {error}
           </div>
         )}
 
-        {loading && (
-          <div className="loading-spinner">
-            <div className="spinner"></div>
-          </div>
-        )}
+        {
+          loading && (
+            <div className="loading-spinner">
+              <div className="spinner"></div>
+            </div>
+          )
+        }
 
         {/* Live Period Tracker */}
-        {filteredData && filteredData.length > 0 && (
-          <div className="results-section">
-            <div className="floating-section">
-              <LivePeriodTracker data={filteredData} selectedDate={date} />
-            </div>
-
-            <div id="muhurats-table" className="table-section">
+        {
+          filteredData && filteredData.length > 0 && (
+            <div className="results-section">
               <div className="floating-section">
-                <div className="table-wrapper">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Muhurat / Category</th>
-                        <th>Timings & Interval</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredData.map((item, index) => (
-                        <tr key={index} className={getCategoryClass(item.category)}>
-                          <td className="muhurat-cell">
-                            <div className="muhurat-name">{item.muhurat}</div>
-                            <span className={`category-badge badge-${item.category.toLowerCase().replace(' ', '-')}`}>
-                              {item.category}
-                            </span>
-                          </td>
-                          <td className="time-cell">{item.time}</td>
+                <LivePeriodTracker data={filteredData} selectedDate={date} />
+              </div>
+
+              <div id="muhurats-table" className="table-section">
+                <div className="floating-section">
+                  <div className="table-wrapper">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Muhurat / Category</th>
+                          <th>Timings & Interval</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody>
+                        {filteredData.map((item, index) => (
+                          <tr key={index} className={getCategoryClass(item.category)}>
+                            <td className="muhurat-cell">
+                              <div className="muhurat-name">{item.muhurat}</div>
+                              <span className={`category-badge badge-${item.category.toLowerCase().replace(' ', '-')}`}>
+                                {item.category}
+                              </span>
+                            </td>
+                            <td className="time-cell">{item.time}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
 
-                <div className="table-footer-actions">
-                  <TableScreenshot tableId="muhurats-table" city={city} />
-                </div>
+                  <div className="table-footer-actions">
+                    <TableScreenshot tableId="muhurats-table" city={city} />
+                  </div>
 
-                <div className="information">
-                  <span className="info-icon">ℹ️</span>
-                  <p className="info">Panchaka Muhurat considers five aspects of the time to determine its quality. Choose "Good" periods for important ventures and avoid "Danger" or "Risk" periods when possible.</p>
+                  <div className="information">
+                    <p className="info">Panchaka Muhurat considers five aspects of the time to determine its quality. Choose "Good" periods for important ventures and avoid "Danger" or "Risk" periods when possible.</p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
-      </div>
-    </div>
+          )
+        }
+      </div >
+    </div >
   );
 };
 

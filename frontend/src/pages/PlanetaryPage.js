@@ -104,18 +104,7 @@ const PlanetaryPage = () => {
   };
 
   const getPlanetIcon = (planet) => {
-    const icons = {
-      'Sun': '☀️',
-      'Moon': '🌙',
-      'Mercury': '☿️',
-      'Venus': '♀️',
-      'Mars': '♂️',
-      'Jupiter': '♃',
-      'Saturn': '♄',
-      'Rahu': '🐉',
-      'Ketu': '☄️'
-    };
-    return icons[planet] || '⭐';
+    return '';
   };
 
   return (
@@ -123,7 +112,6 @@ const PlanetaryPage = () => {
       {/* Hero Section */}
       <div className="page-hero planetary-hero">
         <div className="hero-content">
-          <div className="hero-icon">🪐</div>
           <h1 className="hero-title">Planetary Positions</h1>
           <p className="hero-subtitle">
             Precise sidereal positions of all nine planets in zodiac signs with degrees
@@ -188,7 +176,7 @@ const PlanetaryPage = () => {
             </div>
 
             <button type="submit" className="submit-btn-modern" disabled={isLoading}>
-              {isLoading ? '🔄 Calculating...' : '✨ Get Planetary Positions'}
+              {isLoading ? 'Calculating...' : 'Get Planetary Positions'}
             </button>
           </form>
         </div>
@@ -198,7 +186,6 @@ const PlanetaryPage = () => {
       <div className="results-section">
         {error && (
           <div className="error-card">
-            <div className="error-icon">⚠️</div>
             <p className="error-text">{error}</p>
             <button onClick={() => setError(null)} className="error-dismiss">Dismiss</button>
           </div>
@@ -207,7 +194,7 @@ const PlanetaryPage = () => {
         {/* Saved Profiles Quick Select */}
         {savedProfiles.length > 0 && !planetaryData && !isLoading && !error && (
           <div className="floating-section" style={{ maxWidth: '800px', margin: '0 auto 2rem' }}>
-            <Section title="Quick Load Profile" icon="👥">
+            <Section title="Quick Load Profile">
               <div className="profile-pills">
                 {savedProfiles.slice(0, 5).map((p, i) => (
                   <button
@@ -226,7 +213,6 @@ const PlanetaryPage = () => {
 
         {!planetaryData && !isLoading && !error && (
           <div className="empty-state">
-            <div className="empty-icon">🌌</div>
             <h3 className="empty-title">No Data Yet</h3>
             <p className="empty-text">
               Enter a location, date, and time above to calculate planetary positions
@@ -244,7 +230,7 @@ const PlanetaryPage = () => {
         {planetaryData && !isLoading && (
           <div className="planetary-results">
             {birthDetails && (
-              <Section title="Birth Panchanga Details" icon="🕉️">
+              <Section title="Birth Panchanga Details">
                 <div className="birth-panchang-grid">
                   <div className="panchang-item">
                     <span className="panchang-label">Tithi</span>
@@ -304,7 +290,7 @@ const PlanetaryPage = () => {
                     <div className="detail-row">
                       <span className="detail-label">Status</span>
                       <span className="detail-value">
-                        {planet.isRetrograde ? 'Retrograde ↩️' : 'Forward ➡️'}
+                        {planet.isRetrograde ? 'Retrograde' : 'Forward'}
                       </span>
                     </div>
                   </div>
@@ -320,7 +306,7 @@ const PlanetaryPage = () => {
             </div>
 
             {/* Detailed Table for Professionals */}
-            <Section title="Detailed Planetary Metadata" icon="📋">
+            <Section title="Detailed Planetary Metadata">
               <div className="table-wrapper">
                 <table className="ss-table">
                   <thead>
@@ -341,7 +327,7 @@ const PlanetaryPage = () => {
                         <td>{planet.formatted}</td>
                         <td>{planet.isRetrograde ? 'Vakri (R)' : 'Marga'}</td>
                         <td className={`dignity-cell ${planet.dignity?.toLowerCase()}`}>{planet.dignity}</td>
-                        <td>{planet.isCombust ? 'Yes 🌋' : 'No'}</td>
+                        <td>{planet.isCombust ? 'Yes' : 'No'}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -350,7 +336,6 @@ const PlanetaryPage = () => {
             </Section>
 
             <div className="info-note">
-              <div className="note-icon">ℹ️</div>
               <div>
                 <p>All positions are calculated using the <strong>Sidereal Zodiac</strong> with high-accuracy Swiss Ephemeris algorithms.</p>
                 {planetaryData.planets?.[0] && (

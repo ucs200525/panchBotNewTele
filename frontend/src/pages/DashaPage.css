@@ -201,16 +201,17 @@
 }
 
 @media (max-width: 768px) {
+
   .dasha-table-modern th,
   .dasha-table-modern td {
     padding: 0.5rem 0.25rem;
     font-size: 0.75rem;
   }
-  
+
   .sub-lord-cell {
     padding-left: 0.75rem !important;
   }
-  
+
   .current-badge,
   .sub-current-badge {
     font-size: 0.6rem;

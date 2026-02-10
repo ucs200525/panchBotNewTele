@@ -6,6 +6,9 @@ const { OpenCageUsage } = require('../models/ThirdPartyUsage');
  * @param {object} rateInfo - { limit, remaining, reset } from OpenCage response
  */
 async function trackOpenCageRequest(type = 'geocode', rateInfo = {}) {
+    // Tracking disabled to avoid MongoDB connection issues
+    return;
+    /*
     try {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -30,6 +33,7 @@ async function trackOpenCageRequest(type = 'geocode', rateInfo = {}) {
         console.error('Error tracking OpenCage request:', error.message);
         // Don't throw - tracking shouldn't break the main app
     }
+    */
 }
 
 /**
@@ -39,6 +43,21 @@ async function getOpenCageStats() {
     try {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
+        
+        // Fail fast if database is not connected
+        const mongoose = require('mongoose');
+        if (mongoose.connection.readyState !== 1) {
+            return {
+                dailyLimit: 2500,
+                used: 0,
+                remaining: 2500,
+                geocodeRequests: 0,
+                reverseGeocodeRequests: 0,
+                percentage: 0,
+                resetTime: null,
+                status: 'offline'
+            };
+        }
         
         const todayStats = await OpenCageUsage.findOne({ date: today });
         

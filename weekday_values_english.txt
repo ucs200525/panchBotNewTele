@@ -1,0 +1,44 @@
+    const weekdayValues = {
+        "Sunday": [
+            "Success in Travel/Task", "Academic Success", "Professional Difficulties", "Increase in Enemies", "Fear of Theft", "Sorrow", "Fulfillment of Desires", "Comfort and Profit",
+            "Auspicious events like Marriage", "Increase in Friendships", "Fear of Death", "Good Health", "Success in Auspicious Work", "Result of Efforts", "Fear of Poison", "Employment",
+            "Illness (Fever)", "Royal Honor", "Gain through Travel", "Dispute", "Friendship", "Fear of Fever", "Financial Gain", "Imprisonment / Bondage",
+            "Loss of Position", "Interruption in Education", "Sensual Pleasure", "Success in Travel", "Failure in Travel", "Gain of Land"
+        ],
+        "Monday": [
+            "Loss in Task", "Respect from Authorities", "Acquiring a Vehicle", "Happiness/Comfort", "Gain of Land", "Loss of Position", "Hidden Wealth Gain", "Success in Dealings",
+            "Employment", "Good Food", "Gain from Women", "Meeting with Authorities", "Work Interruption", "Suffering from Disease", "Success in Task", "Destruction of Enemies",
+            "Gain of Cattle", "Victory in Task", "Good Health", "Friendship", "Comfort", "Work Interruption", "Success in Marriage", "Attainment of Work",
+            "Financial Gain", "Academic Gain", "Loss in Stable Work", "Success in Job", "Opportunity to Travel", "Fear of Authority"
+        ],
+        "Tuesday": [
+            "Financial Gain", "Success in Travel", "Sorrow", "Fear of Spirits", "Acquiring a Vehicle", "Philanthropy", "Acquiring Clothes", "Loss in Travel",
+            "Loss in Dispute", "Trouble from Enemies", "Gain from Women", "Destruction of Task", "Difficulty", "Fear of Animals", "Trouble from Fire", "Disease Affliction",
+            "Birth of a Son / Gain of Children", "Victory in Task", "Complications", "Royal Honor", "Attaining Trust", "Loss in Task", "Defeat / Failure", "Victory over Enemies",
+            "Job Loss", "Success", "Success in Task", "Gain from Task", "Happiness and Comfort", "Friendship"
+        ],
+        "Wednesday": [
+            "Bad News", "Mental Agitation", "Financial Gain", "Success in Efforts", "Work Interruption", "Great Fear", "Fickle-mindedness", "Calamities",
+            "Success", "Fear of Travel", "Royal Honor", "Increase in Wealth and Grains", "Job Success", "Profit", "Victory in Efforts", "Gain of Clothes",
+            "Happiness", "Wellbeing", "Slight Gain", "Quarrel", "Fulfillment of Desires", "Gain of Children", "Job Success", "Travel Success",
+            "Success in Dealings", "Auspicious Marriage", "Victory in Task", "Mental Distress", "Meeting with Relatives", "Vehicle Accident"
+        ],
+        "Thursday": [
+            "Financial Gain", "Fulfillment of Desires", "Illness", "Acquiring a Vehicle", "Auspicious Marriage", "Loss of Comfort", "Job Success", "Meeting a Master / Deity",
+            "Interruption in Travel", "Success in Task", "Success in Business", "Destruction of Enemies", "Marriage Success", "Cure of Disease", "Quarrelsome", "Job Loss", "Intense Anger",
+            "Victory in Task", "Loss of Position", "Fear of Theft", "Quarrel in Marriage", "Victory in Dispute", "Auspicious Travel", "Loss of Courage", "Work Interruption",
+            "Safe Travel", "Auspicious Marriage", "Quarrelsome", "Trouble from Fever or Weapons", "Educational Progress"
+        ],
+        "Friday": [
+            "Success in Task", "Ruin of Task", "Financial Gain", "Favor from Authorities", "Failure", "Success in Task", "Sorrow and Fear", "Courage", "Difficulty and Loss",
+            "Happiness", "Favorable", "Acquiring Goods and Vehicles", "Wellbeing and Gain", "Victory in Task", "Fear of Weapons", "Destruction of Enemies", "Extreme Fear",
+            "Academic Success", "Disease Troubles", "Sorrow", "Acquiring a Vehicle", "Gain from Women", "Skin Troubles", "Fear of Venomous Creatures", "Difficulty in Travel", "Fear of Enemies",
+            "Loss in Task", "Comfortable Travel", "Sorrow", "Royal Honor"
+        ],
+        "Saturday": [
+            "Loss in Task", "Happiness", "Marriage Success", "Friendship", "Success in Travel", "Gain of Vehicle", "Victory in Task", "Royal Honor",
+            "Loss in Task", "Harm in Travel", "Gain of Clothes and from Women", "Mental Fickleness", "Loss of Friends", "Finding a Friend", "Gain from Women",
+            "Financial Gain", "Success in Travel", "Loss in Travel", "Wellbeing", "Opportunity for Vehicle", "Increase in Knowledge", "Entertainment", "Quarrel",
+            "Job Loss", "Victory in Effort", "Mental Regret", "Destruction of Enemies", "Destruction of Opposition", "Gain from Travel", "Good News"
+        ]
+    };

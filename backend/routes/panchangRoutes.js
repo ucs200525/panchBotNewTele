@@ -9,9 +9,17 @@ const cheerio = require('cheerio');
 const path = require('path');
 const puppeteer = require('puppeteer');
 
-// Function to fetch coordinates and time zone based on the city name
+// In-memory cache for coordinates to avoid redundant OpenCage calls
+const coordCache = new Map();
+
 // Function to fetch coordinates and time zone based on the city name
 async function fetchCoordinates(city) {
+    const cityKey = city.toLowerCase().trim();
+    if (coordCache.has(cityKey)) {
+        logger.info({ message: 'Using cached coordinates', city: cityKey });
+        return coordCache.get(cityKey);
+    }
+
     logger.info({ message: 'fetchCoordinates called', city });
     const apiKey = '699522e909454a09b82d1c728fc79925'; // Your API key
     try {
@@ -31,8 +39,13 @@ async function fetchCoordinates(city) {
             
             const { lat, lng } = data.results[0].geometry;
             const timeZone = data.results[0].annotations.timezone.name;
+            const result = { lat, lng, timeZone, limit, remaining, reset };
+            
+            // Save to cache
+            coordCache.set(cityKey, result);
+            
             logger.info({ message: 'Coordinates fetched', city, lat, lng, timeZone });
-            return { lat, lng, timeZone, limit, remaining, reset }; // Return all required values
+            return result; // Return all required values
         } else {
             logger.warn({ message: 'City not found', city });
             throw new Error('City not found');
@@ -43,37 +56,44 @@ async function fetchCoordinates(city) {
     }
 }
 
+// In-memory cache for reverse geocoding (lat,lng to city)
+const reverseCache = new Map();
+
 async function fetchCityName(lat, lng) {
+    const cacheKey = `${parseFloat(lat).toFixed(3)},${parseFloat(lng).toFixed(3)}`;
+    if (reverseCache.has(cacheKey)) {
+        logger.info({ message: 'Using cached city name', lat, lng });
+        return reverseCache.get(cacheKey);
+    }
+
     logger.info({ message: 'fetchCityName called', lat, lng });
-    const apiKey = '699522e909454a09b82d1c728fc79925'; // Your API key
+    const apiKey = '699522e909454a09b82d1c728fc79925'; // OpenCage API key
+
     try {
+        // Use OpenCage directly for high accuracy ( GeoNames was only nearby )
         const response = await fetch(`https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(lat)},${encodeURIComponent(lng)}&key=${apiKey}`);
+        
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const data = await response.json();
+        
         if (data.results.length > 0) {
-
             const { limit, remaining, reset } = data.rate;
-            logger.info({ message: 'OpenCage Rate Limit', limit, remaining, reset });
-            
-            // Track OpenCage usage (reverse geocode)
-            trackOpenCageRequest('reverse_geocode', { limit, remaining, reset }).catch(err =>
-                logger.error({ message: 'Error tracking OpenCage', error: err.message })
-            );
-            
             const components = data.results[0].components;
-            const city = components.city || components.town || components.village || 'Unknown city';
+            // Strategy: Try to find the most specific city/town name first
+            const city = components.city || components.town || components.village || components.suburb || components.neighbourhood || components.state_district || components.state;
             const timeZone = data.results[0].annotations.timezone.name;
-            logger.info({ message: 'City name fetched', city, timeZone });
-            logger.info({ message: `fetchCityName called key ${city} and {}`, data });
-            return { cityName: city, timeZone, limit, remaining, reset, data }; // Return city name and time zone
-        } else {
-            logger.warn({ message: 'Location not found', lat, lng });
-            throw new Error('Location not found');
+            
+            const result = { cityName: city, timeZone, limit, remaining, reset, source: 'opencage' };
+            reverseCache.set(cacheKey, result);
+            logger.info({ message: 'City name fetched via OpenCage', city });
+            return result;
         }
+
+        throw new Error('No location found for these coordinates');
     } catch (error) {
-        logger.error({ message: 'Error fetching city name', error: error.message, lat, lng });
+        logger.error({ message: 'Error in fetchCityName', error: error.message, lat, lng });
         return null;
     }
 }
@@ -85,9 +105,28 @@ const convertToLocalTime = (utcDate, timeZone) => {
     return date.toLocaleString('en-US', { timeZone, hour12: false }).split(' ')[1];
 };
 
-// Function to fetch sunrise and sunset times for a given date
-// Function to fetch sunrise and sunset times for a given date
+// Function to fetch sunrise and sunset times for a given date using High Accuracy Swiss Ephemeris
 async function fetchSunTimes(lat, lng, date, timeZone) {
+    logger.info({ message: 'fetchSunTimes (Swiss Priority) called', lat, lng, date, timeZone });
+    try {
+        const { getSunMoonTimesSwiss } = require('../utils/swissHelper');
+        const results = await getSunMoonTimesSwiss(lat, lng, date, timeZone);
+        
+        if (results) {
+            logger.info({ message: 'Sun times fetched using Swiss Ephemeris', results });
+            return results;
+        }
+        
+        logger.warn({ message: 'Swiss Ephemeris failed for sun times, falling back to external API' });
+        return fetchSunTimesExternal(lat, lng, date, timeZone);
+    } catch (error) {
+        logger.error({ message: 'Error in fetchSunTimes wrapper', error: error.message });
+        return fetchSunTimesExternal(lat, lng, date, timeZone);
+    }
+}
+
+// Original external API function (now as fallback)
+async function fetchSunTimesExternal(lat, lng, date, timeZone) {
     logger.info({ message: 'fetchSunTimes called', lat, lng, date, timeZone });
     try {
         const response = await fetch(`https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lng}&formatted=0&date=${date}`);
@@ -132,13 +171,40 @@ async function fetchSunTimes(lat, lng, date, timeZone) {
     }
 }
 
-async function getSunTimesForCity(city, date) {
-    logger.info({ message: 'getSunTimesForCity called', city, date });
-    let coords = await fetchCoordinates(city);
-    logger.info({ message: 'Coordinates fetched for sun times', coords });
+async function getSunTimesForCity(city, date, lat, lng) {
+    logger.info({ message: 'getSunTimesForCity called', city, date, lat, lng });
+    
+    let coords;
+    if (lat && lng && lat !== 'null' && lng !== 'null') {
+        // We have coordinates from frontend! Skip OpenCage.
+        const { getTimezoneFromCoordinates } = require('../utils/panchangHelper');
+        coords = {
+            lat: parseFloat(lat),
+            lng: parseFloat(lng),
+            timeZone: getTimezoneFromCoordinates(parseFloat(lat), parseFloat(lng))
+        };
+        logger.info({ message: 'Using coordinates from request, skipping geocoding', coords });
+    } else {
+        // Only call OpenCage if we don't have coordinates at all
+        coords = await fetchCoordinates(city);
+    }
+
     if (coords) {
         const sunTimes = await fetchSunTimes(coords.lat, coords.lng, date, coords.timeZone);
-        return { sunTimes, coords };
+        
+        // Calculate weekday
+        const [y, m, d] = date.split('-').map(Number);
+        const dateObj = new Date(y, m - 1, d);
+        const weekday = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
+
+        // Clean up response: remove OpenCage rate limit info
+        const cleanCoords = {
+            lat: coords.lat,
+            lng: coords.lng,
+            timeZone: coords.timeZone
+        };
+
+        return { sunTimes, coords: cleanCoords, weekday };
     }
     return null;
 }
@@ -1600,8 +1666,9 @@ router.get('/currentdateByTimeZone/:timezone', (req, res) => {
 
 router.get('/getSunTimesForCity/:city/:date', async (req, res) => {
     const { city, date } = req.params;
-    logger.info({ message: 'Route /getSunTimesForCity called', city, date });
-    const sunTimes = await getSunTimesForCity(city, date);
+    const { lat, lng } = req.query;
+    logger.info({ message: 'Route /getSunTimesForCity called', city, date, lat, lng });
+    const sunTimes = await getSunTimesForCity(city, date, lat, lng);
     if (sunTimes) {
         res.json(sunTimes);
     } else {
@@ -1702,6 +1769,37 @@ router.post('/panchang', async (req, res) => {
     } catch (error) {
         logger.error({ message: 'POST /panchang error', error: error.message, stack: error.stack });
         res.status(500).json({ error: 'Failed to calculate Panchang data', details: error.message });
+    }
+});
+
+// GET: Sun and Moon times using Swiss Ephemeris
+router.get('/getSunMoonTimesSwiss/:city/:date', async (req, res) => {
+    const { city, date } = req.params;
+    logger.info({ message: 'Route /getSunMoonTimesSwiss called', city, date });
+    
+    try {
+        const coords = await fetchCoordinates(city);
+        if (!coords) {
+            return res.status(404).json({ error: 'City not found' });
+        }
+        
+        const { getSunMoonTimesSwiss } = require('../utils/swissHelper');
+        const results = await getSunMoonTimesSwiss(coords.lat, coords.lng, date, coords.timeZone);
+        
+        if (!results) {
+            return res.status(500).json({ error: 'Failed to calculate times using Swiss Ephemeris' });
+        }
+        
+        res.json({ 
+            success: true,
+            city,
+            date,
+            coords,
+            ...results 
+        });
+    } catch (error) {
+        logger.error({ message: 'Route /getSunMoonTimesSwiss error', error: error.message });
+        res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 });
 

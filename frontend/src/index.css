@@ -123,7 +123,7 @@
    Base Styles
    ======================================== */
 html {
-  font-size: 16px;
+  font-size: 22px; /* Increased base to make text larger on zoomed layout */
   scroll-behavior: smooth;
 }
 
@@ -133,31 +133,33 @@ body {
   font-size: var(--text-base);
   line-height: 1.6;
   color: var(--color-dark);
-  background: #fad7a0;
-  /* Requested complete background */
+  background: #f0f4f8;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
   min-height: 100vh;
 }
 
-/* Global Content Container - Unified White Box Layout */
+/* Global Content Container - Unified Layout */
 .app-container {
-  width: 92%;
+  width: 95%;
   max-width: 1400px;
-  margin: 3rem auto;
+  margin: 1rem auto;
   background: #ffffff;
-  padding: 3.5rem;
-  border-radius: 2.5rem;
-  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.05);
-  min-height: calc(100vh - 10rem);
+  padding: 1.5rem 2.5rem;
+  zoom: 0.67; /* Precisely match the 67% zoom aesthetic */
+  border-radius: 1.25rem;
+  /* More professional, less rounded */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  min-height: calc(100vh - 8rem);
   position: relative;
+  border: 1px solid #e2e8f0;
 }
 
 /* Floating Section style - cleaned up to remove 'box-in-box' look */
 .floating-section {
-  padding: var(--space-4) 0;
-  margin-bottom: var(--space-8);
+  padding: var(--space-2) 0;
+  margin-bottom: var(--space-4);
   width: 100%;
 }
 

@@ -91,7 +91,6 @@ const SadeSatiPage = () => {
             {/* Hero Section */}
             <div className="hero-section ss-hero">
                 <div className="hero-content">
-                    <div className="hero-icon">🪐</div>
                     <h1 className="hero-title">Sade Sati Timeline</h1>
                     <p className="hero-subtitle">
                         Analyze the 7.5-year transit periods of Saturn and their impact on your life
@@ -167,10 +166,7 @@ const SadeSatiPage = () => {
                                     Analyzing Transit...
                                 </>
                             ) : (
-                                <>
-                                    <span className="btn-icon">✨</span>
-                                    Calculate Sade Sati
-                                </>
+                                "Calculate Sade Sati"
                             )}
                         </button>
                     </form>
@@ -180,7 +176,6 @@ const SadeSatiPage = () => {
             <div className="results-section">
                 {error && (
                     <div className="error-box-hero">
-                        <span>⚠️</span>
                         {error}
                     </div>
                 )}
@@ -194,7 +189,7 @@ const SadeSatiPage = () => {
                 {/* Saved Profiles Quick Select */}
                 {savedProfiles.length > 0 && !sadeSatiData && !isLoading && (
                     <div className="floating-section">
-                        <Section title="Quick Load Profile" icon="👥">
+                        <Section title="Quick Load Profile">
                             <div className="profile-pills">
                                 {savedProfiles.slice(0, 5).map((p, i) => (
                                     <button
@@ -213,7 +208,7 @@ const SadeSatiPage = () => {
 
                 {sadeSatiData && (
                     <div className="sadesati-results">
-                        <Section title="Natal Moon Details" icon="🌙">
+                        <Section title="Natal Moon Details">
                             <div className="natal-moon-card">
                                 <div className="moon-sign">
                                     <span className="rashi-label">Natal Moon Sign:</span>
@@ -223,7 +218,7 @@ const SadeSatiPage = () => {
                             </div>
                         </Section>
 
-                        <Section title="Lifetime Transit Table" icon="📊">
+                        <Section title="Lifetime Transit Table">
                             <div className="table-wrapper">
                                 <table className="panchang-table ss-table">
                                     <thead>
@@ -280,7 +275,6 @@ const SadeSatiPage = () => {
                         </Section>
 
                         <div className="information">
-                            <span className="info-icon">ℹ️</span>
                             <div className="info-text">
                                 <p><strong>Sade Sati:</strong> A 7.5-year period when Saturn transits the 12th, 1st, and 2nd houses from your natal Moon.</p>
                                 <p><strong>Dhaiya:</strong> A 2.5-year period when Saturn transits the 4th or 8th house from your natal Moon.</p>
@@ -289,7 +283,7 @@ const SadeSatiPage = () => {
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 };
 

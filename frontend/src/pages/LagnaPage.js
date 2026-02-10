@@ -96,7 +96,6 @@ const LagnaPage = () => {
             {/* Hero Section */}
             <div className="hero-section">
                 <div className="hero-content">
-                    <div className="hero-icon">🌅</div>
                     <h1 className="hero-title">Lagna (Ascendant)</h1>
                     <p className="hero-subtitle">
                         Daily transitions of the rising zodiac sign at your location
@@ -162,10 +161,7 @@ const LagnaPage = () => {
                                     Calculating...
                                 </>
                             ) : (
-                                <>
-                                    <span className="btn-icon">✨</span>
-                                    Calculate Lagnas
-                                </>
+                                "Calculate Lagnas"
                             )}
                         </button>
                     </form>
@@ -175,7 +171,6 @@ const LagnaPage = () => {
             <div className="results-section">
                 {error && (
                     <div className="error-box-hero">
-                        <span>⚠️</span>
                         {error}
                     </div>
                 )}
@@ -189,7 +184,7 @@ const LagnaPage = () => {
                 {/* Saved Profiles Quick Select */}
                 {savedProfiles.length > 0 && !lagnaData && !isLoading && (
                     <div className="floating-section">
-                        <Section title="Quick Load Profile" icon="👥">
+                        <Section title="Quick Load Profile">
                             <div className="profile-pills">
                                 {savedProfiles.slice(0, 5).map((p, i) => (
                                     <button
@@ -208,7 +203,7 @@ const LagnaPage = () => {
 
                 {lagnaData && lagnaData.length > 0 && (
                     <div className="floating-section">
-                        <Section title="Daily Lagna Periods" icon="☸️">
+                        <Section title="Daily Lagna Periods">
                             <div className="table-wrapper">
                                 <table>
                                     <thead>
@@ -234,7 +229,6 @@ const LagnaPage = () => {
                             </div>
 
                             <div className="information">
-                                <span className="info-icon">ℹ️</span>
                                 <p className="info">Lagna (Ascendant) duration varies based on geographical latitude and the day of the year. Each sign typically rises for about 2 hours, but this is an approximation.</p>
                             </div>
                         </Section>

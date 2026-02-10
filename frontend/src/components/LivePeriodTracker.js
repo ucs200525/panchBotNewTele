@@ -135,7 +135,7 @@ const LivePeriodTracker = ({ data, selectedDate }) => {
     return (
       <div className="live-tracker-compact">
         <div className="tracker-minimal">
-          🕐 {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+          {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
           <span className="no-period">• No active period</span>
         </div>
       </div>
@@ -146,44 +146,50 @@ const LivePeriodTracker = ({ data, selectedDate }) => {
   const progress = getProgressPercentage();
   const nextPeriod = getNextPeriod();
 
+  // Determine tracker state color
+  let statusClass = 'status-normal';
+  if (currentPeriod.isColored) statusClass = 'status-ashubh';
+  if (currentPeriod.isWednesdayColored) statusClass = 'status-special';
+
   return (
-    <div className="live-tracker-compact">
-      {/* Minimal collapsed view */}
-      <div 
-        className="tracker-minimal" 
-        onClick={() => setIsExpanded(!isExpanded)}
-        style={{ cursor: 'pointer' }}
-      >
-        <div className="minimal-row">
-          <span className="time-badge">🕐 {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
-          <span className="period-badge">🔴 {currentPeriod.weekday}</span>
-          <span className="countdown-badge">
-            ⏱️ {remaining.hours > 0 ? `${remaining.hours}h ` : ''}{remaining.minutes}m
+    <div className={`live-tracker-premium ${statusClass}`}>
+      <div className="tracker-main-row">
+        <div className="tracker-left">
+          <div className="live-pulse"></div>
+          <span className="current-time">
+            {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
           </span>
-          <span className="expand-icon">{isExpanded ? '▼' : '▶'}</span>
         </div>
-        <div className="mini-progress">
-          <div className="mini-progress-fill" style={{ width: `${progress}%` }} />
+        
+        <div className="tracker-center">
+          <span className="period-title">{currentPeriod.weekday}</span>
+          <span className="time-remaining">
+            {remaining.totalMinutes}m left
+          </span>
+        </div>
+
+        <div className="tracker-right">
+          <i className="fas fa-chart-line expand-icon"></i>
         </div>
       </div>
 
-      {/* Expanded view */}
-      {isExpanded && (
-        <div className="tracker-expanded">
-          <div className="expanded-content">
-            <div className="info-row">
-              <span className="label">⏰ Period:</span>
-              <span className="value">{currentPeriod.startTime} - {currentPeriod.endTime}</span>
-            </div>
-            {nextPeriod && (
-              <div className="info-row">
-                <span className="label">⏭️ Next:</span>
-                <span className="value">{nextPeriod.weekday} at {nextPeriod.startTime}</span>
-              </div>
-            )}
-          </div>
+      <div className="tracker-progress-bar">
+        <div className="progress-fill" style={{ width: `${progress}%` }}></div>
+      </div>
+
+      <div className="tracker-details">
+        <div className="detail-item">
+          <span className="detail-label">Today's Period</span>
+          <span className="detail-value">{currentPeriod.startTime} - {currentPeriod.endTime}</span>
         </div>
-      )}
+        
+        {nextPeriod && (
+          <div className="detail-item">
+            <span className="detail-label">Coming Up Next</span>
+            <span className="detail-value">{nextPeriod.weekday} at {nextPeriod.startTime}</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

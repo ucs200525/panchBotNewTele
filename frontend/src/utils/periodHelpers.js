@@ -89,7 +89,9 @@ export const findCurrentPeriod = (data, currentTime) => {
         end: end1,
         startTime: row.start1,
         endTime: row.end1,
-        weekday: row.weekday
+        weekday: row.weekday,
+        isColored: row.isColored,
+        isWednesdayColored: row.isWednesdayColored
       };
     }
     
@@ -104,7 +106,9 @@ export const findCurrentPeriod = (data, currentTime) => {
         end: end2,
         startTime: row.start2,
         endTime: row.end2,
-        weekday: row.weekday
+        weekday: row.weekday,
+        isColored: row.isColored,
+        isWednesdayColored: row.isWednesdayColored
       };
     }
   }

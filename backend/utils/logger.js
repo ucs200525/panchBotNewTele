@@ -15,6 +15,8 @@ const transports = [
 ];
 
 // Add MongoDB transport if URI is available and MongoDB transport is loaded
+// MongoDB transport disabled as requested to avoid connection issues
+/*
 if (process.env.MONGO_URI && MongoDB) {
   try {
     const mongoTransport = new MongoDB({
@@ -56,6 +58,7 @@ if (process.env.MONGO_URI && MongoDB) {
     console.warn('⚠ MongoDB transport not available');
   }
 }
+*/
 
 const logger = winston.createLogger({
   level: 'info',

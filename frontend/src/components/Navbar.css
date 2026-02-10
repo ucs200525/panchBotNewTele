@@ -12,12 +12,13 @@
 }
 
 .navbar-container {
+    width: 100%; /* Match app container width */
     max-width: 1400px;
     margin: 0 auto;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.75rem 1.5rem;
+    padding: 0.4rem 1.5rem; /* Smoother padding */
     gap: 2rem;
 }
 
@@ -199,7 +200,8 @@
     }
 
     .desktop-menu {
-        display: none !important; /* Hide desktop menu on mobile/tablet */
+        display: none !important;
+        /* Hide desktop menu on mobile/tablet */
     }
 
     /* Hamburger Button */
@@ -223,7 +225,7 @@
     .hamburger-btn:hover {
         background: rgba(255, 255, 255, 0.1) !important;
     }
-    
+
     .navbar-brand {
         margin-right: auto;
     }
@@ -239,6 +241,7 @@
     .brand-title {
         font-size: 1.1rem;
     }
+
     .brand-subtitle {
         display: none;
     }
@@ -252,7 +255,7 @@
     width: 280px;
     height: 100vh;
     background: white;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
     z-index: 2000;
     transition: left 0.3s ease-in-out;
     display: flex;
@@ -299,7 +302,8 @@
     transition: background 0.2s;
 }
 
-.sidebar-link:hover, .sidebar-link.active {
+.sidebar-link:hover,
+.sidebar-link.active {
     background: #f0f7ff;
     color: var(--color-accent);
     border-left: 4px solid var(--color-accent);
@@ -328,7 +332,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0, 0, 0, 0.5);
     z-index: 1500;
     opacity: 0;
     visibility: hidden;

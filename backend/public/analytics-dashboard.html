@@ -324,6 +324,30 @@
                         ⚠️ Delete ALL Data
                     </button>
                 </div>
+                
+                <!-- Selective Cleanup -->
+                <details style="margin-top: 1rem;">
+                    <summary style="cursor: pointer; font-weight: 600; padding: 0.5rem; background: #e0e7ff; border-radius: 6px; color: #3730a3;">
+                        🎯 Selective Cleanup (Advanced)
+                    </summary>
+                    <div style="margin-top: 1rem; padding: 1rem; background: #f8fafc; border-radius: 8px;">
+                        <p style="color: #475569; margin-bottom: 0.75rem; font-size: 0.875rem;">Delete specific types of analytics:</p>
+                        <div class="cleanup-btns">
+                            <button class="cleanup-btn warning" onclick="cleanupSelective('admin')" style="font-size: 0.875rem;">
+                                🔒 Delete Admin Requests
+                            </button>
+                            <button class="cleanup-btn warning" onclick="cleanupSelective('favicon')" style="font-size: 0.875rem;">
+                                🖼️ Delete Favicon Requests
+                            </button>
+                            <button class="cleanup-btn warning" onclick="cleanupSelective('errors')" style="font-size: 0.875rem;">
+                                ❌ Delete Error Requests
+                            </button>
+                            <button class="cleanup-btn warning" onclick="cleanupSelective('static')" style="font-size: 0.875rem;">
+                                📄 Delete Static Files
+                            </button>
+                        </div>
+                    </div>
+                </details>
             </div>
             
             <!-- Overall Stats -->
@@ -458,6 +482,7 @@
                     <thead>
                         <tr>
                             <th>Session ID</th>
+                            <th>IP Address</th>
                             <th>Requests</th>
                             <th>Last Seen</th>
                             <th>Location</th>
@@ -658,6 +683,35 @@
             }
         }
         
+        async function cleanupSelective(type) {
+            const descriptions = {
+                'admin': 'all admin dashboard and analytics requests',
+                'favicon': 'all favicon.ico requests',
+                'errors': 'all failed/error requests',
+                'static': 'all static file requests (CSS, JS, images, etc.)'
+            };
+            
+            const description = descriptions[type] || type;
+            
+            if (!confirm(`Delete ${description}?\n\nThis will remove these analytics records permanently.`)) {
+                return;
+            }
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/analytics/cleanup/analytics/selective?type=${type}`, {
+                    method: 'DELETE',
+                    headers: { 'x-admin-secret': ADMIN_SECRET }
+                });
+                const data = await res.json();
+                
+                alert(`Success! Deleted ${data.deletedCount} ${description}`);
+                loadSpaceStats();
+                loadAllData();
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+        
         async function loadAllData() {
             await Promise.all([
                 loadOverallStats(),
@@ -789,10 +843,14 @@
                 tbody.innerHTML = '';
                 
                 data.forEach((item, idx) => {
+                    const ipSpan = item.ips && item.ips.length > 0 
+                        ? `<br><small style="color: #64748b; font-size: 0.75rem;">(IPs: ${item.ips.slice(0, 3).join(', ')}${item.ips.length > 3 ? '...' : ''})</small>` 
+                        : '';
+                        
                     tbody.innerHTML += `
                         <tr>
                             <td>${idx + 1}</td>
-                            <td>${item.city}</td>
+                            <td><strong>${item.city}</strong>${ipSpan}</td>
                             <td>${item.requestCount.toLocaleString()}</td>
                             <td>${item.uniqueUsers.toLocaleString()}</td>
                         </tr>
@@ -815,9 +873,13 @@
                 
                 if (data.byCountry && data.byCountry.length > 0) {
                     data.byCountry.forEach(item => {
+                        const ipSpan = item.ips && item.ips.length > 0 
+                            ? `<br><small style="color: #64748b; font-size: 0.75rem;">(IPs: ${item.ips.slice(0, 3).join(', ')}${item.ips.length > 3 ? '...' : ''})</small>` 
+                            : '';
+                            
                         tbody.innerHTML += `
                             <tr>
-                                <td>${item._id || 'Unknown'}</td>
+                                <td><strong>${item._id || 'Unknown'}</strong>${ipSpan}</td>
                                 <td>${item.count.toLocaleString()}</td>
                                 <td>${item.cities.length}</td>
                             </tr>
@@ -848,6 +910,7 @@
                     tbody.innerHTML += `
                         <tr>
                             <td>${item.sessionId.substring(0, 8)}...</td>
+                            <td><code style="font-size: 0.875rem; color: #0ea5e9;">${item.ipAddress || 'Unknown'}</code></td>
                             <td>${item.requestCount.toLocaleString()}</td>
                             <td>${lastSeen}</td>
                             <td>${location}</td>

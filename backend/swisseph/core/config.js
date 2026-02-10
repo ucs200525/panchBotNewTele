@@ -27,7 +27,86 @@ let swisseph;
 let engine = 'unknown';
 
 try {
-    swisseph = require('swisseph');
+    const rawSwisseph = require('swisseph');
+    swisseph = rawSwisseph;
+    
+    // Support for modern 'sweph' package (v2+) which removed 'swe_' prefix
+    // and moved constants to a 'constants' property
+    if (!swisseph.swe_set_ephe_path) {
+        // If constants are in a sub-property, move them to top-level
+        if (swisseph.constants) {
+            Object.assign(swisseph, swisseph.constants);
+        }
+        
+        // Helper to normalize function results
+        const wrapNative = (fnName, originalFn) => {
+            return (...args) => {
+                const result = originalFn(...args);
+                
+                // If it's the newer object-based result with a data property
+                if (result && result.data !== undefined) {
+                    if (fnName.includes('calc')) {
+                        // For calc/calc_ut: return object with named properties
+                        return {
+                            longitude: result.data[0],
+                            latitude: result.data[1],
+                            distance: result.data[2],
+                            longitudeSpeed: result.data[3],
+                            latitudeSpeed: result.data[4],
+                            distanceSpeed: result.data[5],
+                            error: result.error
+                        };
+                    } else if (fnName.includes('houses')) {
+                        // For houses: return object with houses and ascmc (points)
+                        return {
+                            houses: result.data.houses,
+                            ascmc: result.data.points,
+                            ascendant: result.data.points[0],
+                            error: result.error
+                        };
+                    } else if (fnName.includes('fixstar')) {
+                        return {
+                            name: result.name,
+                            longitude: result.data[0],
+                            latitude: result.data[1],
+                            distance: result.data[2],
+                            longitudeSpeed: result.data[3]
+                        };
+                    } else if (fnName.includes('rise_trans')) {
+                        return {
+                            transitTime: result.data,
+                            error: result.error,
+                            flag: result.flag
+                        };
+                    }
+                }
+                return result;
+            };
+        };
+
+        // Alias functions to have the 'swe_' prefix expected by the app
+        Object.keys(swisseph).forEach(key => {
+            if (typeof swisseph[key] === 'function' && !key.startsWith('swe_')) {
+                const wrapped = wrapNative(key, swisseph[key]);
+                swisseph['swe_' + key] = wrapped;
+                swisseph[key] = wrapped; // Also wrap the non-prefixed one for internal consistency
+            }
+        });
+        
+        // Ensure common legacy names are also present and wrapped
+        const ensureWrapped = (legacyName, nativeName) => {
+            if (swisseph[nativeName] && !swisseph[legacyName]) {
+                swisseph[legacyName] = swisseph['swe_' + nativeName] || wrapNative(nativeName, swisseph[nativeName]);
+            }
+        };
+
+        ensureWrapped('swe_set_ephe_path', 'set_ephe_path');
+        ensureWrapped('swe_calc_ut', 'calc_ut');
+        ensureWrapped('swe_julday', 'julday');
+        ensureWrapped('swe_revjul', 'revjul');
+        ensureWrapped('swe_houses', 'houses');
+    }
+
     engine = 'native';
     // Configure paths for native engine
     const ephePath = path.join(__dirname, '..', '..', 'data', 'ephe');
@@ -35,6 +114,7 @@ try {
     console.log('🚀 Using Native Swiss Ephemeris Engine (High Accuracy)');
 } catch (e) {
     console.warn('⚠️  Native Swiss Ephemeris failed, falling back to JS Mathematics Engine');
+    console.error('Error details:', e.message);
     engine = 'js';
     swisseph = {
         SEFLG_SWIEPH: 2,

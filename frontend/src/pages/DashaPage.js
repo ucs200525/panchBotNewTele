@@ -101,7 +101,6 @@ const DashaPage = () => {
             {/* Hero Section */}
             <div className="hero-section">
                 <div className="hero-content">
-                    <div className="hero-icon">⏳</div>
                     <h1 className="hero-title">Vimshottari Dasha</h1>
                     <p className="hero-subtitle">
                         Explore your life's timeline through the 120-year planetary period system
@@ -177,10 +176,7 @@ const DashaPage = () => {
                                     Calculating...
                                 </>
                             ) : (
-                                <>
-                                    <span className="btn-icon">✨</span>
-                                    View Timeline
-                                </>
+                                "View Timeline"
                             )}
                         </button>
                     </form>
@@ -190,7 +186,6 @@ const DashaPage = () => {
             <div className="results-section">
                 {error && (
                     <div className="error-box-hero">
-                        <span>⚠️</span>
                         {error}
                     </div>
                 )}
@@ -204,7 +199,7 @@ const DashaPage = () => {
                 {/* Saved Profiles Quick Select */}
                 {savedProfiles.length > 0 && !dashaData && !isLoading && (
                     <div className="floating-section">
-                        <Section title="Quick Load Profile" icon="👥">
+                        <Section title="Quick Load Profile">
                             <div className="profile-pills">
                                 {savedProfiles.slice(0, 5).map((p, i) => (
                                     <button
@@ -223,7 +218,7 @@ const DashaPage = () => {
 
                 {dashaData && dashaData.birthDetails && (
                     <div className="floating-section">
-                        <Section title="Birth Chart Details" icon="🌙">
+                        <Section title="Birth Chart Details">
                             <div className="data-grid" style={{gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1rem'}}>
                                 <div className="data-card">
                                     <div className="data-card-label">Birth Star (Nakshatra)</div>
@@ -261,7 +256,7 @@ const DashaPage = () => {
 
                 {dashaData && dashaData.mahadashas && (
                     <div className="floating-section">
-                        <Section title="Vimshottari Dasha Timeline" icon="🗓️">
+                        <Section title="Vimshottari Dasha Timeline">
                             <div className="table-wrapper">
                                 <table className="dasha-table-modern">
                                     <thead>
@@ -322,7 +317,6 @@ const DashaPage = () => {
                             </div>
 
                             <div className="information">
-                                <span className="info-icon">ℹ️</span>
                                 <p className="info">Vimshottari Dasha periods indicate the major planetary influences throughout your lifetime based on the Moon's position at birth. Click on any Mahadasha to see its sub-periods (Antardashas).</p>
                             </div>
                         </Section>

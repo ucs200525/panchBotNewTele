@@ -3,6 +3,18 @@ const router = express.Router();
 const { ApiAnalytics, DailySummary } = require('../models/Analytics');
 const Log = require('../models/Log');
 const { getOpenCageStats, getOpenCageHistory } = require('../utils/thirdPartyTracker');
+const mongoose = require('mongoose');
+
+// Helper to check DB connection and fail fast if not connected
+const checkDBConn = (req, res, next) => {
+    if (mongoose.connection.readyState !== 1) {
+        return res.status(503).json({ 
+            error: 'Service Unavailable', 
+            details: 'Database connection is still initializing or unavailable. Please try again in a few seconds.' 
+        });
+    }
+    next();
+};
 
 // Admin Authentication Middleware (same as adminRoutes.js)
 const authenticateAdmin = (req, res, next) => {
@@ -17,8 +29,9 @@ const authenticateAdmin = (req, res, next) => {
     }
 };
 
-// Protect ALL analytics routes with admin auth
+// Protect ALL analytics routes with admin auth and DB check
 router.use(authenticateAdmin);
+router.use(checkDBConn);
 
 // DELETE: Clear old analytics data (space management)
 router.delete('/cleanup/analytics', async (req, res) => {
@@ -95,6 +108,101 @@ router.delete('/cleanup/analytics/all', async (req, res) => {
             message: 'All analytics data deleted',
             analyticsDeleted: result.deletedCount,
             summariesDeleted: summaryResult.deletedCount
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// DELETE: Clear analytics by endpoint pattern (selective cleanup)
+router.delete('/cleanup/analytics/selective', async (req, res) => {
+    try {
+        const { type } = req.query;
+
+        let filter = {};
+        let description = '';
+
+        switch (type) {
+            case 'admin':
+                // Delete admin and analytics dashboard requests
+                filter = {
+                    $or: [
+                        { endpoint: { $regex: '^/admin' } },
+                        { endpoint: { $regex: '^/api/analytics' } },
+                        { endpoint: '/analytics-dashboard.html' }
+                    ]
+                };
+                description = 'admin and analytics requests';
+                break;
+
+            case 'favicon':
+                // Delete favicon requests
+                filter = { endpoint: '/favicon.ico' };
+                description = 'favicon requests';
+                break;
+
+            case 'errors':
+                // Delete failed requests only
+                filter = { success: false };
+                description = 'failed/error requests';
+                break;
+
+            case 'static':
+                // Delete static file requests
+                filter = {
+                    $or: [
+                        { endpoint: { $regex: '\\.(css|js|png|jpg|ico|svg)$' } },
+                        { endpoint: '/favicon.ico' }
+                    ]
+                };
+                description = 'static file requests';
+                break;
+
+            default:
+                return res.status(400).json({
+                    error: 'Invalid type parameter',
+                    validTypes: ['admin', 'favicon', 'errors', 'static'],
+                    examples: [
+                        '/api/analytics/cleanup/analytics/selective?type=admin',
+                        '/api/analytics/cleanup/analytics/selective?type=favicon',
+                        '/api/analytics/cleanup/analytics/selective?type=errors',
+                        '/api/analytics/cleanup/analytics/selective?type=static'
+                    ]
+                });
+        }
+
+        const result = await ApiAnalytics.deleteMany(filter);
+
+        res.json({
+            success: true,
+            message: `Deleted ${result.deletedCount} ${description}`,
+            deletedCount: result.deletedCount,
+            type
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// DELETE: Clear analytics by specific endpoint
+router.delete('/cleanup/analytics/endpoint', async (req, res) => {
+    try {
+        const { endpoint } = req.query;
+
+        if (!endpoint) {
+            return res.status(400).json({
+                error: 'Endpoint parameter required',
+                example: '/api/analytics/cleanup/analytics/endpoint?endpoint=/favicon.ico'
+            });
+        }
+
+        const result = await ApiAnalytics.deleteMany({ endpoint });
+
+        res.json({
+            success: true,
+            message: `Deleted ${result.deletedCount} requests for endpoint: ${endpoint}`,
+            deletedCount: result.deletedCount,
+            endpoint
         });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -410,7 +518,8 @@ router.get('/stats/popular-cities', async (req, res) => {
                 $group: {
                     _id: '$requestedCity',
                     count: { $sum: 1 },
-                    uniqueUsers: { $addToSet: '$sessionId' }
+                    uniqueUsers: { $addToSet: '$sessionId' },
+                    ips: { $addToSet: '$ipAddress' }
                 }
             },
             {
@@ -418,6 +527,7 @@ router.get('/stats/popular-cities', async (req, res) => {
                     city: '$_id',
                     requestCount: '$count',
                     uniqueUsers: { $size: '$uniqueUsers' },
+                    ips: 1,
                     _id: 0
                 }
             },
@@ -443,7 +553,8 @@ router.get('/stats/user-geography', async (req, res) => {
                         city: '$userLocation.city'
                     },
                     count: { $sum: 1 },
-                    uniqueUsers: { $addToSet: '$sessionId' }
+                    uniqueUsers: { $addToSet: '$sessionId' },
+                    ips: { $addToSet: '$ipAddress' }
                 }
             },
             {
@@ -452,6 +563,7 @@ router.get('/stats/user-geography', async (req, res) => {
                     city: '$_id.city',
                     requests: '$count',
                     users: { $size: '$uniqueUsers' },
+                    ips: 1,
                     _id: 0
                 }
             },
@@ -466,7 +578,8 @@ router.get('/stats/user-geography', async (req, res) => {
                 $group: {
                     _id: '$userLocation.country',
                     count: { $sum: 1 },
-                    cities: { $addToSet: '$userLocation.city' }
+                    cities: { $addToSet: '$userLocation.city' },
+                    ips: { $addToSet: '$ipAddress' }
                 }
             },
             { $sort: { count: -1 } },
@@ -534,7 +647,8 @@ router.get('/stats/per-user', async (req, res) => {
                         requestCount: { $sum: 1 },
                         lastSeen: { $max: '$timestamp' },
                         endpoints: { $addToSet: '$endpoint' },
-                        location: { $last: '$userLocation' }
+                        location: { $last: '$userLocation' },
+                        ipAddress: { $last: '$ipAddress' }
                     }
                 },
                 { $sort: { requestCount: -1 } },
@@ -546,6 +660,7 @@ router.get('/stats/per-user', async (req, res) => {
                         lastSeen: 1,
                         endpointCount: { $size: '$endpoints' },
                         location: 1,
+                        ipAddress: 1,
                         _id: 0
                     }
                 }
@@ -664,7 +779,7 @@ router.get('/stats/performance', async (req, res) => {
 router.get('/stats/third-party', async (req, res) => {
     try {
         const openCageStats = await getOpenCageStats();
-        
+
         res.json({
             openCage: {
                 service: 'OpenCage Geocoding API',
@@ -690,7 +805,7 @@ router.get('/stats/third-party/opencage/history', async (req, res) => {
     try {
         const days = parseInt(req.query.days) || 7;
         const history = await getOpenCageHistory(days);
-        
+
         res.json({
             days,
             history

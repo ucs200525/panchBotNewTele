@@ -71,8 +71,7 @@ const dailySummarySchema = new mongoose.Schema({
     date: {
         type: Date,
         required: true,
-        unique: true,
-        index: true
+        unique: true
     },
 
     // Overall Stats

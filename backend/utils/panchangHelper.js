@@ -835,7 +835,7 @@ function calculateVarjyam(dateObj, sunriseStr, sunsetStr, tithiNumber) {
     try {
         // Varjyam is inauspicious period based on Tithi number
         // Each Tithi has specific Varjyam duration in ghatis (1 ghati = 24 minutes)
-        
+
         // Varjyam durations in ghatis for each Tithi (1-30)
         const varjyamGhatis = {
             1: 3,   // Pratipada - 3 ghatis
@@ -871,7 +871,7 @@ function calculateVarjyam(dateObj, sunriseStr, sunsetStr, tithiNumber) {
         };
 
         const varjyamDurationGhatis = varjyamGhatis[tithiNumber] || 2;
-        
+
         if (varjyamDurationGhatis === 0) {
             return null; // No Varjyam for Purnima/Amavasya
         }
@@ -891,11 +891,11 @@ function calculateVarjyam(dateObj, sunriseStr, sunsetStr, tithiNumber) {
 
         // Varjyam timing varies by Tithi - calculated from noon
         const noonTime = new Date(sunriseDate.getTime() + (dayDuration * 1000) / 2);
-        
+
         // Calculate Varjyam start - typically in afternoon
         const varjyamStartOffset = oneGhati * 30 * 1000; // Around midday
         const varjyamStart = new Date(noonTime.getTime() - varjyamStartOffset / 2);
-        
+
         // Calculate Varjyam end
         const varjyamDuration = varjyamDurationGhatis * oneGhati * 1000;
         const varjyamEnd = new Date(varjyamStart.getTime() + varjyamDuration);
@@ -944,5 +944,5 @@ function getVaraLord(vara) {
     return varaLords[vara] || { lord: 'Unknown', planet: 'N/A', color: 'N/A', gemstone: 'N/A' };
 }
 
-module.exports = { calculatePanchangData };
+module.exports = { calculatePanchangData, getTimezoneFromCoordinates };
 

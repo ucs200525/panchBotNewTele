@@ -24,6 +24,17 @@ const TimeConverterApp = () => {
   const [sunriseToday, setSunriseToday] = useState(() => sessionStorage.getItem('sunriseToday') || '05:00:00');
   const [sunsetToday, setSunsetToday] = useState(() => sessionStorage.getItem('sunsetToday') || '18:00:00');
   const [sunriseTmrw, setSunriseTmrw] = useState(() => sessionStorage.getItem('sunriseTmrw') || '06:00:00');
+  const [moonrise, setMoonrise] = useState(() => sessionStorage.getItem('moonrise') || '');
+  const [moonset, setMoonset] = useState(() => sessionStorage.getItem('moonset') || '');
+
+  const [selectedLat, setSelectedLat] = useState(() => {
+    const saved = sessionStorage.getItem('selectedLat');
+    return (saved === 'null' || !saved) ? null : saved;
+  });
+  const [selectedLng, setSelectedLng] = useState(() => {
+    const saved = sessionStorage.getItem('selectedLng');
+    return (saved === 'null' || !saved) ? null : saved;
+  });
 
   const [weekday, setWeekday] = useState(() => sessionStorage.getItem('weekday') || '');
   const [is12HourFormat, setIs12HourFormat] = useState(true);
@@ -38,34 +49,43 @@ const TimeConverterApp = () => {
     sessionStorage.setItem('sunriseToday', sunriseToday);
     sessionStorage.setItem('sunsetToday', sunsetToday);
     sessionStorage.setItem('sunriseTmrw', sunriseTmrw);
+    sessionStorage.setItem('moonrise', moonrise);
+    sessionStorage.setItem('moonset', moonset);
+    sessionStorage.setItem('selectedLat', selectedLat);
+    sessionStorage.setItem('selectedLng', selectedLng);
     sessionStorage.setItem('weekday', weekday);
-  }, [data, sunriseToday, sunsetToday, sunriseTmrw, weekday]);
+  }, [data, sunriseToday, sunsetToday, sunriseTmrw, moonrise, moonset, selectedLat, selectedLng, weekday]);
 
   const Getpanchangam = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/getSunTimesForCity/${cityName}/${currentDate}`);
-      const response1 = await fetch(`${process.env.REACT_APP_API_URL}/api/getWeekday/${currentDate}`);
+      let url = `${process.env.REACT_APP_API_URL}/api/getSunTimesForCity/${cityName}/${currentDate}`;
+      if (selectedLat && selectedLng) {
+        url += `?lat=${selectedLat}&lng=${selectedLng}`;
+      }
+      const response = await fetch(url);
 
-      if (!response.ok || !response1.ok) {
+      if (!response.ok) {
         throw new Error('Failed to fetch Panchangam data');
       }
 
-      const sunTimes = await response.json();
-      const week = await response1.json();
+      const result = await response.json();
+      const sunData = result.sunTimes;
 
-      setWeekday(week.weekday);
-      setSunriseToday(sunTimes.sunTimes.sunriseToday);
-      setSunsetToday(sunTimes.sunTimes.sunsetToday);
-      setSunriseTmrw(sunTimes.sunTimes.sunriseTmrw);
+      setWeekday(result.weekday);
+      setSunriseToday(sunData.sunriseToday);
+      setSunsetToday(sunData.sunsetToday);
+      setSunriseTmrw(sunData.sunriseTmrw);
+      setMoonrise(sunData.moonriseToday || 'N/A');
+      setMoonset(sunData.moonsetToday || 'N/A');
 
       // Fetch table data
       await fetchTableData(
-        sunTimes.sunTimes.sunriseToday,
-        sunTimes.sunTimes.sunsetToday,
-        sunTimes.sunTimes.sunriseTmrw,
-        week.weekday
+        sunData.sunriseToday,
+        sunData.sunsetToday,
+        sunData.sunriseTmrw,
+        result.weekday
       );
 
       setHasData(true);
@@ -99,8 +119,12 @@ const TimeConverterApp = () => {
 
   const handleCitySelect = (city) => {
     setCityName(city.name);
+    setSelectedLat(city.lat);
+    setSelectedLng(city.lng);
     // Save to localStorage for persistence
     localStorage.setItem('selectedCity', city.name);
+    localStorage.setItem('selectedLat', city.lat);
+    localStorage.setItem('selectedLng', city.lng);
   };
 
   const handleGetPanchang = async (e) => {
@@ -126,13 +150,11 @@ const TimeConverterApp = () => {
       {/* Hero Section */}
       <div className="hero-section">
         <div className="hero-content">
-          <div className="hero-icon">🌞</div>
-          <h1 className="hero-title">Bhargava Panchang</h1>
+          <h1 className="hero-title">Panchaka Rahu Muhurtham</h1>
           <p className="hero-subtitle">
             Ancient Vedic wisdom for modern living. Find your auspicious moments based on 24-minute precise periods.
           </p>
 
-          {!hasData && (
             <div className="hero-form-wrapper">
               <form className="hero-form" onSubmit={handleGetPanchang}>
                 <div className="form-group-inline">
@@ -148,7 +170,7 @@ const TimeConverterApp = () => {
                   </div>
 
                   <div className="input-wrapper" style={{ flex: 1 }}>
-                    <label className="input-label">Select Date</label>
+                    <label className="input-label">Date</label>
                     <input
                       type="date"
                       className="date-input-hero"
@@ -160,16 +182,14 @@ const TimeConverterApp = () => {
                 </div>
 
                 <button type="submit" className="get-panchang-btn-hero" disabled={!cityName}>
-                  <span className="btn-icon">✨</span>
                   Calculate Timings
                 </button>
               </form>
             </div>
-          )}
 
           {error && (
             <div className="error-box-hero">
-              <span>⚠️</span> {error}
+              {error}
             </div>
           )}
         </div>
@@ -181,37 +201,30 @@ const TimeConverterApp = () => {
       {hasData && data.length > 0 && (
         <div className="results-section">
           <div className="floating-section">
-            <div className="info-cards">
-              <div className="info-card">
-                <div className="card-icon">📍</div>
-                <div className="card-content">
-                  <div className="card-label">Location</div>
-                  <div className="card-value">{cityName}</div>
-                </div>
+            <div className="summary-bar">
+              <div className="summary-item">
+                <span className="summary-label">Location</span>
+                <span className="summary-value">{cityName}</span>
               </div>
-
-              <div className="info-card">
-                <div className="card-icon">📅</div>
-                <div className="card-content">
-                  <div className="card-label">Selected Date</div>
-                  <div className="card-value">{currentDate}</div>
-                </div>
+              <div className="summary-divider"></div>
+              <div className="summary-item">
+                <span className="summary-label">Selected Date</span>
+                <span className="summary-value">{currentDate}</span>
               </div>
-
-              <div className="info-card">
-                <div className="card-icon">🎭</div>
-                <div className="card-content">
-                  <div className="card-label">Weekday</div>
-                  <div className="card-value">{weekday}</div>
-                </div>
+              <div className="summary-divider"></div>
+              <div className="summary-item">
+                <span className="summary-label">Weekday</span>
+                <span className="summary-value">{weekday}</span>
               </div>
-
-              <div className="info-card">
-                <div className="card-icon">🌅</div>
-                <div className="card-content">
-                  <div className="card-label">Sunrise & Sunset</div>
-                  <div className="card-value">{sunriseToday} - {sunsetToday}</div>
-                </div>
+              <div className="summary-divider"></div>
+              <div className="summary-item">
+                <span className="summary-label">Sunrise & Sunset</span>
+                <span className="summary-value">{sunriseToday} - {sunsetToday}</span>
+              </div>
+              <div className="summary-divider"></div>
+              <div className="summary-item">
+                <span className="summary-label">Moonrise & Moonset</span>
+                <span className="summary-value">{moonrise} - {moonset}</span>
               </div>
             </div>
           </div>
@@ -219,50 +232,9 @@ const TimeConverterApp = () => {
           {/* Live Period Tracker */}
           <LivePeriodTracker data={data} selectedDate={currentDate} />
 
-          {/* Control Buttons */}
-          <div className="controls-section">
-            <button
-              className="control-btn"
-              onClick={() => setIs12HourFormat(!is12HourFormat)}
-            >
-              <i className={`fas fa-clock`}></i>
-              {is12HourFormat ? "Use 24h Format" : "Use 12h Format"}
-            </button>
-            <button
-              className={`control-btn ${showNonBlue ? 'active' : ''}`}
-              onClick={toggleShowNonBlue}
-            >
-              <i className="fas fa-filter"></i>
-              {showNonBlue ? "Show All Rows" : "Show Best Timings"}
-            </button>
-            <button
-              className="control-btn secondary"
-              onClick={() => {
-                setHasData(false);
-                setData([]);
-                setCityName('');
-                localStorage.removeItem('selectedCity');
-              }}
-            >
-              <i className="fas fa-sync-alt"></i>
-              New Search
-            </button>
-          </div>
-
-          <div className="floating-section">
-            <div className="info-note">
-              <span className="info-icon">💡</span>
-              <div className="info-text-wrapper">
-                <strong>Inauspicious Timing:</strong>
-                <span> Cells with a dark blue background (</span>
-                <span className="color-box"></span>
-                <span>) are considered <strong>ashubh</strong>. Avoid starting new ventures during these periods.</span>
-              </div>
-            </div>
-
-            {/* Table Section */}
-            <div id="tableToCapture">
-              <div className="table-wrapper">
+          {/* Table Section */}
+          <div id="tableToCapture">
+            <div className="table-wrapper">
                 <table className="panchang-table">
                   <thead>
                     <tr>
@@ -308,7 +280,6 @@ const TimeConverterApp = () => {
               </div>
             </div>
           </div>
-        </div>
       )}
     </div>
   );

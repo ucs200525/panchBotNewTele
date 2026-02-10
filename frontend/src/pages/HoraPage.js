@@ -95,7 +95,6 @@ const HoraPage = () => {
             {/* Hero Section */}
             <div className="hero-section">
                 <div className="hero-content">
-                    <div className="hero-icon">⌛</div>
                     <h1 className="hero-title">Hora (Planetary Hours)</h1>
                     <p className="hero-subtitle">
                         Analyze the 24 planetary hours of the day to find the most auspicious timings
@@ -161,10 +160,7 @@ const HoraPage = () => {
                                     Calculating...
                                 </>
                             ) : (
-                                <>
-                                    <span className="btn-icon">✨</span>
-                                    Get Planetary Hours
-                                </>
+                                "Get Planetary Hours"
                             )}
                         </button>
                     </form>
@@ -174,7 +170,6 @@ const HoraPage = () => {
             <div className="results-section">
                 {error && (
                     <div className="error-box-hero">
-                        <span>⚠️</span>
                         {error}
                     </div>
                 )}
@@ -188,7 +183,7 @@ const HoraPage = () => {
                 {/* Saved Profiles Quick Select */}
                 {savedProfiles.length > 0 && !horaData && !isLoading && (
                     <div className="floating-section">
-                        <Section title="Quick Load Profile" icon="👥">
+                        <Section title="Quick Load Profile">
                             <div className="profile-pills">
                                 {savedProfiles.slice(0, 5).map((p, i) => (
                                     <button
@@ -208,7 +203,7 @@ const HoraPage = () => {
                 {horaData && (
                     <div className="hora-results">
                         <div className="floating-section">
-                            <Section title="Day Horas" icon="☀️">
+                            <Section title="Day Horas">
                                 <div className="table-wrapper">
                                     <table>
                                         <thead>
@@ -233,7 +228,7 @@ const HoraPage = () => {
                         </div>
 
                         <div className="floating-section">
-                            <Section title="Night Horas" icon="🌙">
+                            <Section title="Night Horas">
                                 <div className="table-wrapper">
                                     <table>
                                         <thead>
@@ -259,7 +254,6 @@ const HoraPage = () => {
 
                         <div className="floating-section">
                             <div className="information">
-                                <span className="info-icon">ℹ️</span>
                                 <p className="info">Each hora is approximately 1 hour long and is ruled by a specific planet. Choose activities that align with the ruling planet's nature.</p>
                             </div>
                         </div>

@@ -82,7 +82,6 @@ const CombinePage = () => {
       {/* Hero Section */}
       <div className="hero-section">
         <div className="hero-content">
-          <div className="hero-icon">🖇️</div>
           <h1 className="hero-title">Combined Insights</h1>
           <p className="hero-subtitle">
             Unified view of Muhurat timings and Bhargava Panchang calculations
@@ -139,7 +138,6 @@ const CombinePage = () => {
                 </>
               ) : (
                 <>
-                  <span className="btn-icon">✨</span>
                   Generate Combined View
                 </>
               )}
@@ -151,7 +149,6 @@ const CombinePage = () => {
       <div className="results-section">
         {error && (
           <div className="error-box-hero">
-            <span>⚠️</span>
             {error}
           </div>
         )}
@@ -214,7 +211,6 @@ const CombinePage = () => {
               </div>
 
               <div className="information">
-                <span className="info-icon">ℹ️</span>
                 <p className="info">This combined view merges drik-panchang muhurats with Bhargava astrological calculations for a more complete picture of the day's quality.</p>
               </div>
             </div>

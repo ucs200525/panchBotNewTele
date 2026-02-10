@@ -25,13 +25,12 @@ const Navbar = () => {
           onClick={() => setOpenDropdown(openDropdown === 'mobile-menu' ? null : 'mobile-menu')}
           aria-label="Toggle Menu"
         >
-          <span className="hamburger-icon">☰</span>
+          Menu
         </button>
 
         {/* Logo/Brand */}
         <div className="navbar-brand">
           <Link to="/" className="brand-link" onClick={closeDropdowns}>
-            <span className="brand-icon">🕉️</span>
             <div className="brand-text">
               <span className="brand-title">Bhargava Panchang</span>
               <span className="brand-subtitle">Vedic Astrology</span>
@@ -46,7 +45,6 @@ const Navbar = () => {
             className={`nav-link ${isActive('/') ? 'active' : ''}`}
             onClick={closeDropdowns}
           >
-            <span className="nav-icon">🏠</span>
             <span className="nav-text">Home</span>
           </Link>
 
@@ -55,7 +53,6 @@ const Navbar = () => {
             className={`nav-link ${isActive('/panchaka') ? 'active' : ''}`}
             onClick={closeDropdowns}
           >
-            <span className="nav-icon">⏰</span>
             <span className="nav-text">Bhargava</span>
           </Link>
 
@@ -66,7 +63,6 @@ const Navbar = () => {
                 }`}
               onClick={() => toggleDropdown('panchang')}
             >
-              <span className="nav-icon">📅</span>
               <span className="nav-text">Panchang</span>
               <span className={`dropdown-arrow ${openDropdown === 'panchang' ? 'open' : ''}`}>▼</span>
             </button>
@@ -77,21 +73,21 @@ const Navbar = () => {
                   className="dropdown-item"
                   onClick={closeDropdowns}
                 >
-                  📅 Daily Panchang
+                  Daily Panchang
                 </Link>
                 <Link
                   to="/lagna"
                   className="dropdown-item"
                   onClick={closeDropdowns}
                 >
-                  🌅 Lagna Times
+                  Lagna Times
                 </Link>
                 <Link
                   to="/hora"
                   className="dropdown-item"
                   onClick={closeDropdowns}
                 >
-                  ⌛ Hora
+                  Hora
                 </Link>
               </div>
             )}
@@ -104,7 +100,6 @@ const Navbar = () => {
                 }`}
               onClick={() => toggleDropdown('charts')}
             >
-              <span className="nav-icon">📊</span>
               <span className="nav-text">Charts</span>
               <span className={`dropdown-arrow ${openDropdown === 'charts' ? 'open' : ''}`}>▼</span>
             </button>
@@ -115,28 +110,28 @@ const Navbar = () => {
                   className="dropdown-item"
                   onClick={closeDropdowns}
                 >
-                  📊 Birth Charts
+                  Birth Charts
                 </Link>
                 <Link
                   to="/dasha"
                   className="dropdown-item"
                   onClick={closeDropdowns}
                 >
-                  ⏳ Vimshottari Dasha
+                  Vimshottari Dasha
                 </Link>
                 <Link
                   to="/planetary"
                   className="dropdown-item"
                   onClick={closeDropdowns}
                 >
-                  🪐 Planetary Positions
+                  Planetary Positions
                 </Link>
                 <Link
                   to="/sadesati"
                   className="dropdown-item"
                   onClick={closeDropdowns}
                 >
-                  🪐 Sade Sati
+                  Sade Sati
                 </Link>
               </div>
             )}
@@ -147,7 +142,6 @@ const Navbar = () => {
             className={`nav-link ${isActive('/good-timings') ? 'active' : ''}`}
             onClick={closeDropdowns}
           >
-            <span className="nav-icon">⭐</span>
             <span className="nav-text">Good Timings</span>
           </Link>
 
@@ -156,7 +150,6 @@ const Navbar = () => {
             className={`nav-link ${isActive('/combine') ? 'active' : ''}`}
             onClick={closeDropdowns}
           >
-            <span className="nav-icon">🔮</span>
             <span className="nav-text">Combine</span>
           </Link>
         </div>
@@ -171,26 +164,26 @@ const Navbar = () => {
            
            <div className="sidebar-links">
               <Link to="/" className={`sidebar-link ${isActive('/') ? 'active' : ''}`} onClick={closeDropdowns}>
-                 <span className="nav-icon">🏠</span> Home
+                 Home
               </Link>
               <Link to="/panchaka" className={`sidebar-link ${isActive('/panchaka') ? 'active' : ''}`} onClick={closeDropdowns}>
-                 <span className="nav-icon">⏰</span> Bhargava
+                 Bhargava
               </Link>
               
               <div className="sidebar-divider">Panchang</div>
-              <Link to="/panchang" className="sidebar-link" onClick={closeDropdowns}>📅 Daily Panchang</Link>
-              <Link to="/lagna" className="sidebar-link" onClick={closeDropdowns}>🌅 Lagna Times</Link>
-              <Link to="/hora" className="sidebar-link" onClick={closeDropdowns}>⌛ Hora</Link>
+              <Link to="/panchang" className="sidebar-link" onClick={closeDropdowns}>Daily Panchang</Link>
+              <Link to="/lagna" className="sidebar-link" onClick={closeDropdowns}>Lagna Times</Link>
+              <Link to="/hora" className="sidebar-link" onClick={closeDropdowns}>Hora</Link>
 
               <div className="sidebar-divider">Charts & Astrology</div>
-              <Link to="/charts" className="sidebar-link" onClick={closeDropdowns}>📊 Birth Charts</Link>
-              <Link to="/dasha" className="sidebar-link" onClick={closeDropdowns}>⏳ Vimshottari Dasha</Link>
-              <Link to="/planetary" className="sidebar-link" onClick={closeDropdowns}>🪐 Planetary Positions</Link>
-              <Link to="/sadesati" className="sidebar-link" onClick={closeDropdowns}>🪐 Sade Sati</Link>
+              <Link to="/charts" className="sidebar-link" onClick={closeDropdowns}>Birth Charts</Link>
+              <Link to="/dasha" className="sidebar-link" onClick={closeDropdowns}>Vimshottari Dasha</Link>
+              <Link to="/planetary" className="sidebar-link" onClick={closeDropdowns}>Planetary Positions</Link>
+              <Link to="/sadesati" className="sidebar-link" onClick={closeDropdowns}>Sade Sati</Link>
 
               <div className="sidebar-divider">Tools</div>
               <Link to="/good-timings" className={`sidebar-link ${isActive('/good-timings') ? 'active' : ''}`} onClick={closeDropdowns}>
-                 <span className="nav-icon">⭐</span> Good Timings
+                 Good Timings
               </Link>
               <Link to="/combine" className={`sidebar-link ${isActive('/combine') ? 'active' : ''}`} onClick={closeDropdowns}>
                  Combine
