@@ -1489,44 +1489,68 @@ router.get('/', (req, res) => {
 
 // Function to fetch Muhurat data for a given city and date
 // Function to fetch Muhurat data for a given city and date
-const fetchmuhurat = async (city, date) => {
-    logger.info({ message: 'fetchmuhurat called', city, date });
+// Original scraper function (Old Tool)
+const fetchmuhurat_old = async (city, date) => {
+    logger.info({ message: 'fetchmuhurat_old (Scraper) called', city, date });
     try {
-        // Get the GeoName ID for the provided city
         const geoNameId = await getGeoNameId(city);
-
-        // Format the URL to include the date and GeoName ID
         const url = `https://www.drikpanchang.com/muhurat/panchaka-rahita-muhurat.html?geoname-id=${geoNameId}&date=${date}`;
-
-        // Fetch the HTML content from the website
         const response = await axios.get(url);
-
-        // Load the HTML content using cheerio
         const $ = cheerio.load(response.data);
-
-        // Extract the required data from the table
         const muhuratData = [];
-
-        // Loop through all the rows that contain the Muhurat information
         $('.dpMuhurtaRow').each((i, element) => {
             const muhurtaName = $(element).find('.dpMuhurtaName').text().trim();
             const muhurtaTime = $(element).find('.dpMuhurtaTime').text().trim();
-
-            const [name, category] = muhurtaName.split(' - ');  // Split name and category
-
+            const [name, category] = muhurtaName.split(' - ');
             muhuratData.push({
                 muhurat: name,
                 category: category || '',
                 time: muhurtaTime
             });
         });
+        logger.info({ message: 'fetchmuhurat_old completed', count: muhuratData.length });
+        return muhuratData;
+    } catch (error) {
+        logger.error({ message: "Error in old fetchmuhurat scraper", error: error.message, city, date });
+        throw new Error('Error fetching data from external source');
+    }
+};
 
-        logger.info({ message: 'fetchmuhurat completed', count: muhuratData.length });
-        return muhuratData; // Return the muhurat data
+const fetchmuhurat = async (city, date) => {
+    logger.info({ message: 'fetchmuhurat (Swiss) called', city, date });
+    try {
+        // Convert DD/MM/YYYY to YYYY-MM-DD for consistency
+        const [day, month, year] = date.split('/');
+        const isoDate = `${year}-${month}-${day}`;
+        
+        // 1. Get coordinates
+        const coords = await fetchCoordinates(city);
+        if (!coords) throw new Error('City not found');
+
+        // 2. Get sun times (we need sunrise today and tomorrow for the Vedic day)
+        const sunTimesData = await fetchSunTimes(coords.lat, coords.lng, isoDate, coords.timeZone);
+        if (!sunTimesData) throw new Error('Could not calculate sun times');
+
+        // 3. Use Swiss calculation from our helper
+        const { calculateSwissPanchakaRahita } = require('../utils/panchangHelper');
+        const dateObj = new Date(year, month - 1, day, 12, 0, 0);
+
+        const muhuratData = await calculateSwissPanchakaRahita(
+            dateObj,
+            coords.lat,
+            coords.lng,
+            coords.timeZone,
+            sunTimesData.sunriseToday,
+            sunTimesData.sunsetToday,
+            sunTimesData.sunriseTmrw
+        );
+
+        logger.info({ message: 'fetchmuhurat Swiss completed', count: muhuratData.length });
+        return muhuratData;
 
     } catch (error) {
-        logger.error({ message: "Error fetching Muhurat data", error: error.message, city, date });
-        throw new Error('Error fetching data');
+        logger.error({ message: "Error in Swiss fetchmuhurat", error: error.message, city, date });
+        throw new Error('Error calculating muhurat data');
     }
 };
 
@@ -1551,6 +1575,20 @@ router.post('/fetch_muhurat', async (req, res) => {
         res.status(500).send('Error fetching data');
     }
 });
+
+// Old Scraper Route
+router.post('/fetch_muhurat_old', async (req, res) => {
+    const { city, date } = req.body;
+    logger.info({ message: 'Route /fetch_muhurat_old called', city, date });
+    try {
+        const muhuratData = await fetchmuhurat_old(city, date);
+        res.json(muhuratData);
+    } catch (error) {
+        logger.error({ message: "Error in /fetch_muhurat_old route", error: error.message });
+        res.status(500).send('Error fetching old data');
+    }
+});
+
 
 
 router.post('/fetch_muhurat_table', async (req, res) => {
@@ -1707,6 +1745,8 @@ router.get('/getPanchangData', async (req, res) => {
             coords.lng,
             sunTimesData.sunriseToday,
             sunTimesData.sunsetToday,
+            sunTimesData.moonriseToday,
+            sunTimesData.moonsetToday,
             true  // includeTransitions - Enable Swiss Ephemeris calculations!
         );
 

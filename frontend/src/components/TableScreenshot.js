@@ -59,7 +59,7 @@ const TableScreenshot = ({ tableId, city }) => {
             const branding = clonedDoc.createElement('div');
             branding.innerHTML = `
               <div style="background: #1e293b; color: white; padding: 16px 25px; display: flex; justify-content: space-between; align-items: center; border-radius: 12px 12px 0 0; font-family: sans-serif; margin-bottom: 2px;">
-                <span style="font-size: 18px; font-weight: 800; letter-spacing: 2px; font-family: inherit;">PANCHAKA RAHU MUHURTHAM</span>
+                <span style="font-size: 18px; font-weight: 800; letter-spacing: 2px; font-family: inherit;">Bhargava Panchangam</span>
                 <div style="display: flex; align-items: center; gap: 12px;">
                   <span style="font-size: 13px; font-weight: 700; background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 4px;">${city || 'Location'}</span>
                   <div style="width: 1px; height: 16px; background: rgba(255,255,255,0.3);"></div>

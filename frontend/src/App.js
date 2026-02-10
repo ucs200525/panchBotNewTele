@@ -4,6 +4,7 @@ import './pages/PanchakaMuhurth.css';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import BharagavaPanchagam from './pages/BharagavaPanchagam';
 import PanchakaMuhurth from './pages/PanchakaMuhurth';
+import SwissPanchaka from './pages/SwissPanchaka';
 import Combine from './pages/Combine';
 import Navbar from './components/Navbar';
 import PlanetaryPage from './pages/PlanetaryPage';
@@ -14,6 +15,7 @@ import LagnaPage from './pages/LagnaPage';
 import HoraPage from './pages/HoraPage';
 import SadeSatiPage from './pages/SadeSatiPage';
 import DailyPanchang from './pages/DailyPanchang';
+import SwissPanchang from './pages/SwissPanchang';
 import GoodTimingsPage from './pages/GoodTimingsPage';
 
 function App() {
@@ -24,7 +26,9 @@ function App() {
         <Routes>
           <Route path="/" element={<BharagavaPanchagam />} />
           <Route path="/panchaka" element={<PanchakaMuhurth />} />
+          <Route path="/panchaka-swiss" element={<SwissPanchaka />} />
           <Route path="/panchang" element={<DailyPanchang />} />
+          <Route path="/panchang-swiss" element={<SwissPanchang />} />
           <Route path="/good-timings" element={<GoodTimingsPage />} />
           <Route path="/planetary" element={<PlanetaryPage />} />
           <Route path="/charts" element={<ChartsPage />} />

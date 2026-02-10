@@ -1,30 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Section } from '../components/layout';
 import { CityAutocomplete } from '../components/forms';
 import { useAuth } from '../context/AuthContext';
-import { saveProfile, getProfile, getAllProfiles } from '../utils/profileStorage';
 
 const LagnaPage = () => {
     const { setCityAndDate } = useAuth();
-    const [name, setName] = useState('');
     const [cityName, setCityName] = useState(() => localStorage.getItem('selectedCity') || '');
     const [currentDate, setCurrentDate] = useState(new Date().toISOString().substring(0, 10));
     const [lagnaData, setLagnaData] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [savedProfiles, setSavedProfiles] = useState([]);
-
-    useEffect(() => {
-        setSavedProfiles(getAllProfiles());
-    }, []);
 
     const fetchLagnaData = async (city, date) => {
         setIsLoading(true);
         setError(null);
         try {
-            saveProfile(name, { cityName: city, birthDate: date });
-            setSavedProfiles(getAllProfiles());
-
             // First, fetch coordinates for the city
             const geoResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/fetchCoordinates/${city}`);
             if (!geoResponse.ok) throw new Error('Could not find city');
@@ -56,23 +46,6 @@ const LagnaPage = () => {
     const handleCitySelect = (city) => {
         setCityName(city.name);
         localStorage.setItem('selectedCity', city.name);
-    };
-
-    const handleNameChange = (e) => {
-        const value = e.target.value;
-        setName(value);
-
-        const profile = getProfile(value);
-        if (profile) {
-            setCityName(profile.cityName);
-            setCurrentDate(profile.birthDate);
-        }
-    };
-
-    const loadProfile = (profile) => {
-        setName(profile.name);
-        setCityName(profile.cityName);
-        setCurrentDate(profile.birthDate);
     };
 
     const formatTime = (timeStr) => {
@@ -111,24 +84,6 @@ const LagnaPage = () => {
                         }
                     }}>
                         <div className="form-group-inline">
-                            <div className="input-wrapper">
-                                <label className="input-label">Name</label>
-                                <input
-                                    type="text"
-                                    list="profiles-list"
-                                    value={name}
-                                    onChange={handleNameChange}
-                                    placeholder="Enter name..."
-                                    className="date-input-hero"
-                                    required
-                                />
-                                <datalist id="profiles-list">
-                                    {savedProfiles.map((p, i) => (
-                                        <option key={i} value={p.name}>{p.cityName} - {p.birthDate}</option>
-                                    ))}
-                                </datalist>
-                            </div>
-
                             <div className="input-wrapper">
                                 <label className="input-label">City Search</label>
                                 <CityAutocomplete
@@ -178,26 +133,6 @@ const LagnaPage = () => {
                 {isLoading && (
                     <div className="loading-spinner">
                         <div className="spinner"></div>
-                    </div>
-                )}
-
-                {/* Saved Profiles Quick Select */}
-                {savedProfiles.length > 0 && !lagnaData && !isLoading && (
-                    <div className="floating-section">
-                        <Section title="Quick Load Profile">
-                            <div className="profile-pills">
-                                {savedProfiles.slice(0, 5).map((p, i) => (
-                                    <button
-                                        key={i}
-                                        className="profile-pill"
-                                        onClick={() => loadProfile(p)}
-                                    >
-                                        <span className="pill-name">{p.name}</span>
-                                        <span className="pill-meta">{p.cityName}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        </Section>
                     </div>
                 )}
 

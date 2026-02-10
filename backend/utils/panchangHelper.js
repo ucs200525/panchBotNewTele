@@ -6,7 +6,7 @@
 const { panchanga, julianDay, muhurta, lagna: lagnaModule } = require('../swisseph');
 const { swisseph, useNative } = require('../swisseph/core/config');
 
-async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr, includeTransitions = true) {
+async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr, moonriseStr, moonsetStr, includeTransitions = true) {
     try {
         // Parse date string
         const [year, month, day] = date.split('-').map(Number);
@@ -22,21 +22,9 @@ async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr
         // Calculate all Panchanga elements
         const panchangaData = panchanga.calculateDayPanchanga(dateObj, timezone);
 
-        // Format time helper
-        const formatTime = (dateInput) => {
-            if (!dateInput) return 'N/A';
-            if (typeof dateInput === 'string') return dateInput;
-
-            const d = new Date(dateInput);
-            return d.toLocaleTimeString('en-IN', {
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: true
-            });
-        };
-
         // Parse sunrise/sunset times safely
         const parseTime = (str) => {
+            if (!str || str === 'N/A') return { h: NaN, m: 0, s: 0 };
             const clean = str.toLowerCase().replace(/[ap]m/, '').trim();
             const parts = clean.split(':').map(Number);
             let h = parts[0];
@@ -49,16 +37,11 @@ async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr
 
         const sunr = parseTime(sunriseStr);
         const suns = parseTime(sunsetStr);
-
-        const sunriseHour = sunr.h;
-        const sunriseMin = sunr.m;
-        const sunriseSec = sunr.s;
-
-        const sunsetHour = suns.h;
-        const sunsetMin = suns.m;
-        const sunsetSec = suns.s;
+        const moonr = parseTime(moonriseStr);
+        const moons = parseTime(moonsetStr);
 
         const formatProvidedTime = (hour, min, sec) => {
+            if (isNaN(hour)) return 'N/A';
             const d = new Date();
             d.setHours(hour, min, sec || 0);
             return d.toLocaleTimeString('en-IN', {
@@ -68,21 +51,51 @@ async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr
             });
         };
 
-        const formattedSunrise = formatProvidedTime(sunriseHour, sunriseMin, sunriseSec);
-        const formattedSunset = formatProvidedTime(sunsetHour, sunsetMin, sunsetSec);
+        const formattedSunrise = formatProvidedTime(sunr.h, sunr.m, sunr.s);
+        const formattedSunset = formatProvidedTime(suns.h, suns.m, suns.s);
+        const formattedMoonrise = formatProvidedTime(moonr.h, moonr.m, moonr.s);
+        const formattedMoonset = formatProvidedTime(moons.h, moons.m, moons.s);
 
         // Get weekday
         const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         const vara = weekdays[dateObj.getDay()];
+
+        // Format helper for Lagna times
+        const formatLagnaTime = (dateStr) => {
+            if (!dateStr || dateStr === 'N/A') return 'N/A';
+            try {
+                const d = new Date(dateStr);
+                return d.toLocaleTimeString('en-IN', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: true
+                });
+            } catch (e) {
+                return dateStr;
+            }
+        };
+
+        // Format lagnas
+        const formattedLagnas = (panchangaData.lagnas || lagnaModule.calculateDayLagnas(dateObj, lat, lng, timezone, sunriseStr)).map(lagna => ({
+            ...lagna,
+            startTime: formatLagnaTime(lagna.startTime),
+            endTime: formatLagnaTime(lagna.endTime)
+        }));
+
+        const rawPaksha = panchangaData.paksha?.name || (panchangaData.tithis?.[0]?.paksha) || 'N/A';
+        const cleanPaksha = rawPaksha.replace(/\s*Paksha\s*/gi, '').trim();
 
         // Build comprehensive response
         return {
             city,
             date,
 
-            // Sun timings
+            // Sun & Moon timings
             sunrise: formattedSunrise,
             sunset: formattedSunset,
+            moonrise: formattedMoonrise,
+            moonset: formattedMoonset,
 
             // Core Panchanga elements
             tithis: panchangaData.tithis || [],
@@ -100,7 +113,7 @@ async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr
             weekday: vara,
 
             // Paksha
-            paksha: panchangaData.paksha?.name || (panchangaData.tithis?.[0]?.paksha) || 'N/A',
+            paksha: cleanPaksha,
 
             // Moon phase (simplified)
             moonPhase: panchangaData.tithis?.[0]?.number <= 15 ? 'Waxing' : 'Waning',
@@ -116,7 +129,7 @@ async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr
             yamaganda: calculateYamaganda(dateObj, sunriseStr, sunsetStr),
 
             // Calculate Lagnas (Daily transitions)
-            lagnas: lagnaModule.calculateDayLagnas(dateObj, lat, lng, timezone, sunriseStr),
+            lagnas: formattedLagnas,
 
             // Calculate Abhijit Lagna (auspicious midday lagna)
             abhijitLagna: calculateAbhijitLagna(dateObj, lat, lng, timezone, sunriseStr, sunsetStr),
@@ -134,17 +147,7 @@ async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr
             varjyam: calculateVarjyam(dateObj, sunriseStr, sunsetStr, panchangaData.tithis?.[0]?.number),
 
             // Calculate Pancha Rahita Muhurat (periods free from ALL 5 inauspicious timings)
-            // Pancha = 5: Rahu Kaal, Yamaganda, Gulika, Varjyam, Dur Muhurat
-            panchaRahitaMuhurat: calculatePanchaRahitaMuhurat(
-                dateObj,
-                sunriseStr,
-                sunsetStr,
-                calculateRahuKaal(dateObj, formattedSunrise, formattedSunset),
-                calculateYamaganda(dateObj, sunriseStr, sunsetStr),
-                calculateGulika(dateObj, sunriseStr, sunsetStr),
-                calculateVarjyam(dateObj, sunriseStr, sunsetStr, panchangaData.tithis?.[0]?.number),
-                calculateDurMuhurat(dateObj, sunriseStr, sunsetStr)
-            ),
+            panchaRahitaMuhurat: [], 
 
             // Additional Vedic calendar info
             masa: panchanga.getMasa ? panchanga.getMasa(dateObj) : { name: 'Pausha', type: 'Lunar' },
@@ -674,162 +677,140 @@ function calculateAbhijitLagna(dateObj, lat, lng, timezone, sunriseStr, sunsetSt
     }
 }
 
-function calculatePanchaRahitaMuhurat(dateObj, sunriseStr, sunsetStr, rahuKaal, yamaganda, gulika, varjyam, durMuhurtas) {
+function calculateSwissPanchakaRahita(dateObj, lat, lng, timezone, sunriseStr, sunsetStr, nextSunriseStr) {
     try {
-        const [sh, sm, ss = 0] = sunriseStr.split(':').map(Number);
-        const [suh, sum, sus = 0] = sunsetStr.split(':').map(Number);
+        const tithiCalc = new panchanga.TithiCalculator();
+        const naksCalc = new panchanga.NakshatraCalculator();
+        const lagnaCalc = new lagnaModule.LagnaCalculator();
 
-        const sunriseDate = new Date(dateObj);
-        sunriseDate.setHours(sh, sm, ss || 0, 0);
-
-        const sunsetDate = new Date(dateObj);
-        sunsetDate.setHours(suh, sum, sus || 0, 0);
-
-        // Parse time string to Date object
-        const parseTimeToDate = (timeStr) => {
-            if (!timeStr || timeStr === 'N/A') return null;
-            const match = timeStr.match(/(\d+):(\d+)\s*(am|pm)/i);
-            if (!match) return null;
-
-            let [, hours, minutes, period] = match;
-            hours = parseInt(hours);
-            minutes = parseInt(minutes);
-
-            // Convert to 24-hour format
-            if (period.toLowerCase() === 'pm' && hours !== 12) {
-                hours += 12;
-            } else if (period.toLowerCase() === 'am' && hours === 12) {
-                hours = 0;
-            }
-
-            const time = new Date(dateObj);
-            time.setHours(hours, minutes, 0, 0);
-            return time;
+        // 1. Define the Vedic Day window
+        const parseTime = (date, str) => {
+            const clean = str.toLowerCase().replace(/[ap]m/, '').trim();
+            const parts = clean.split(':').map(Number);
+            let h = parts[0];
+            const m = parts[1] || 0;
+            const s = parts[2] || 0;
+            if (str.toLowerCase().includes('pm') && h < 12) h += 12;
+            if (str.toLowerCase().includes('am') && h === 12) h = 0;
+            const d = new Date(date);
+            d.setHours(h, m, s, 0);
+            return d;
         };
 
-        // Collect all inauspicious periods
-        const inauspiciousPeriods = [];
+        const dayStart = parseTime(dateObj, sunriseStr);
+        const dayEnd = parseTime(new Date(dateObj.getTime() + 24 * 60 * 60 * 1000), nextSunriseStr);
 
-        // Add Rahu Kaal
-        if (rahuKaal && rahuKaal.start && rahuKaal.end) {
-            const start = parseTimeToDate(rahuKaal.start);
-            const end = parseTimeToDate(rahuKaal.end);
-            if (start && end) {
-                inauspiciousPeriods.push({ name: 'Rahu Kaal', start, end });
-            }
-        }
+        // 2. Identify all transitions
+        // We look for transitions in Tithi, Nakshatra and Lagna
+        const transitions = new Set();
+        transitions.add(dayStart.getTime());
+        transitions.add(dayEnd.getTime());
 
-        // Add Yamaganda
-        if (yamaganda && yamaganda.start && yamaganda.end) {
-            const start = parseTimeToDate(yamaganda.start);
-            const end = parseTimeToDate(yamaganda.end);
-            if (start && end) {
-                inauspiciousPeriods.push({ name: 'Yamaganda', start, end });
-            }
-        }
-
-        // Add Gulika
-        if (gulika && gulika.start && gulika.end) {
-            const start = parseTimeToDate(gulika.start);
-            const end = parseTimeToDate(gulika.end);
-            if (start && end) {
-                inauspiciousPeriods.push({ name: 'Gulika', start, end });
-            }
-        }
-
-        // Add Varjyam (5th element!)
-        if (varjyam && varjyam.start && varjyam.end) {
-            const start = parseTimeToDate(varjyam.start);
-            const end = parseTimeToDate(varjyam.end);
-            if (start && end) {
-                inauspiciousPeriods.push({ name: 'Varjyam', start, end });
-            }
-        }
-
-        // Add Dur Muhurtas
-        if (durMuhurtas && Array.isArray(durMuhurtas)) {
-            durMuhurtas.forEach(dur => {
-                const start = parseTimeToDate(dur.start);
-                const end = parseTimeToDate(dur.end);
-                if (start && end) {
-                    inauspiciousPeriods.push({ name: dur.name, start, end });
-                }
+        // Helper to add transitions within range
+        const addInRange = (list) => {
+            list.forEach(item => {
+                const s = item.startTime ? new Date(item.startTime).getTime() : null;
+                const e = item.endTime ? new Date(item.endTime).getTime() : null;
+                if (s && s > dayStart.getTime() && s < dayEnd.getTime()) transitions.add(s);
+                if (e && e > dayStart.getTime() && e < dayEnd.getTime()) transitions.add(e);
             });
-        }
+        };
 
-        // Sort periods by start time
-        inauspiciousPeriods.sort((a, b) => a.start - b.start);
+        // Get Transitions for both today and tomorrow to cover the sunrise-sunrise period
+        const tomorrow = new Date(dateObj.getTime() + 24 * 60 * 60 * 1000);
 
-        // Find gaps (Pancha Rahita periods)
-        const panchaRahitaPeriods = [];
-        const formatTime = (date) => {
-            return date.toLocaleTimeString('en-IN', {
+        addInRange(tithiCalc.calculateDayTithis(dateObj, timezone));
+        addInRange(tithiCalc.calculateDayTithis(tomorrow, timezone));
+
+        addInRange(naksCalc.calculateDayNakshatras(dateObj, timezone));
+        addInRange(naksCalc.calculateDayNakshatras(tomorrow, timezone));
+
+        addInRange(lagnaCalc.calculateDayLagnas(dateObj, lat, lng, timezone, sunriseStr));
+
+        // 3. Create sorted unique transition timestamps
+        const sortedTimes = Array.from(transitions).sort((a, b) => a - b);
+
+        // 4. Calculate status for each segment
+        const results = [];
+        const varaIndex = dateObj.getDay() + 1; // 1=Sun, 7=Sat
+
+        const formatTime = (d) => {
+            return d.toLocaleTimeString('en-IN', {
                 hour: '2-digit',
                 minute: '2-digit',
                 hour12: true
             });
         };
 
-        // Check from sunrise to first inauspicious period
-        if (inauspiciousPeriods.length > 0 && inauspiciousPeriods[0].start > sunriseDate) {
-            const duration = Math.round((inauspiciousPeriods[0].start - sunriseDate) / (1000 * 60));
-            if (duration >= 20) { // Only include if at least 20 minutes
-                panchaRahitaPeriods.push({
-                    start: formatTime(sunriseDate),
-                    end: formatTime(inauspiciousPeriods[0].start),
-                    duration: `${duration} minutes`
-                });
+        for (let i = 0; i < sortedTimes.length - 1; i++) {
+            const start = new Date(sortedTimes[i]);
+            const end = new Date(sortedTimes[i + 1]);
+
+            // Skip segments shorter than 2 minutes (noise protection)
+            if (end.getTime() - start.getTime() < 120000) continue;
+
+            const mid = new Date(start.getTime() + (end.getTime() - start.getTime()) / 2);
+
+            // Get data at midpoint
+            const tithi = tithiCalc.getTithiAtTime(mid);
+            const naks = naksCalc.getNakshatraAtTime(mid);
+            const lagna = lagnaCalc.getLagnaAtTime(mid, lat, lng);
+
+            // Calculation: (Tithi(1-15) + Vara(1-7) + Nakshatra(1-27) + Lagna(1-12)) % 9
+            const tIndex = (tithi.number % 15) + 1;
+            const vIndex = varaIndex;
+            const nIndex = naks.number + 1;
+            const lIndex = lagna.index + 1;
+
+            const sum = tIndex + vIndex + nIndex + lIndex;
+            const remainder = sum % 9;
+
+            let muhuratName = "";
+            let category = "Good";
+
+            switch (remainder) {
+                case 1: muhuratName = "Mrityu"; category = "Danger"; break;
+                case 2: muhuratName = "Agni"; category = "Risk"; break;
+                case 4: muhuratName = "Raja"; category = "Bad"; break;
+                case 6: muhuratName = "Chora"; category = "Evil"; break;
+                case 8: muhuratName = "Roga"; category = "Disease"; break;
+                default: muhuratName = "Rahitam"; category = "Good"; break;
             }
-        }
 
-        // Check gaps between inauspicious periods
-        for (let i = 0; i < inauspiciousPeriods.length - 1; i++) {
-            const currentEnd = inauspiciousPeriods[i].end;
-            const nextStart = inauspiciousPeriods[i + 1].start;
-
-            if (nextStart > currentEnd) {
-                const duration = Math.round((nextStart - currentEnd) / (1000 * 60));
-                if (duration >= 20) { // Only include if at least 20 minutes
-                    panchaRahitaPeriods.push({
-                        start: formatTime(currentEnd),
-                        end: formatTime(nextStart),
-                        duration: `${duration} minutes`
-                    });
-                }
-            }
-        }
-
-        // Check from last inauspicious period to sunset
-        if (inauspiciousPeriods.length > 0) {
-            const lastPeriod = inauspiciousPeriods[inauspiciousPeriods.length - 1];
-            if (lastPeriod.end < sunsetDate) {
-                const duration = Math.round((sunsetDate - lastPeriod.end) / (1000 * 60));
-                if (duration >= 20) { // Only include if at least 20 minutes
-                    panchaRahitaPeriods.push({
-                        start: formatTime(lastPeriod.end),
-                        end: formatTime(sunsetDate),
-                        duration: `${duration} minutes`
-                    });
-                }
-            }
-        }
-
-        // If no inauspicious periods, the whole day is Pancha Rahita (unlikely but possible)
-        if (inauspiciousPeriods.length === 0) {
-            const duration = Math.round((sunsetDate - sunriseDate) / (1000 * 60));
-            panchaRahitaPeriods.push({
-                start: formatTime(sunriseDate),
-                end: formatTime(sunsetDate),
-                duration: `${duration} minutes`
+            results.push({
+                muhurat: muhuratName,
+                category: category,
+                time: `${formatTime(start)} to ${formatTime(end)}`,
+                _start: start.getTime(), // For merging
+                _sum: sum,
+                _remainder: remainder
             });
         }
 
-        return panchaRahitaPeriods;
+        // 5. Merge continuous identical segments
+        const merged = [];
+        if (results.length > 0) {
+            let current = results[0];
+            for (let i = 1; i < results.length; i++) {
+                if (results[i].muhurat === current.muhurat) {
+                    // Update current end time
+                    current.time = current.time.split(' to ')[0] + ' to ' + results[i].time.split(' to ')[1];
+                } else {
+                    merged.push(current);
+                    current = results[i];
+                }
+            }
+            merged.push(current);
+        }
+
+        return merged;
+
     } catch (error) {
-        console.error('Error calculating Pancha Rahita Muhurat:', error);
+        console.error('Error in calculateSwissPanchakaRahita:', error);
         return [];
     }
 }
+
 
 function calculateVarjyam(dateObj, sunriseStr, sunsetStr, tithiNumber) {
     try {
@@ -944,5 +925,5 @@ function getVaraLord(vara) {
     return varaLords[vara] || { lord: 'Unknown', planet: 'N/A', color: 'N/A', gemstone: 'N/A' };
 }
 
-module.exports = { calculatePanchangData, getTimezoneFromCoordinates };
+module.exports = { calculatePanchangData, getTimezoneFromCoordinates, calculateSwissPanchakaRahita };
 

@@ -79,13 +79,15 @@
     margin-bottom: 2rem;
     flex-wrap: nowrap;
     /* Force one line */
-    align-items: center; /* Better than flex-end for inconsistent component heights */
+    align-items: center;
+    /* Better than flex-end for inconsistent component heights */
     justify-content: center;
 }
 
 .input-wrapper {
     flex: 1;
-    min-width: 0; /* Allow flex to shrink if needed */
+    min-width: 0;
+    /* Allow flex to shrink if needed */
     text-align: left;
     display: flex;
     flex-direction: column;
@@ -95,28 +97,34 @@
     display: block;
     font-weight: 700;
     margin-bottom: 0.6rem;
-    font-size: 0.85rem;
+    font-size: 0.95rem;
+    /* Increased from 0.85rem */
     text-transform: uppercase;
     letter-spacing: 0.1em;
     color: #64748b;
 }
 
 .date-input-hero {
-    width: 100%;
-    height: 52px; /* Explicit height to match typical Autocomplete result */
-    padding: 0 16px;
-    font-size: 16px;
+    width: 90%; /* Increased to prevent year-digit clipping */
+    height: 48px; 
+    padding: 0 8px; /* Reduced side padding */
+    font-size: 0.95rem !important; 
     border: 2px solid #e2e8f0;
-    border-radius: 12px;
+    border-radius: 8px;
     outline: none;
     transition: all 0.2s ease;
     font-family: 'Outfit', sans-serif;
     color: #1e293b;
     background: white;
+    cursor: pointer;
+    zoom: 1.49; /* Restore 100% scale for browser pickers */
+    text-align: center; /* Center to ensure visibility */
 }
 
 .date-input-hero:focus {
     border-color: #3b82f6;
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
 }
 
 .get-panchang-btn-hero {
@@ -186,7 +194,8 @@
 }
 
 .summary-label {
-    font-size: 0.65rem;
+    font-size: 0.85rem;
+    /* Increased from 0.65rem */
     font-weight: 700;
     text-transform: uppercase;
     color: #94a3b8;
@@ -239,7 +248,8 @@
 }
 
 .card-label {
-    font-size: 0.7rem;
+    font-size: 0.85rem;
+    /* Increased from 0.7rem */
     font-weight: 700;
     text-transform: uppercase;
     color: #94a3b8;
@@ -416,13 +426,14 @@
     }
 
     .date-input-hero {
-        font-size: 14px;
-        padding: 10px 12px;
+        font-size: 1.25rem !important; /* Force readable size on mobile */
+        height: 64px !important;
+        padding: 10px 16px;
     }
 
     .get-panchang-btn-hero {
-        font-size: 0.9rem;
-        padding: 12px 20px;
+        font-size: 1.1rem;
+        padding: 14px 24px;
     }
 
     .card-icon {
@@ -546,7 +557,7 @@
 }
 
 .time-remaining {
-    font-size: 0.75rem;
+    font-size: 0.9rem; /* Increased from 0.75rem */
     color: #64748b;
     text-transform: uppercase;
     font-weight: 700;
@@ -619,7 +630,7 @@
 }
 
 .detail-label {
-    font-size: 0.7rem;
+    font-size: 0.85rem; /* Increased from 0.7rem */
     font-weight: 700;
     text-transform: uppercase;
     color: #94a3b8;

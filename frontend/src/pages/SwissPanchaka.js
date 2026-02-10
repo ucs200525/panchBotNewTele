@@ -4,7 +4,7 @@ import { CityAutocomplete } from '../components/forms';
 import LivePeriodTracker from '../components/LivePeriodTracker';
 import TableScreenshot from '../components/TableScreenshot';
 
-const PanchakaMuhurth = () => {
+const SwissPanchaka = () => {
   const { localCity, localDate, setCityAndDate } = useAuth();
   const [city, setCity] = useState(localCity || '');
   const [date, setDate] = useState(localDate || new Date().toISOString().substring(0, 10));
@@ -30,7 +30,7 @@ const PanchakaMuhurth = () => {
     setError(null);
     try {
       const ddmmvvyy = dateValue.split("-").reverse().join("/");
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/fetch_muhurat_old`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/fetch_muhurat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ city: cityName, date: ddmmvvyy })
@@ -80,9 +80,9 @@ const PanchakaMuhurth = () => {
       {/* Hero Section */}
       <div className="hero-section">
         <div className="hero-content">
-          <h1 className="hero-title">Panchaka Muhurat</h1>
+          <h1 className="hero-title">Panchaka Rahitam (Swiss)</h1>
           <p className="hero-subtitle">
-            Comprehensive daily guide to auspicious and inauspicious time intervals
+            High-precision Vedic auspicious timings calculated using Swiss Ephemeris.
           </p>
         </div>
 
@@ -197,7 +197,75 @@ const PanchakaMuhurth = () => {
                   </div>
 
                   <div className="information">
-                    <p className="info">Panchaka Muhurat considers five aspects of the time to determine its quality. Choose "Good" periods for important ventures and avoid "Danger" or "Risk" periods when possible.</p>
+                    <p className="info">This page uses high-precision Swiss Ephemeris data to calculate Panchaka Rahitam timings mathematically. Choose "Good" (Rahitam) periods for important ventures.</p>
+                  </div>
+
+                  {/* Comprehensive Swiss Documentation */}
+                  <div className="swiss-doc">
+                    <div className="doc-section">
+                      <h3>Transition Engine</h3>
+                      <p>The logic now scans the entire <strong>Vedic Day</strong> (from today's Sunrise to tomorrow's Sunrise) and identifies every single second where a Tithi, Nakshatra, or Lagna changes.</p>
+                    </div>
+
+                    <div className="doc-section">
+                      <h3>Mathematical Accuracy</h3>
+                      <p>For every time segment created by these transitions, it applies the traditional Vedic formula:</p>
+                      <div className="formula-box">
+                        (Tithi index + Vara index + Nakshatra index + Lagna index) % 9
+                      </div>
+                    </div>
+
+                    <div className="doc-section">
+                      <h3>Indices Used</h3>
+                      <div className="doc-grid">
+                        <div className="doc-item">
+                          <span className="doc-label">Tithi</span>
+                          <span className="doc-value">1–15 (Cycles for both Shukla & Krishna)</span>
+                        </div>
+                        <div className="doc-item">
+                          <span className="doc-label">Vara</span>
+                          <span className="doc-value">1 (Sun) to 7 (Sat) from Sunrise</span>
+                        </div>
+                        <div className="doc-item">
+                          <span className="doc-label">Nakshatra</span>
+                          <span className="doc-value">1 (Ashwini) to 27 (Revati)</span>
+                        </div>
+                        <div className="doc-item">
+                          <span className="doc-label">Lagna</span>
+                          <span className="doc-value">1 (Aries) to 12 (Pisces)</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="doc-section">
+                      <h3>Dosha Mapping</h3>
+                      <div className="dosha-list">
+                        <div className="dosha-mapping-item">
+                          <span className="dosha-num">Rem 1</span>
+                          <span className="dosha-status status-danger">Mrityu (Danger)</span>
+                        </div>
+                        <div className="dosha-mapping-item">
+                          <span className="dosha-num">Rem 2</span>
+                          <span className="dosha-status status-risk">Agni (Risk)</span>
+                        </div>
+                        <div className="dosha-mapping-item">
+                          <span className="dosha-num">Rem 4</span>
+                          <span className="dosha-status status-bad">Raja (Bad)</span>
+                        </div>
+                        <div className="dosha-mapping-item">
+                          <span className="dosha-num">Rem 6</span>
+                          <span className="dosha-status status-evil">Chora (Evil)</span>
+                        </div>
+                        <div className="dosha-mapping-item">
+                          <span className="dosha-num">Rem 8</span>
+                          <span className="dosha-status status-bad">Roga (Disease)</span>
+                        </div>
+                        <div className="dosha-mapping-item">
+                          <span className="dosha-num">0, 3, 5, 7</span>
+                          <span className="dosha-status status-good">Rahitam (Good)</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -209,4 +277,4 @@ const PanchakaMuhurth = () => {
   );
 };
 
-export default PanchakaMuhurth;
+export default SwissPanchaka;

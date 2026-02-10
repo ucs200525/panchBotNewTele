@@ -123,7 +123,8 @@
    Base Styles
    ======================================== */
 html {
-  font-size: 22px; /* Increased base to make text larger on zoomed layout */
+  font-size: 26px;
+  /* Increased base so 67% zoom results in ~17.5px (Normal readability) */
   scroll-behavior: smooth;
 }
 
@@ -147,7 +148,8 @@ body {
   margin: 1rem auto;
   background: #ffffff;
   padding: 1.5rem 2.5rem;
-  zoom: 0.67; /* Precisely match the 67% zoom aesthetic */
+  zoom: 0.67;
+  /* Precisely match the 67% zoom aesthetic */
   border-radius: 1.25rem;
   /* More professional, less rounded */
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -364,7 +366,27 @@ select:focus,
 textarea:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+  transform: scale(1.02); /* Slight scale up on focus to assist visibility */
+}
+
+/* Global Date/Time Picker Fix for 67% Zoom */
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"] {
+  width: 67%; /* Compansate for zoom expansion */
+  font-size: 0.95rem !important; 
+  font-weight: 600;
+  cursor: pointer;
+  zoom: 1.49; /* Inverse of 0.67 to restore 100% scale for browser pickers */
+  text-align: center;
+}
+
+::-webkit-calendar-picker-indicator {
+  width: 1.2rem;
+  height: 1.2rem;
+  cursor: pointer;
+  filter: invert(0.4) sepia(1) saturate(5) hue-rotate(175deg);
 }
 
 /* Loading Spinner */

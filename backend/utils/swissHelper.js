@@ -10,6 +10,7 @@ const planetary = new PlanetaryCalculator();
  * @param {string} date - YYYY-MM-DD
  * @param {string} timeZone 
  */
+
 async function getSunMoonTimesSwiss(lat, lng, date, timeZone) {
     try {
         const dateObj = new Date(date);

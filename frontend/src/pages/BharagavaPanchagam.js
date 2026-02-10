@@ -150,7 +150,7 @@ const TimeConverterApp = () => {
       {/* Hero Section */}
       <div className="hero-section">
         <div className="hero-content">
-          <h1 className="hero-title">Panchaka Rahu Muhurtham</h1>
+          <h1 className="hero-title">Bhargava Panchangam</h1>
           <p className="hero-subtitle">
             Ancient Vedic wisdom for modern living. Find your auspicious moments based on 24-minute precise periods.
           </p>
