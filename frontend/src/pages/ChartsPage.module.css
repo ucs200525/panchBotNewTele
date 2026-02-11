@@ -1,0 +1,41 @@
+/* ChartsPage - Minimal Module Styles */
+
+.chartsView {
+    margin-top: 2rem;
+}
+
+.chartCard {
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.profilePills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.profilePill {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 10px 16px;
+    text-align: left;
+    min-width: 120px;
+}
+
+.pillName {
+    margin-bottom: 0.25rem;
+}
+
+.information {
+    margin: 2rem 0;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .chartCard {
+        padding: 0 !important;
+    }
+}

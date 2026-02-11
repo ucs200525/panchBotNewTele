@@ -1,94 +1,149 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import './Navbar.css';
 
 const Navbar = () => {
   const location = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activeSubmenu, setActiveSubmenu] = useState(null);
   const isActive = (path) => location.pathname === path;
+
+  // Handle mobile menu toggle
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+    setActiveSubmenu(null);
+  };
+
+  // Close everything
+  const closeAll = () => {
+    setIsMobileMenuOpen(false);
+    setActiveSubmenu(null);
+  };
+
+  // Toggle submenu on mobile
+  const handleToggleSubmenu = (menuId) => {
+    setActiveSubmenu(activeSubmenu === menuId ? null : menuId);
+  };
+
+  // Close menu when route changes
+  useEffect(() => {
+    closeAll();
+  }, [location.pathname]);
 
   return (
     <nav className="pro-navbar">
-      {/* Tier 1: Brand, Search, Login */}
+      {/* Tier 1: Brand & Actions */}
       <div className="navbar-upper">
         <div className="navbar-container">
           <div className="upper-left">
-            <Link to="/" className="pro-logo">
+            <Link to="/" className="pro-logo" onClick={closeAll}>
               <span className="logo-text">VedicVishwa</span>
             </Link>
           </div>
 
-          <div className="upper-center">
-            {/* Search bar removed as per user request */}
-          </div>
-
           <div className="upper-right">
-            <button className="pro-login-btn">
+            <button className="pro-login-btn desktop-only">
               <span className="login-icon">👤</span>
               <span className="login-text">Login</span>
+            </button>
+
+            <button
+              className="mobile-menu-btn mobile-only"
+              onClick={toggleMobileMenu}
+              aria-label="Menu"
+            >
+              <span className={`hamburger-icon ${isMobileMenuOpen ? 'open' : ''}`}>
+                <span></span>
+                <span></span>
+                <span></span>
+              </span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* Tier 2: Category Links with Hover Menus */}
-      <div className="navbar-lower">
+      {/* Tier 2: Navigation Links */}
+      <div className={`navbar-lower ${isMobileMenuOpen ? 'mobile-show' : ''}`}>
         <div className="navbar-container">
-          <div className="lower-menu">
-            <div className="nav-item-wrapper">
-              <Link to="/" className={`lower-link ${isActive('/') ? 'active' : ''}`}>
-                <span className="lower-icon">🏠</span> HOME
-              </Link>
-            </div>
+          <div className="menu-list">
 
-            {/* Panchang Category with Dropdown */}
-            <div className="nav-item-wrapper dropdown-hover">
-              <div className="lower-link">
-                <span className="lower-icon">📅</span> PANCHANG <span className="arrow-small">▼</span>
+            {/* Muhurat Submenu */}
+            <div className={`menu-item-container has-dropdown ${activeSubmenu === 'muhurat' ? 'expanded' : ''}`}>
+              <div className="menu-link-wrapper">
+                <div className="menu-link" onClick={() => handleToggleSubmenu('muhurat')}>
+                  <span className="menu-icon">✨</span> MUHURAT
+                  <span className="chevron-icon"></span>
+                </div>
               </div>
-              <div className="mega-dropdown">
-                <Link to="/panchang" className="dropdown-sub-item">Daily Panchang</Link>
-                <Link to="/panchang-swiss" className="dropdown-sub-item">Swiss Daily Precision</Link>
-                <Link to="/lagna" className="dropdown-sub-item">Lagna (Ascendant) Times</Link>
-                <Link to="/hora" className="dropdown-sub-item">Hora Calculator</Link>
+              <div className="submenu-content">
+                <Link to="/good-timings" className="submenu-link">Auspicious Timings</Link>
+                <Link to="/panchaka-swiss" className="submenu-link"> Panchaka Rahitha Muhuratam</Link>
+                <Link to="/" className="submenu-link">Bhargava Panchangam</Link>
+                <Link to="/choghadiya-info" className="submenu-link">Choghadiya Calculator</Link>
               </div>
             </div>
 
-            {/* Astrology Category with Dropdown */}
-            <div className="nav-item-wrapper dropdown-hover">
-              <div className="lower-link">
-                <span className="lower-icon">⚙️</span> ASTROLOGY <span className="arrow-small">▼</span>
+
+            {/* Panchang Submenu */}
+            <div className={`menu-item-container has-dropdown ${activeSubmenu === 'panchang' ? 'expanded' : ''}`}>
+              <div className="menu-link-wrapper">
+                <div className="menu-link" onClick={() => handleToggleSubmenu('panchang')}>
+                  <span className="menu-icon">📅</span> PANCHANG
+                  <span className="chevron-icon"></span>
+                </div>
               </div>
-              <div className="mega-dropdown">
-                <Link to="/charts" className="dropdown-sub-item">Birth Charts (Janam Kundli)</Link>
-                <Link to="/dasha" className="dropdown-sub-item">Vimshottari Dasha</Link>
-                <Link to="/planetary" className="dropdown-sub-item">Planetary Positions</Link>
-                <Link to="/sadesati" className="dropdown-sub-item">Sade Sati Report</Link>
+              <div className="submenu-content">
+                <Link to="/panchang" className="submenu-link">Daily Panchang</Link>
+                <Link to="/panchang-swiss" className="submenu-link">Swiss Precision</Link>
+                <Link to="/lagna" className="submenu-link">Lagna Times</Link>
+                <Link to="/hora" className="submenu-link">Hora Calculator</Link>
               </div>
             </div>
 
-            {/* Muhurat Category with Dropdown */}
-            <div className="nav-item-wrapper dropdown-hover">
-              <div className="lower-link">
-                <span className="lower-icon">✨</span> MUHURAT <span className="arrow-small">▼</span>
+            {/* Astrology Submenu */}
+            <div className={`menu-item-container has-dropdown ${activeSubmenu === 'astrology' ? 'expanded' : ''}`}>
+              <div className="menu-link-wrapper">
+                <div className="menu-link" onClick={() => handleToggleSubmenu('astrology')}>
+                  <span className="menu-icon">⚙️</span> ASTROLOGY
+                  <span className="chevron-icon"></span>
+                </div>
               </div>
-              <div className="mega-dropdown">
-                <Link to="/good-timings" className="dropdown-sub-item">Auspicious (Good) Timings</Link>
-                <Link to="/panchaka-swiss" className="dropdown-sub-item">Swiss Panchaka Guide</Link>
+              <div className="submenu-content">
+                <Link to="/charts" className="submenu-link">Birth Charts</Link>
+                <Link to="/dasha" className="submenu-link">Vimshottari Dasha</Link>
+                <Link to="/planetary" className="submenu-link">Planetary Positions</Link>
+                <Link to="/sadesati" className="submenu-link">Sade Sati Report</Link>
               </div>
             </div>
 
-            <div className="nav-item-wrapper dropdown-hover">
-              <div className="lower-link">
-                <span className="lower-icon">🔄</span> TOOLS <span className="arrow-small">▼</span>
+
+            {/* Tools Submenu */}
+            <div className={`menu-item-container has-dropdown ${activeSubmenu === 'tools' ? 'expanded' : ''}`}>
+              <div className="menu-link-wrapper">
+                <div className="menu-link" onClick={() => handleToggleSubmenu('tools')}>
+                  <span className="menu-icon">🔄</span> TOOLS
+                  <span className="chevron-icon"></span>
+                </div>
               </div>
-              <div className="mega-dropdown">
-                <Link to="/combine" className="dropdown-sub-item">Combined View</Link>
-                <Link to="/panchaka" className="dropdown-sub-item">Old Panchaka Tool</Link>
+              <div className="submenu-content">
+                <Link to="/combine" className="submenu-link">Combined View</Link>
+                <Link to="/panchaka" className="submenu-link">Old Panchaka Tool</Link>
               </div>
             </div>
+
+            {/* Mobile Login Item */}
+            <div className="menu-item-container mobile-only-item">
+              <div className="menu-link mobile-login-item">
+                <span className="menu-icon">👤</span> LOGIN / REGISTER
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
+
+      {/* Backdrop */}
+      {isMobileMenuOpen && <div className="nav-backdrop" onClick={closeAll}></div>}
     </nav>
   );
 };

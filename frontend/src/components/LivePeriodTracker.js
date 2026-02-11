@@ -11,7 +11,7 @@ const LivePeriodTracker = ({ data, selectedDate }) => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
-    
+
     return () => clearInterval(timer);
   }, []);
 
@@ -26,13 +26,13 @@ const LivePeriodTracker = ({ data, selectedDate }) => {
   // Check if selected date is today
   const isToday = () => {
     if (!selectedDate) return true; // If no date provided, assume it's today
-    
+
     const today = new Date();
     const selected = new Date(selectedDate);
-    
+
     return today.getFullYear() === selected.getFullYear() &&
-           today.getMonth() === selected.getMonth() &&
-           today.getDate() === selected.getDate();
+      today.getMonth() === selected.getMonth() &&
+      today.getDate() === selected.getDate();
   };
 
   // Don't render if not viewing today's data
@@ -43,10 +43,10 @@ const LivePeriodTracker = ({ data, selectedDate }) => {
   // Calculate remaining time
   const getRemainingTime = () => {
     if (!currentPeriod) return null;
-    
+
     const now = currentTime.getHours() * 60 + currentTime.getMinutes();
     let remainingMinutes;
-    
+
     // Handle overnight periods (end time is on next day)
     if (currentPeriod.end < currentPeriod.start) {
       // Period crosses midnight
@@ -61,7 +61,7 @@ const LivePeriodTracker = ({ data, selectedDate }) => {
       // Normal same-day period
       remainingMinutes = currentPeriod.end - now;
     }
-    
+
     return {
       hours: Math.floor(remainingMinutes / 60),
       minutes: remainingMinutes % 60,
@@ -72,10 +72,10 @@ const LivePeriodTracker = ({ data, selectedDate }) => {
   // Calculate progress percentage
   const getProgressPercentage = () => {
     if (!currentPeriod) return 0;
-    
+
     const now = currentTime.getHours() * 60 + currentTime.getMinutes();
     let duration, elapsed;
-    
+
     // Handle overnight periods
     if (currentPeriod.end < currentPeriod.start) {
       duration = (24 * 60 - currentPeriod.start) + currentPeriod.end;
@@ -88,21 +88,21 @@ const LivePeriodTracker = ({ data, selectedDate }) => {
       duration = currentPeriod.end - currentPeriod.start;
       elapsed = now - currentPeriod.start;
     }
-    
+
     return Math.min(100, Math.max(0, (elapsed / duration) * 100));
   };
 
   // Get next period preview
   const getNextPeriod = () => {
     if (!currentPeriod || !data || data.length === 0) return null;
-    
+
     // Find next row
     const currentIndex = currentPeriod.index;
     const nextIndex = currentIndex < data.length - 1 ? currentIndex + 1 : 0;
     const nextRow = data[nextIndex];
-    
+
     if (!nextRow) return null;
-    
+
     // For Panchaka Muhurth format
     if (nextRow.time) {
       const timeParts = nextRow.time.split(' to ');
@@ -111,7 +111,7 @@ const LivePeriodTracker = ({ data, selectedDate }) => {
         startTime: timeParts[0] || ''
       };
     }
-    
+
     // For Bhargava Panchang format
     if (currentPeriod.column === 'period1' && nextRow.start2) {
       return {
@@ -126,7 +126,7 @@ const LivePeriodTracker = ({ data, selectedDate }) => {
         startTime: nextNextRow?.start1 || ''
       };
     }
-    
+
     return null;
   };
 
@@ -160,7 +160,7 @@ const LivePeriodTracker = ({ data, selectedDate }) => {
             {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
           </span>
         </div>
-        
+
         <div className="tracker-center">
           <span className="period-title">{currentPeriod.weekday}</span>
           <span className="time-remaining">
@@ -182,7 +182,7 @@ const LivePeriodTracker = ({ data, selectedDate }) => {
           <span className="detail-label">Today's Period</span>
           <span className="detail-value">{currentPeriod.startTime} - {currentPeriod.endTime}</span>
         </div>
-        
+
         {nextPeriod && (
           <div className="detail-item">
             <span className="detail-label">Coming Up Next</span>

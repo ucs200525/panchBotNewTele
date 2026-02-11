@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import '../pages/hero-styles.css';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { CityAutocomplete } from '../components/forms';
-import './SwissPanchang.css';
+
 
 const SwissPanchang = () => {
     const [cityName, setCityName] = useState(localStorage.getItem('selectedCity') || '');
@@ -38,19 +39,19 @@ const SwissPanchang = () => {
 
     return (
         <div className="content">
-            <div className="hero-section swiss-panchang-hero" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', padding: '3rem 0' }}>
-                <div className="hero-content" style={{ maxWidth: '800px' }}>
-                    <h1 className="hero-title" style={{ color: '#f8fafc', fontSize: '2.5rem', marginBottom: '1rem' }}>
+            <div className="hero-section">
+                <div className="hero-content">
+                    <h1 className="hero-title">
                         Swiss Daily Panchang
                     </h1>
-                    <p className="hero-subtitle" style={{ color: '#94a3b8', fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto 2.5rem' }}>
+                    <p className="hero-subtitle">
                         High-precision astronomical and Vedic report calculated using the Swiss Ephemeris engine
                     </p>
 
-                    <form className="hero-form" onSubmit={handleGetPanchang} style={{ background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', padding: '2rem', borderRadius: '1.5rem', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <form className="hero-form" onSubmit={handleGetPanchang}>
                         <div className="form-group-inline">
-                            <div className="input-wrapper" style={{ flex: 2 }}>
-                                <label className="input-label" style={{ color: '#ccd6f6' }}>Target City</label>
+                            <div className="input-wrapper" style={{ flex: 1 }}>
+                                <label className="input-label">Target City</label>
                                 <CityAutocomplete
                                     value={cityName}
                                     onChange={setCityName}
@@ -59,18 +60,17 @@ const SwissPanchang = () => {
                                 />
                             </div>
                             <div className="input-wrapper" style={{ flex: 1 }}>
-                                <label className="input-label" style={{ color: '#ccd6f6' }}>Select Date</label>
+                                <label className="input-label">Select Date</label>
                                 <input
                                     type="date"
                                     className="date-input-hero"
                                     value={currentDate}
                                     onChange={(e) => setCurrentDate(e.target.value)}
                                     required
-                                    style={{ background: '#0a192f', color: 'white', border: '1px solid #233554' }}
                                 />
                             </div>
                         </div>
-                        <button type="submit" className="get-panchang-btn-hero" disabled={!cityName} style={{ marginTop: '1.5rem', width: '100%', background: 'linear-gradient(90deg, #64ffda 0%, #48bb78 100%)', color: '#0a192f', fontWeight: '800' }}>
+                        <button type="submit" className="get-panchang-btn-hero" disabled={!cityName}>
                             {isLoading ? 'Calculating...' : 'Generate Precision Report'}
                         </button>
                     </form>
@@ -82,7 +82,7 @@ const SwissPanchang = () => {
 
             {panchangData && (
                 <div className="swiss-panchang-results">
-                    
+
                     {/* Astronomical Table */}
                     <div className="swiss-section">
                         <h2 className="swiss-section-header">
@@ -120,7 +120,7 @@ const SwissPanchang = () => {
                                     <tr>
                                         <td className="swiss-label">Vedic Weekday (Vara)</td>
                                         <td className="swiss-value">
-                                            {panchangData.weekday} 
+                                            {panchangData.weekday}
                                             <span className="swiss-tag">{panchangData.varaLord?.planet || 'Ruling Lord'}</span>
                                         </td>
                                     </tr>

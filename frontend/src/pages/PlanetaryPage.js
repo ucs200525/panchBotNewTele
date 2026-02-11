@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import styles from './PlanetaryPage.module.css';
+import '../pages/hero-styles.css';
 import { CityAutocomplete } from '../components/forms';
 import { Section } from '../components/layout';
 import { saveProfile, getProfile, getAllProfiles } from '../utils/profileStorage';
-import './PlanetaryPage.css';
+
 
 const PlanetaryPage = () => {
   const [name, setName] = useState('');
@@ -108,32 +110,28 @@ const PlanetaryPage = () => {
   };
 
   return (
-    <div className="planetary-page">
+    <div className="content">
       {/* Hero Section */}
-      <div className="page-hero planetary-hero">
+      <div className="hero-section">
         <div className="hero-content">
           <h1 className="hero-title">Planetary Positions</h1>
           <p className="hero-subtitle">
             Precise sidereal positions of all nine planets in zodiac signs with degrees
           </p>
         </div>
-      </div>
 
-      {/* Input Section */}
-      <div className="input-section">
-        <div className="input-card">
-          <h2 className="section-title">Enter Birth Details</h2>
-          <form onSubmit={handleSubmit} className="planetary-form">
-            <div className="form-row-modern">
-              <div className="form-group-modern">
-                <label className="form-label-modern">Name</label>
+        {/* Hero Form */}
+        <div className="hero-form">
+          <form onSubmit={handleSubmit}>
+            <div className="form-row">
+              <div className="input-wrapper">
+                <label className="input-label">Name</label>
                 <input
                   type="text"
                   list="profiles-list"
                   value={name}
                   onChange={handleNameChange}
                   placeholder="Enter name..."
-                  className="date-input-modern"
                   required
                 />
                 <datalist id="profiles-list">
@@ -143,8 +141,8 @@ const PlanetaryPage = () => {
                 </datalist>
               </div>
 
-              <div className="form-group-modern">
-                <label className="form-label-modern">Location</label>
+              <div className="input-wrapper">
+                <label className="input-label">Location</label>
                 <CityAutocomplete
                   value={selectedCity?.name || ''}
                   onSelect={handleCitySelect}
@@ -154,28 +152,26 @@ const PlanetaryPage = () => {
                 />
               </div>
 
-              <div className="form-group-modern">
-                <label className="form-label-modern">Date</label>
+              <div className="input-wrapper">
+                <label className="input-label">Date</label>
                 <input
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="date-input-modern"
                 />
               </div>
 
-              <div className="form-group-modern">
-                <label className="form-label-modern">Time</label>
+              <div className="input-wrapper">
+                <label className="input-label">Time</label>
                 <input
                   type="time"
                   value={time}
                   onChange={(e) => setTime(e.target.value)}
-                  className="date-input-modern"
                 />
               </div>
             </div>
 
-            <button type="submit" className="submit-btn-modern" disabled={isLoading}>
+            <button type="submit" className="get-panchang-btn-hero" disabled={isLoading}>
               {isLoading ? 'Calculating...' : 'Get Planetary Positions'}
             </button>
           </form>
@@ -307,7 +303,7 @@ const PlanetaryPage = () => {
 
             {/* Detailed Table for Professionals */}
             <Section title="Detailed Planetary Metadata">
-              <div className="table-wrapper">
+              <div className={styles.tableWrapper}>
                 <table className="ss-table">
                   <thead>
                     <tr>

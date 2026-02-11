@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import styles from './DashaPage.module.css';
 import { Section } from '../components/layout';
 import { CityAutocomplete } from '../components/forms';
 import { useAuth } from '../context/AuthContext';
 import { saveProfile, getProfile, getAllProfiles } from '../utils/profileStorage';
-import './DashaPage.css';
+
 
 const DashaPage = () => {
     const { setCityAndDate } = useAuth();
@@ -219,8 +220,8 @@ const DashaPage = () => {
                 {dashaData && dashaData.birthDetails && (
                     <div className="floating-section">
                         <Section title="Birth Chart Details">
-                            <div className="data-grid" style={{gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1rem'}}>
-                                <div className="data-card">
+                            <div className={styles.dataGrid} style={{gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1rem'}}>
+                                <div className={styles.dataCard}>
                                     <div className="data-card-label">Birth Star (Nakshatra)</div>
                                     <div className="data-card-value">
                                         {dashaData.birthDetails.birthStar}
@@ -230,7 +231,7 @@ const DashaPage = () => {
                                     </div>
                                 </div>
 
-                                <div className="data-card">
+                                <div className={styles.dataCard}>
                                     <div className="data-card-label">Moon's Rashi</div>
                                     <div className="data-card-value">{dashaData.birthDetails.moonRashi}</div>
                                     <div className="data-card-sub">
@@ -238,12 +239,12 @@ const DashaPage = () => {
                                     </div>
                                 </div>
 
-                                <div className="data-card">
+                                <div className={styles.dataCard}>
                                     <div className="data-card-label">Birth Dasha Lord</div>
                                     <div className="data-card-value">{dashaData.birthDetails.dashaLord}</div>
                                 </div>
 
-                                <div className="data-card">
+                                <div className={styles.dataCard}>
                                     <div className="data-card-label">Dasha Balance at Birth</div>
                                     <div className="data-card-value">
                                         {dashaData.birthDetails.balanceOfDasha.years}y {dashaData.birthDetails.balanceOfDasha.months}m {dashaData.birthDetails.balanceOfDasha.days}d
@@ -257,7 +258,7 @@ const DashaPage = () => {
                 {dashaData && dashaData.mahadashas && (
                     <div className="floating-section">
                         <Section title="Vimshottari Dasha Timeline">
-                            <div className="table-wrapper">
+                            <div className={styles.tableWrapper}>
                                 <table className="dasha-table-modern">
                                     <thead>
                                         <tr>

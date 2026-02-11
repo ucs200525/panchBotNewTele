@@ -31,19 +31,19 @@ async function fetchCoordinates(city) {
         if (data.results.length > 0) {
             const { limit, remaining, reset } = data.rate;
             logger.info({ message: 'OpenCage Rate Limit', limit, remaining, reset });
-            
+
             // Track OpenCage usage
-            trackOpenCageRequest('geocode', { limit, remaining, reset }).catch(err => 
+            trackOpenCageRequest('geocode', { limit, remaining, reset }).catch(err =>
                 logger.error({ message: 'Error tracking OpenCage', error: err.message })
             );
-            
+
             const { lat, lng } = data.results[0].geometry;
             const timeZone = data.results[0].annotations.timezone.name;
             const result = { lat, lng, timeZone, limit, remaining, reset };
-            
+
             // Save to cache
             coordCache.set(cityKey, result);
-            
+
             logger.info({ message: 'Coordinates fetched', city, lat, lng, timeZone });
             return result; // Return all required values
         } else {
@@ -72,19 +72,19 @@ async function fetchCityName(lat, lng) {
     try {
         // Use OpenCage directly for high accuracy ( GeoNames was only nearby )
         const response = await fetch(`https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(lat)},${encodeURIComponent(lng)}&key=${apiKey}`);
-        
+
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const data = await response.json();
-        
+
         if (data.results.length > 0) {
             const { limit, remaining, reset } = data.rate;
             const components = data.results[0].components;
             // Strategy: Try to find the most specific city/town name first
             const city = components.city || components.town || components.village || components.suburb || components.neighbourhood || components.state_district || components.state;
             const timeZone = data.results[0].annotations.timezone.name;
-            
+
             const result = { cityName: city, timeZone, limit, remaining, reset, source: 'opencage' };
             reverseCache.set(cacheKey, result);
             logger.info({ message: 'City name fetched via OpenCage', city });
@@ -111,12 +111,12 @@ async function fetchSunTimes(lat, lng, date, timeZone) {
     try {
         const { getSunMoonTimesSwiss } = require('../utils/swissHelper');
         const results = await getSunMoonTimesSwiss(lat, lng, date, timeZone);
-        
+
         if (results) {
             logger.info({ message: 'Sun times fetched using Swiss Ephemeris', results });
             return results;
         }
-        
+
         logger.warn({ message: 'Swiss Ephemeris failed for sun times, falling back to external API' });
         return fetchSunTimesExternal(lat, lng, date, timeZone);
     } catch (error) {
@@ -173,7 +173,7 @@ async function fetchSunTimesExternal(lat, lng, date, timeZone) {
 
 async function getSunTimesForCity(city, date, lat, lng) {
     logger.info({ message: 'getSunTimesForCity called', city, date, lat, lng });
-    
+
     let coords;
     if (lat && lng && lat !== 'null' && lng !== 'null') {
         // We have coordinates from frontend! Skip OpenCage.
@@ -191,7 +191,7 @@ async function getSunTimesForCity(city, date, lat, lng) {
 
     if (coords) {
         const sunTimes = await fetchSunTimes(coords.lat, coords.lng, date, coords.timeZone);
-        
+
         // Calculate weekday
         const [y, m, d] = date.split('-').map(Number);
         const dateObj = new Date(y, m - 1, d);
@@ -1522,7 +1522,7 @@ const fetchmuhurat = async (city, date) => {
         // Convert DD/MM/YYYY to YYYY-MM-DD for consistency
         const [day, month, year] = date.split('/');
         const isoDate = `${year}-${month}-${day}`;
-        
+
         // 1. Get coordinates
         const coords = await fetchCoordinates(city);
         if (!coords) throw new Error('City not found');
@@ -1747,6 +1747,7 @@ router.get('/getPanchangData', async (req, res) => {
             sunTimesData.sunsetToday,
             sunTimesData.moonriseToday,
             sunTimesData.moonsetToday,
+            sunTimesData.sunriseTmrw,
             true  // includeTransitions - Enable Swiss Ephemeris calculations!
         );
 
@@ -1801,6 +1802,9 @@ router.post('/panchang', async (req, res) => {
             coords.lng,
             sunTimesData.sunriseToday,
             sunTimesData.sunsetToday,
+            sunTimesData.moonriseToday,
+            sunTimesData.moonsetToday,
+            sunTimesData.sunriseTmrw,
             true  // includeTransitions - Enable Swiss Ephemeris calculations!
         );
 
@@ -1816,26 +1820,26 @@ router.post('/panchang', async (req, res) => {
 router.get('/getSunMoonTimesSwiss/:city/:date', async (req, res) => {
     const { city, date } = req.params;
     logger.info({ message: 'Route /getSunMoonTimesSwiss called', city, date });
-    
+
     try {
         const coords = await fetchCoordinates(city);
         if (!coords) {
             return res.status(404).json({ error: 'City not found' });
         }
-        
+
         const { getSunMoonTimesSwiss } = require('../utils/swissHelper');
         const results = await getSunMoonTimesSwiss(coords.lat, coords.lng, date, coords.timeZone);
-        
+
         if (!results) {
             return res.status(500).json({ error: 'Failed to calculate times using Swiss Ephemeris' });
         }
-        
-        res.json({ 
+
+        res.json({
             success: true,
             city,
             date,
             coords,
-            ...results 
+            ...results
         });
     } catch (error) {
         logger.error({ message: 'Route /getSunMoonTimesSwiss error', error: error.message });

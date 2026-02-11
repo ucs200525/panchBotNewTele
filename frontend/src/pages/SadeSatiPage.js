@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import styles from './SadeSatiPage.module.css';
 import { Section } from '../components/layout';
 import { CityAutocomplete } from '../components/forms';
 import { useAuth } from '../context/AuthContext';
 import { saveProfile, getProfile, getAllProfiles } from '../utils/profileStorage';
-import './SadeSatiPage.css';
+
 
 const SadeSatiPage = () => {
     const { setCityAndDate } = useAuth();
@@ -219,7 +220,7 @@ const SadeSatiPage = () => {
                         </Section>
 
                         <Section title="Lifetime Transit Table">
-                            <div className="table-wrapper">
+                            <div className={styles.tableWrapper}>
                                 <table className="panchang-table ss-table">
                                     <thead>
                                         <tr>

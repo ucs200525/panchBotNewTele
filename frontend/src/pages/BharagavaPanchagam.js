@@ -7,6 +7,61 @@ import LivePeriodTracker from '../components/LivePeriodTracker';
 import { findCurrentPeriod } from '../utils/periodHelpers';
 import './hero-styles.css';
 
+// Helper function to format time range (time to time, date)
+const formatTimeRange = (start, end) => {
+  if (!start || !end) return `${start || ''} to ${end || ''}`;
+
+  // Check if dates are included (look for "Feb" or month names)
+  const hasDate = start.includes('Feb') || start.includes('Jan') || start.includes('Mar') ||
+    start.includes('Apr') || start.includes('May') || start.includes('Jun') ||
+    start.includes('Jul') || start.includes('Aug') || start.includes('Sep') ||
+    start.includes('Oct') || start.includes('Nov') || start.includes('Dec');
+
+  if (!hasDate) {
+    // Simple case: just times
+    return `${start} to ${end}`;
+  }
+
+  // Extract date and time from format like "Feb 12 , 06:09 AM"
+  const parseDateTime = (str) => {
+    // Match pattern: "Feb 12 , 06:09 AM" or "06:09 AM"
+    const match = str.trim().match(/^(?:(\w+\s+\d+)\s*,\s*)?(.+)$/);
+    if (match) {
+      return {
+        date: match[1] || null,
+        time: match[2] || str
+      };
+    }
+    return { date: null, time: str };
+  };
+
+  const startParts = parseDateTime(start);
+  const endParts = parseDateTime(end);
+
+  // If both have dates and they're the same, show: time to time, date
+  if (startParts.date && endParts.date && startParts.date === endParts.date) {
+    return `${startParts.time} to ${endParts.time}, ${startParts.date}`;
+  }
+
+  // If dates are different, show: time (date) to time (date)
+  if (startParts.date && endParts.date && startParts.date !== endParts.date) {
+    return `${startParts.time} (${startParts.date}) to ${endParts.time} (${endParts.date})`;
+  }
+
+  // If only start has date
+  if (startParts.date && !endParts.date) {
+    return `${startParts.time} to ${endParts.time}, ${startParts.date}`;
+  }
+
+  // If only end has date
+  if (!startParts.date && endParts.date) {
+    return `${startParts.time} to ${endParts.time}, ${endParts.date}`;
+  }
+
+  // Fallback
+  return `${start} to ${end}`;
+};
+
 const TimeConverterApp = () => {
   const { setCityAndDate } = useAuth();
 
@@ -155,37 +210,37 @@ const TimeConverterApp = () => {
             Ancient Vedic wisdom for modern living. Find your auspicious moments based on 24-minute precise periods.
           </p>
 
-            <div className="hero-form-wrapper">
-              <form className="hero-form" onSubmit={handleGetPanchang}>
-                <div className="form-group-inline">
-                  <div className="input-wrapper" style={{ flex: 2 }}>
-                    <label className="input-label">Select City</label>
-                    <CityAutocomplete
-                      value={cityName}
-                      onChange={setCityName}
-                      onSelect={handleCitySelect}
-                      placeholder="Delhi, Mumbai, New York..."
-                      showGeolocation={true}
-                    />
-                  </div>
-
-                  <div className="input-wrapper" style={{ flex: 1 }}>
-                    <label className="input-label">Date</label>
-                    <input
-                      type="date"
-                      className="date-input-hero"
-                      value={currentDate}
-                      onChange={(e) => setCurrentDate(e.target.value)}
-                      required
-                    />
-                  </div>
+          <div className="hero-form-wrapper">
+            <form className="hero-form" onSubmit={handleGetPanchang}>
+              <div className="form-group-inline">
+                <div className="input-wrapper" style={{ flex: 1 }}>
+                  <label className="input-label">Select City</label>
+                  <CityAutocomplete
+                    value={cityName}
+                    onChange={setCityName}
+                    onSelect={handleCitySelect}
+                    placeholder="Delhi, Mumbai, New York..."
+                    showGeolocation={true}
+                  />
                 </div>
 
-                <button type="submit" className="get-panchang-btn-hero" disabled={!cityName}>
-                  Calculate Timings
-                </button>
-              </form>
-            </div>
+                <div className="input-wrapper" style={{ flex: 1 }}>
+                  <label className="input-label">Date</label>
+                  <input
+                    type="date"
+                    className="date-input-hero"
+                    value={currentDate}
+                    onChange={(e) => setCurrentDate(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <button type="submit" className="get-panchang-btn-hero" disabled={!cityName}>
+                Calculate Timings
+              </button>
+            </form>
+          </div>
 
           {error && (
             <div className="error-box-hero">
@@ -235,26 +290,26 @@ const TimeConverterApp = () => {
           {/* Table Section */}
           <div id="tableToCapture">
             <div className="table-wrapper">
-                <table className="panchang-table">
-                  <thead>
-                    <tr>
-                      <th>Start 1</th>
-                      <th>End 1</th>
-                      <th className="weekday-th">{weekday}</th>
-                      <th>Start 2</th>
-                      <th>End 2</th>
-                      <th>S.No</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.map((item, index) => {
+              <table className="panchang-table">
+                <thead>
+                  <tr>
+                    <th>Start-End 1</th>
+                    <th className="weekday-th">{weekday}</th>
+                    <th>Start-End 2</th>
+                    <th>S.No</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data
+                    .filter(item => item.sNo !== '' && item.sNo !== null && item.sNo !== undefined)
+                    .map((item, index) => {
                       const currentPeriod = findCurrentPeriod(data, new Date());
                       const isCurrentPeriod = currentPeriod?.index === index;
 
                       return (
                         <tr key={index} className={isCurrentPeriod ? 'current-period-row' : ''}>
-                          <td>{item.start1}</td>
-                          <td>{item.end1}</td>
+                          <td className="time-range-cell">{formatTimeRange(item.start1, item.end1)}</td>
+
                           <td
                             className={
                               item.isWednesdayColored
@@ -266,20 +321,19 @@ const TimeConverterApp = () => {
                           >
                             {item.weekday}
                           </td>
-                          <td>{item.start2}</td>
-                          <td>{item.end2}</td>
+                          <td className="time-range-cell">{formatTimeRange(item.start2, item.end2)}</td>
                           <td>{item.sNo}</td>
                         </tr>
                       );
                     })}
-                  </tbody>
-                </table>
-              </div>
-              <div className="table-footer-actions">
-                <TableScreenshot tableId="tableToCapture" city={cityName} />
-              </div>
+                </tbody>
+              </table>
+            </div>
+            <div className="table-footer-actions">
+              <TableScreenshot tableId="tableToCapture" city={cityName} />
             </div>
           </div>
+        </div>
       )}
     </div>
   );

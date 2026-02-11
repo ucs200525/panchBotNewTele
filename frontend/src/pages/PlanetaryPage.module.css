@@ -1,0 +1,39 @@
+/* Generic minimal module for simple pages with hero section */
+
+.pageContainer {
+    padding: 2rem 0;
+}
+
+.pageContent {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.dataGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.dataCard {
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.tableWrapper {
+    overflow-x: auto;
+    margin: 2rem 0;
+}
+
+@media (max-width: 768px) {
+    .pageContent {
+        padding: 0 0.5rem;
+    }
+
+    .dataGrid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}

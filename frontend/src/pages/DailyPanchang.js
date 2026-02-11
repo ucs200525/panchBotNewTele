@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { CityAutocomplete } from '../components/forms';
-import './hero-styles.css';
-import './DailyPanchang.css';
+import '../pages/hero-styles.css';
+import styles from './DailyPanchang.module.css';
 
 const DailyPanchang = () => {
     const [cityName, setCityName] = useState(localStorage.getItem('selectedCity') || '');
@@ -40,7 +40,7 @@ const DailyPanchang = () => {
 
     return (
         <div className="content">
-            <div className="hero-section panchang-hero">
+            <div className="hero-section">
                 <div className="hero-content">
                     <h1 className="hero-title">
                         Daily Panchang
@@ -51,7 +51,7 @@ const DailyPanchang = () => {
 
                     <form className="hero-form" onSubmit={handleGetPanchang}>
                         <div className="form-group-inline">
-                            <div className="input-wrapper" style={{ flex: 2 }}>
+                            <div className="input-wrapper" style={{ flex: 1 }}>
                                 <label className="input-label">City</label>
                                 <CityAutocomplete
                                     value={cityName}
@@ -82,37 +82,37 @@ const DailyPanchang = () => {
             {error && <div className="error-box-hero">{error}</div>}
 
             {panchangData && (
-                <div className="results-section panchang-results">
+                <div className="results-section panchangResults">
 
                     {/* Sun & Moon Info Card */}
-                    <div className="info-card-grid">
-                        <div className="info-card sun-card">
-                            <div className="card-content">
+                    <div className={styles.infoCardGrid}>
+                        <div className={`${styles.infoCard} sun-card`}>
+                            <div className={styles.cardContent}>
                                 <h3>Sunrise</h3>
-                                <p className="card-value">{panchangData.sunrise}</p>
+                                <p className={styles.cardValue}>{panchangData.sunrise}</p>
                             </div>
                         </div>
-                        <div className="info-card moon-card">
-                            <div className="card-content">
+                        <div className={`${styles.infoCard} moon-card`}>
+                            <div className={styles.cardContent}>
                                 <h3>Sunset</h3>
-                                <p className="card-value">{panchangData.sunset}</p>
+                                <p className={styles.cardValue}>{panchangData.sunset}</p>
                             </div>
                         </div>
-                        <div className="info-card vara-card">
-                            <div className="card-content">
+                        <div className={`${styles.infoCard} vara-card`}>
+                            <div className={styles.cardContent}>
                                 <h3>Weekday (Vara)</h3>
-                                <p className="card-value">{panchangData.weekday}</p>
+                                <p className={styles.cardValue}>{panchangData.weekday}</p>
                                 {panchangData.varaLord && (
-                                    <p className="card-subtext">{panchangData.varaLord.planet}</p>
+                                    <p className={styles.cardSubtext}>{panchangData.varaLord.planet}</p>
                                 )}
                             </div>
                         </div>
                         {panchangData.moonPhase && (
-                            <div className="info-card phase-card">
-                                <div className="card-content">
+                            <div className={`${styles.infoCard} phase-card`}>
+                                <div className={styles.cardContent}>
                                     <h3>Moon Phase</h3>
-                                    <p className="card-value">{panchangData.moonPhase.name}</p>
-                                    <p className="card-subtext">{panchangData.moonPhase.illumination} illuminated</p>
+                                    <p className={styles.cardValue}>{panchangData.moonPhase.name}</p>
+                                    <p className={styles.cardSubtext}>{panchangData.moonPhase.illumination} illuminated</p>
                                 </div>
                             </div>
                         )}
@@ -120,30 +120,30 @@ const DailyPanchang = () => {
 
                     {/* Vedic Calendar */}
                     {(panchangData.masa || panchangData.samvatsara || panchangData.rtu) && (
-                        <div className="panchang-section calendar-section">
-                            <h2 className="section-header">
+                        <div className={styles.panchangSection}>
+                            <h2 className={styles.sectionHeader}>
                                 Vedic Calendar
                             </h2>
-                            <div className="info-card-grid three-col">
+                            <div className={`${styles.infoCardGrid} ${styles.threeCol}`}>
                                 {panchangData.masa && (
-                                    <div className="info-card compact">
-                                        <div className="card-label">Masa (Month)</div>
-                                        <div className="card-value">{panchangData.masa.name}</div>
-                                        <div className="card-subtext">{panchangData.masa.type}</div>
+                                    <div className={`${styles.infoCard} ${styles.compact}`}>
+                                        <div className={styles.cardLabel}>Masa (Month)</div>
+                                        <div className={styles.cardValue}>{panchangData.masa.name}</div>
+                                        <div className={styles.cardSubtext}>{panchangData.masa.type}</div>
                                     </div>
                                 )}
                                 {panchangData.samvatsara && (
-                                    <div className="info-card compact">
-                                        <div className="card-label">Samvatsara</div>
-                                        <div className="card-value">{panchangData.samvatsara.name}</div>
-                                        <div className="card-subtext">Year {panchangData.samvatsara.year}</div>
+                                    <div className={`${styles.infoCard} ${styles.compact}`}>
+                                        <div className={styles.cardLabel}>Samvatsara</div>
+                                        <div className={styles.cardValue}>{panchangData.samvatsara.name}</div>
+                                        <div className={styles.cardSubtext}>Year {panchangData.samvatsara.year}</div>
                                     </div>
                                 )}
                                 {panchangData.rtu && (
-                                    <div className="info-card compact">
-                                        <div className="card-label">Rtu (Season)</div>
-                                        <div className="card-value">{panchangData.rtu.name}</div>
-                                        <div className="card-subtext">{panchangData.rtu.season}</div>
+                                    <div className={`${styles.infoCard} ${styles.compact}`}>
+                                        <div className={styles.cardLabel}>Rtu (Season)</div>
+                                        <div className={styles.cardValue}>{panchangData.rtu.name}</div>
+                                        <div className={styles.cardSubtext}>{panchangData.rtu.season}</div>
                                     </div>
                                 )}
                             </div>
@@ -151,65 +151,65 @@ const DailyPanchang = () => {
                     )}
 
                     {/* Core Panchanga Elements */}
-                    <div className="panchang-section core-section">
-                        <h2 className="section-header">
+                    <div className={styles.panchangSection}>
+                        <h2 className={styles.sectionHeader}>
                             Panchanga Elements
                         </h2>
-                        <div className="elements-grid">
-                            <div className="element-card tithi-card">
-                                <div className="element-name">Tithi</div>
-                                <div className="element-value">{panchangData.tithi.name}</div>
-                                <div className="element-detail">#{panchangData.tithi.number} • {panchangData.paksha}</div>
+                        <div className={styles.elementsGrid}>
+                            <div className={styles.elementCard}>
+                                <div className={styles.elementName}>Tithi</div>
+                                <div className={styles.elementValue}>{panchangData.tithi.name}</div>
+                                <div className={styles.elementDetail}>#{panchangData.tithi.number} • {panchangData.paksha}</div>
                             </div>
-                            <div className="element-card nakshatra-card">
-                                <div className="element-name">Nakshatra</div>
-                                <div className="element-value">{panchangData.nakshatra.name}</div>
-                                <div className="element-detail">#{panchangData.nakshatra.number}</div>
+                            <div className={styles.elementCard}>
+                                <div className={styles.elementName}>Nakshatra</div>
+                                <div className={styles.elementValue}>{panchangData.nakshatra.name}</div>
+                                <div className={styles.elementDetail}>#{panchangData.nakshatra.number}</div>
                             </div>
-                            <div className="element-card yoga-card">
-                                <div className="element-name">Yoga</div>
-                                <div className="element-value">{panchangData.yoga.name}</div>
-                                <div className="element-detail">#{panchangData.yoga.number}</div>
+                            <div className={styles.elementCard}>
+                                <div className={styles.elementName}>Yoga</div>
+                                <div className={styles.elementValue}>{panchangData.yoga.name}</div>
+                                <div className={styles.elementDetail}>#{panchangData.yoga.number}</div>
                             </div>
-                            <div className="element-card karana-card">
-                                <div className="element-name">Karana</div>
-                                <div className="element-value">{panchangData.karana.name}</div>
-                                <div className="element-detail">#{panchangData.karana.number}</div>
+                            <div className={styles.elementCard}>
+                                <div className={styles.elementName}>Karana</div>
+                                <div className={styles.elementValue}>{panchangData.karana.name}</div>
+                                <div className={styles.elementDetail}>#{panchangData.karana.number}</div>
                             </div>
                         </div>
                     </div>
 
                     {/* Auspicious Timings */}
-                    <div className="panchang-section auspicious-section">
-                        <h2 className="section-header">
+                    <div className={styles.panchangSection}>
+                        <h2 className={styles.sectionHeader}>
                             Auspicious Timings
                         </h2>
-                        <div className="timings-grid">
+                        <div className={styles.timingsGrid}>
                             {panchangData.abhijitMuhurat && (
-                                <div className="timing-card shubh">
-                                    <div className="timing-name">Abhijit Muhurat</div>
-                                    <div className="timing-time">
+                                <div className={`${styles.timingCard} shubh`}>
+                                    <div className={styles.timingName}>Abhijit Muhurat</div>
+                                    <div className={styles.timingTime}>
                                         {panchangData.abhijitMuhurat.start} - {panchangData.abhijitMuhurat.end}
                                     </div>
-                                    <div className="timing-desc">Most auspicious period</div>
+                                    <div className={styles.timingDesc}>Most auspicious period</div>
                                 </div>
                             )}
                             {panchangData.brahmaMuhurat && (
-                                <div className="timing-card shubh">
-                                    <div className="timing-name">Brahma Muhurat</div>
-                                    <div className="timing-time">
+                                <div className={`${styles.timingCard} shubh`}>
+                                    <div className={styles.timingName}>Brahma Muhurat</div>
+                                    <div className={styles.timingTime}>
                                         {panchangData.brahmaMuhurat.start} - {panchangData.brahmaMuhurat.end}
                                     </div>
-                                    <div className="timing-desc">Sacred meditation time</div>
+                                    <div className={styles.timingDesc}>Sacred meditation time</div>
                                 </div>
                             )}
                             {panchangData.abhijitLagna && panchangData.abhijitLagna.start !== 'N/A' && (
-                                <div className="timing-card shubh">
-                                    <div className="timing-name">Abhijit Lagna</div>
-                                    <div className="timing-time">
+                                <div className={`${styles.timingCard} shubh`}>
+                                    <div className={styles.timingName}>Abhijit Lagna</div>
+                                    <div className={styles.timingTime}>
                                         {panchangData.abhijitLagna.start} - {panchangData.abhijitLagna.end}
                                     </div>
-                                    <div className="timing-desc">{panchangData.abhijitLagna.rashi}</div>
+                                    <div className={styles.timingDesc}>{panchangData.abhijitLagna.rashi}</div>
                                 </div>
                             )}
                         </div>
@@ -217,23 +217,23 @@ const DailyPanchang = () => {
 
                     {/* Pancha Rahita Muhurat */}
                     {panchangData.panchaRahitaMuhurat && panchangData.panchaRahitaMuhurat.length > 0 && (
-                        <div className="panchang-section rahita-section">
-                            <h2 className="section-header">
+                        <div className={styles.panchangSection}>
+                            <h2 className={styles.sectionHeader}>
                                 Pancha Rahita Muhurat
                             </h2>
-                            <p className="section-subtitle">
+                            <p className={styles.sectionSubtitle}>
                                 Periods free from all inauspicious timings - Best for important activities
                             </p>
-                            <div className="rahita-grid">
+                            <div className={styles.rahitaGrid}>
                                 {panchangData.panchaRahitaMuhurat.map((period, idx) => (
-                                    <div key={idx} className="rahita-card">
-                                        <div className="rahita-number">{idx + 1}</div>
-                                        <div className="rahita-time">
+                                    <div key={idx} className={styles.rahitaCard}>
+                                        <div className={styles.rahitaNumber}>{idx + 1}</div>
+                                        <div className={styles.rahitaTime}>
                                             <span className="start">{period.start}</span>
-                                            <span className="separator">→</span>
+                                            <span className={styles.separator}>→</span>
                                             <span className="end">{period.end}</span>
                                         </div>
-                                        <div className="rahita-duration">{period.duration}</div>
+                                        <div className={styles.rahitaDuration}>{period.duration}</div>
                                     </div>
                                 ))}
                             </div>
@@ -241,48 +241,48 @@ const DailyPanchang = () => {
                     )}
 
                     {/* Inauspicious Timings */}
-                    <div className="panchang-section inauspicious-section">
-                        <h2 className="section-header">
+                    <div className={styles.panchangSection}>
+                        <h2 className={styles.sectionHeader}>
                             Inauspicious Timings (Avoid)
                         </h2>
-                        <div className="timings-grid">
+                        <div className={styles.timingsGrid}>
                             {panchangData.rahuKaal && panchangData.rahuKaal.start && (
-                                <div className="timing-card ashubh">
-                                    <div className="timing-name">Rahu Kaal</div>
-                                    <div className="timing-time">
+                                <div className={`${styles.timingCard} ashubh`}>
+                                    <div className={styles.timingName}>Rahu Kaal</div>
+                                    <div className={styles.timingTime}>
                                         {panchangData.rahuKaal.start} - {panchangData.rahuKaal.end}
                                     </div>
                                 </div>
                             )}
                             {panchangData.yamaganda && panchangData.yamaganda.start && (
-                                <div className="timing-card ashubh">
-                                    <div className="timing-name">Yamaganda</div>
-                                    <div className="timing-time">
+                                <div className={`${styles.timingCard} ashubh`}>
+                                    <div className={styles.timingName}>Yamaganda</div>
+                                    <div className={styles.timingTime}>
                                         {panchangData.yamaganda.start} - {panchangData.yamaganda.end}
                                     </div>
                                 </div>
                             )}
                             {panchangData.gulika && panchangData.gulika.start && (
-                                <div className="timing-card ashubh">
-                                    <div className="timing-name">Gulika Kalam</div>
-                                    <div className="timing-time">
+                                <div className={`${styles.timingCard} ashubh`}>
+                                    <div className={styles.timingName}>Gulika Kalam</div>
+                                    <div className={styles.timingTime}>
                                         {panchangData.gulika.start} - {panchangData.gulika.end}
                                     </div>
                                 </div>
                             )}
                             {panchangData.varjyam && panchangData.varjyam.start && (
-                                <div className="timing-card ashubh">
-                                    <div className="timing-name">Varjyam</div>
-                                    <div className="timing-time">
+                                <div className={`${styles.timingCard} ashubh`}>
+                                    <div className={styles.timingName}>Varjyam</div>
+                                    <div className={styles.timingTime}>
                                         {panchangData.varjyam.start} - {panchangData.varjyam.end}
                                     </div>
-                                    <div className="timing-desc">{panchangData.varjyam.ghatis} ghatis - Tithi-based</div>
+                                    <div className={styles.timingDesc}>{panchangData.varjyam.ghatis} ghatis - Tithi-based</div>
                                 </div>
                             )}
                             {panchangData.durMuhurat && panchangData.durMuhurat.map((dur, idx) => (
-                                <div key={idx} className="timing-card ashubh">
-                                    <div className="timing-name">{dur.name}</div>
-                                    <div className="timing-time">
+                                <div key={idx} className={`${styles.timingCard} ashubh`}>
+                                    <div className={styles.timingName}>{dur.name}</div>
+                                    <div className={styles.timingTime}>
                                         {dur.start} - {dur.end}
                                     </div>
                                 </div>
@@ -292,16 +292,16 @@ const DailyPanchang = () => {
 
                     {/* Choghadiya - Day */}
                     {panchangData.choghadiya && panchangData.choghadiya.day && panchangData.choghadiya.day.length > 0 && (
-                        <div className="panchang-section choghadiya-section">
-                            <h2 className="section-header">
+                        <div className={styles.panchangSection}>
+                            <h2 className={styles.sectionHeader}>
                                 Choghadiya (Day)
                             </h2>
-                            <div className="choghadiya-grid">
+                            <div className={styles.choghadiyaGrid}>
                                 {panchangData.choghadiya.day.map((chog, idx) => (
                                     <div key={idx} className={`chog-card ${chog.type.toLowerCase()}`}>
-                                        <div className="chog-badge">{chog.type === 'Good' ? '✅' : '❌'}</div>
-                                        <div className="chog-name">{chog.name}</div>
-                                        <div className="chog-time">{chog.start} - {chog.end}</div>
+                                        <div className={styles.chogBadge}>{chog.type === 'Good' ? '✅' : '❌'}</div>
+                                        <div className={styles.chogName}>{chog.name}</div>
+                                        <div className={styles.chogTime}>{chog.start} - {chog.end}</div>
                                     </div>
                                 ))}
                             </div>
@@ -310,15 +310,15 @@ const DailyPanchang = () => {
 
                     {/* Choghadiya - Night */}
                     {panchangData.choghadiya && panchangData.choghadiya.night && panchangData.choghadiya.night.length > 0 && (
-                        <div className="panchang-section choghadiya-section">
-                            <h2 className="section-header">
+                        <div className={styles.panchangSection}>
+                            <h2 className={styles.sectionHeader}>
                                 Choghadiya (Night)
                             </h2>
-                            <div className="choghadiya-grid">
+                            <div className={styles.choghadiyaGrid}>
                                 {panchangData.choghadiya.night.map((chog, idx) => (
                                     <div key={idx} className={`chog-card ${chog.type.toLowerCase()}`}>
-                                        <div className="chog-name">{chog.name}</div>
-                                        <div className="chog-time">{chog.start} - {chog.end}</div>
+                                        <div className={styles.chogName}>{chog.name}</div>
+                                        <div className={styles.chogTime}>{chog.start} - {chog.end}</div>
                                     </div>
                                 ))}
                             </div>
@@ -327,19 +327,19 @@ const DailyPanchang = () => {
 
                     {/* Panchanga Transitions */}
                     {panchangData.lagnas && panchangData.lagnas.length > 0 && (
-                        <div className="panchang-section lagna-section">
-                            <h2 className="section-header">
+                        <div className={styles.panchangSection}>
+                            <h2 className={styles.sectionHeader}>
                                 Lagna Times (Ascendant Changes)
                             </h2>
-                            <p className="section-subtitle">
+                            <p className={styles.sectionSubtitle}>
                                 All 12 rashi (zodiac sign) ascendant changes throughout the day - Calculated with Swiss Ephemeris
                             </p>
-                            <div className="lagna-grid">
+                            <div className={styles.lagnaGrid}>
                                 {panchangData.lagnas.map((lagna, idx) => (
-                                    <div key={idx} className="lagna-card">
-                                        <div className="lagna-name">{lagna.name}</div>
-                                        <div className="lagna-number">#{lagna.number}</div>
-                                        <div className="lagna-time">
+                                    <div key={idx} className={styles.lagnaCard}>
+                                        <div className={styles.lagnaName}>{lagna.name}</div>
+                                        <div className={styles.lagnaNumber}>#{lagna.number}</div>
+                                        <div className={styles.lagnaTime}>
                                             {lagna.startTime} → {lagna.endTime}
                                         </div>
                                     </div>
@@ -349,20 +349,20 @@ const DailyPanchang = () => {
                     )}
 
                     {panchangData.tithis && panchangData.tithis.length > 1 && (
-                        <div className="panchang-section transitions-section">
-                            <h2 className="section-header">
+                        <div className={styles.panchangSection}>
+                            <h2 className={styles.sectionHeader}>
                                 Tithi Transitions
                             </h2>
-                            <div className="transitions-list">
+                            <div className={styles.transitionsList}>
                                 {panchangData.tithis.map((tithi, idx) => (
-                                    <div key={idx} className="transition-item">
-                                        <div className="trans-name">{tithi.name} #{tithi.number}</div>
-                                        <div className="trans-times">
+                                    <div key={idx} className={styles.transitionItem}>
+                                        <div className={styles.transName}>{tithi.name} #{tithi.number}</div>
+                                        <div className={styles.transTimes}>
                                             <span>{tithi.startTime || 'Previous day'}</span>
-                                            <span className="trans-arrow">→</span>
+                                            <span className={styles.transArrow}>→</span>
                                             <span>{tithi.endTime || 'Next day'}</span>
                                         </div>
-                                        <div className="trans-paksha">{tithi.paksha}</div>
+                                        <div className={styles.transPaksha}>{tithi.paksha}</div>
                                     </div>
                                 ))}
                             </div>
@@ -370,20 +370,20 @@ const DailyPanchang = () => {
                     )}
 
                     {panchangData.nakshatras && panchangData.nakshatras.length > 1 && (
-                        <div className="panchang-section transitions-section">
-                            <h2 className="section-header">
+                        <div className={styles.panchangSection}>
+                            <h2 className={styles.sectionHeader}>
                                 Nakshatra Transitions
                             </h2>
-                            <div className="transitions-list">
+                            <div className={styles.transitionsList}>
                                 {panchangData.nakshatras.map((nak, idx) => (
-                                    <div key={idx} className="transition-item">
-                                        <div className="trans-name">{nak.name} #{nak.number}</div>
-                                        <div className="trans-times">
+                                    <div key={idx} className={styles.transitionItem}>
+                                        <div className={styles.transName}>{nak.name} #{nak.number}</div>
+                                        <div className={styles.transTimes}>
                                             <span>{nak.startTime || 'Previous day'}</span>
-                                            <span className="trans-arrow">→</span>
+                                            <span className={styles.transArrow}>→</span>
                                             <span>{nak.endTime || 'Next day'}</span>
                                         </div>
-                                        {nak.lord && <div className="trans-paksha">Lord: {nak.lord}</div>}
+                                        {nak.lord && <div className={styles.transPaksha}>Lord: {nak.lord}</div>}
                                     </div>
                                 ))}
                             </div>

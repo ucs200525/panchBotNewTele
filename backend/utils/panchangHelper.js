@@ -6,7 +6,7 @@
 const { panchanga, julianDay, muhurta, lagna: lagnaModule } = require('../swisseph');
 const { swisseph, useNative } = require('../swisseph/core/config');
 
-async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr, moonriseStr, moonsetStr, includeTransitions = true) {
+async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr, moonriseStr, moonsetStr, nextSunriseStr, includeTransitions = true) {
     try {
         // Parse date string
         const [year, month, day] = date.split('-').map(Number);
@@ -140,6 +140,9 @@ async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr
             // Calculate Choghadiya (Day and Night muhurta timings)
             choghadiya: calculateChoghadiya(dateObj, sunriseStr, sunsetStr, formattedSunrise, formattedSunset),
 
+            // Calculate Kaal Ratri (inauspicious night period)
+            kaalRatri: calculateKaalRatri(dateObj, sunsetStr, nextSunriseStr),
+
             // Calculate Dur Muhurat (inauspicious periods)
             durMuhurat: calculateDurMuhurat(dateObj, sunriseStr, sunsetStr),
 
@@ -147,7 +150,7 @@ async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr
             varjyam: calculateVarjyam(dateObj, sunriseStr, sunsetStr, panchangaData.tithis?.[0]?.number),
 
             // Calculate Pancha Rahita Muhurat (periods free from ALL 5 inauspicious timings)
-            panchaRahitaMuhurat: [], 
+            panchaRahitaMuhurat: calculateSwissPanchakaRahita(dateObj, lat, lng, timezone, sunriseStr, sunsetStr, nextSunriseStr),
 
             // Additional Vedic calendar info
             masa: panchanga.getMasa ? panchanga.getMasa(dateObj) : { name: 'Pausha', type: 'Lunar' },
@@ -427,26 +430,29 @@ function calculateChoghadiya(dateObj, sunriseStr, sunsetStr, formattedSunrise, f
         const nightDuration = (nextSunrise - sunsetDate) / (8 * 60 * 1000);
 
         const weekday = dateObj.getDay();
-        // Choghadiya names
+        // Correct Choghadiya sequences based on traditional Vedic astrology
+        // Day Choghadiya: Starts with the lord of the weekday
         const dayOrder = [
-            ['Udveg', 'Char', 'Labh', 'Amrit', 'Kaal', 'Shubh', 'Rog', 'Udveg'],  // Sunday
-            ['Char', 'Rog', 'Kaal', 'Labh', 'Udveg', 'Shubh', 'Amrit', 'Char'],     // Monday
-            ['Labh', 'Amrit', 'Kaal', 'Rog', 'Udveg', 'Shubh', 'Char', 'Labh'],     // Tuesday
-            ['Rog', 'Kaal', 'Labh', 'Udveg', 'Shubh', 'Amrit', 'Char', 'Rog'],      // Wednesday
-            ['Udveg', 'Shubh', 'Amrit', 'Char', 'Rog', 'Kaal', 'Labh', 'Udveg'],    // Thursday
-            ['Char', 'Rog', 'Kaal', 'Labh', 'Amrit', 'Shubh', 'Rog', 'Char'],       // Friday
-            ['Labh', 'Amrit', 'Shubh', 'Rog', 'Udveg', 'Char', 'Kaal', 'Labh']      // Saturday
+            ['Udveg', 'Char', 'Labh', 'Amrit', 'Kaal', 'Shubh', 'Rog', 'Udveg'],  // Sunday (Sun)
+            ['Amrit', 'Kaal', 'Shubh', 'Rog', 'Udveg', 'Char', 'Labh', 'Amrit'],  // Monday (Moon)
+            ['Rog', 'Udveg', 'Char', 'Labh', 'Amrit', 'Kaal', 'Shubh', 'Rog'],    // Tuesday (Mars)
+            ['Labh', 'Amrit', 'Kaal', 'Shubh', 'Rog', 'Udveg', 'Char', 'Labh'],   // Wednesday (Mercury)
+            ['Shubh', 'Rog', 'Udveg', 'Char', 'Labh', 'Amrit', 'Kaal', 'Shubh'],  // Thursday (Jupiter)
+            ['Char', 'Labh', 'Amrit', 'Kaal', 'Shubh', 'Rog', 'Udveg', 'Char'],   // Friday (Venus)
+            ['Kaal', 'Shubh', 'Rog', 'Udveg', 'Char', 'Labh', 'Amrit', 'Kaal']    // Saturday (Saturn)
         ];
 
+        // Night Choghadiya: Follows a different sequence
         const nightOrder = [
-            ['Shubh', 'Amrit', 'Char', 'Rog', 'Kaal', 'Labh', 'Udveg', 'Shubh'],    // Sunday night
-            ['Amrit', 'Char', 'Rog', 'Kaal', 'Labh', 'Udveg', 'Shubh', 'Amrit'],    // Monday night
-            ['Char', 'Rog', 'Kaal', 'Labh', 'Udveg', 'Shubh', 'Amrit', 'Char'],     // Tuesday night
-            ['Rog', 'Kaal', 'Labh', 'Udveg', 'Shubh', 'Amrit', 'Char', 'Rog'],      // Wednesday night
-            ['Kaal', 'Labh', 'Udveg', 'Shubh', 'Amrit', 'Char', 'Rog', 'Kaal'],     // Thursday night
-            ['Labh', 'Udveg', 'Shubh', 'Amrit', 'Char', 'Rog', 'Kaal', 'Labh'],     // Friday night
-            ['Udveg', 'Shubh', 'Amrit', 'Char', 'Rog', 'Kaal', 'Labh', 'Udveg']     // Saturday night
+            ['Shubh', 'Amrit', 'Char', 'Rog', 'Kaal', 'Labh', 'Udveg', 'Shubh'],  // Sunday night
+            ['Char', 'Rog', 'Kaal', 'Labh', 'Udveg', 'Shubh', 'Amrit', 'Char'],   // Monday night  
+            ['Kaal', 'Labh', 'Udveg', 'Shubh', 'Amrit', 'Char', 'Rog', 'Kaal'],   // Tuesday night
+            ['Udveg', 'Shubh', 'Amrit', 'Char', 'Rog', 'Kaal', 'Labh', 'Udveg'],  // Wednesday night
+            ['Amrit', 'Char', 'Rog', 'Kaal', 'Labh', 'Udveg', 'Shubh', 'Amrit'],  // Thursday night
+            ['Rog', 'Kaal', 'Labh', 'Udveg', 'Shubh', 'Amrit', 'Char', 'Rog'],    // Friday night
+            ['Labh', 'Udveg', 'Shubh', 'Amrit', 'Char', 'Rog', 'Kaal', 'Labh']    // Saturday night
         ];
+
 
         const formatTime = (date) => {
             return date.toLocaleTimeString('en-IN', {
@@ -780,8 +786,11 @@ function calculateSwissPanchakaRahita(dateObj, lat, lng, timezone, sunriseStr, s
             results.push({
                 muhurat: muhuratName,
                 category: category,
-                time: `${formatTime(start)} to ${formatTime(end)}`,
-                _start: start.getTime(), // For merging
+                start: formatTime(start),
+                end: formatTime(end),
+                duration: Math.round((end.getTime() - start.getTime()) / 60000) + ' mins',
+                _start: start.getTime(),
+                _end: end.getTime(),
                 _sum: sum,
                 _remainder: remainder
             });
@@ -790,14 +799,16 @@ function calculateSwissPanchakaRahita(dateObj, lat, lng, timezone, sunriseStr, s
         // 5. Merge continuous identical segments
         const merged = [];
         if (results.length > 0) {
-            let current = results[0];
+            let current = { ...results[0] };
             for (let i = 1; i < results.length; i++) {
                 if (results[i].muhurat === current.muhurat) {
                     // Update current end time
-                    current.time = current.time.split(' to ')[0] + ' to ' + results[i].time.split(' to ')[1];
+                    current.end = results[i].end;
+                    current._end = results[i]._end;
+                    current.duration = Math.round((current._end - current._start) / 60000) + ' mins';
                 } else {
                     merged.push(current);
-                    current = results[i];
+                    current = { ...results[i] };
                 }
             }
             merged.push(current);
@@ -925,5 +936,53 @@ function getVaraLord(vara) {
     return varaLords[vara] || { lord: 'Unknown', planet: 'N/A', color: 'N/A', gemstone: 'N/A' };
 }
 
-module.exports = { calculatePanchangData, getTimezoneFromCoordinates, calculateSwissPanchakaRahita };
+function calculateKaalRatri(dateObj, sunsetStr, nextSunriseStr) {
+    try {
+        const [suh, sum, sus = 0] = sunsetStr.split(':').map(Number);
+
+        // If next sunrise is not provided or invalid, assume 24h cycle
+        let [nsh, nsm, nss = 0] = (nextSunriseStr || '').split(':').map(Number);
+        if (isNaN(nsh)) {
+            nsh = (suh + 12) % 24; // Very rough fallback
+            nsm = sum;
+        }
+
+        const sunsetDate = new Date(dateObj);
+        sunsetDate.setHours(suh, sum, sus || 0, 0);
+
+        const nextSunriseDate = new Date(dateObj);
+        nextSunriseDate.setDate(nextSunriseDate.getDate() + 1);
+        nextSunriseDate.setHours(nsh, nsm, nss || 0, 0);
+
+        const nightDuration = (nextSunriseDate - sunsetDate) / (8 * 60 * 1000); // 8 parts in minutes
+
+        const weekday = dateObj.getDay();
+        // Kaal Ratri sequence (1st to 8th part of night)
+        // Sunday: 4, Monday: 2, Tuesday: 7, Wednesday: 5, Thursday: 3, Friday: 1, Saturday: 6
+        const kaalRatriParts = [4, 2, 7, 5, 3, 1, 6];
+        const partIdx = kaalRatriParts[weekday] - 1; // 0-indexed
+
+        const kaalRatriStart = new Date(sunsetDate.getTime() + partIdx * nightDuration * 60 * 1000);
+        const kaalRatriEnd = new Date(sunsetDate.getTime() + (partIdx + 1) * nightDuration * 60 * 1000);
+
+        const formatTime = (date) => {
+            return date.toLocaleTimeString('en-IN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            });
+        };
+
+        return {
+            start: formatTime(kaalRatriStart),
+            end: formatTime(kaalRatriEnd),
+            duration: Math.round(nightDuration) + ' mins'
+        };
+    } catch (error) {
+        console.error('Error calculating Kaal Ratri:', error);
+        return { start: 'N/A', end: 'N/A' };
+    }
+}
+
+module.exports = { calculatePanchangData, getTimezoneFromCoordinates, calculateSwissPanchakaRahita, calculateKaalRatri };
 

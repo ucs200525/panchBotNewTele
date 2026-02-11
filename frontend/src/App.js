@@ -17,6 +17,7 @@ import SadeSatiPage from './pages/SadeSatiPage';
 import DailyPanchang from './pages/DailyPanchang';
 import SwissPanchang from './pages/SwissPanchang';
 import GoodTimingsPage from './pages/GoodTimingsPage';
+import ChoghadiyaInfo from './pages/ChoghadiyaInfo';
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
           <Route path="/lagna" element={<LagnaPage />} />
           <Route path="/hora" element={<HoraPage />} />
           <Route path="/combine" element={<Combine />} />
+          <Route path="/choghadiya-info" element={<ChoghadiyaInfo />} />
           {/* Add more routes here if needed */}
         </Routes>
       </div>

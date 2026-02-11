@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import './CityAutocomplete.css';
 import { popularCities } from '../../../data/popularCities';
 
 const CityAutocomplete = ({
@@ -55,7 +54,7 @@ const CityAutocomplete = ({
     }
 
     // 1. Check Local Popular Cities First (Instant - 0ms)
-    const localMatches = popularCities.filter(c => 
+    const localMatches = popularCities.filter(c =>
       c.name.toLowerCase().includes(trimmedQuery)
     ).map(city => ({
       name: city.name,
@@ -109,16 +108,16 @@ const CityAutocomplete = ({
           lat: city.lat,
           lng: city.lng
         }));
-        
+
         // Save to cache
         searchCache.current[trimmedQuery] = formattedSuggestions;
-        
+
         // Merge with local results
         const merged = [...localMatches];
         formattedSuggestions.forEach(fs => {
-            if (!merged.find(m => m.name.toLowerCase() === fs.name.toLowerCase())) {
-                merged.push(fs);
-            }
+          if (!merged.find(m => m.name.toLowerCase() === fs.name.toLowerCase())) {
+            merged.push(fs);
+          }
         });
 
         setSuggestions(merged);
@@ -275,7 +274,7 @@ const CityAutocomplete = ({
 
       {isOpen && suggestions.length > 0 && (
         <ul className="autocomplete-dropdown">
-            {suggestions.map((suggestion, index) => (
+          {suggestions.map((suggestion, index) => (
             <li
               key={index}
               className={`autocomplete-item ${index === selectedIndex ? 'selected' : ''}`}
@@ -284,7 +283,7 @@ const CityAutocomplete = ({
             >
               <div className="city-icon">
                 {suggestion.countryCode ? (
-                  <img 
+                  <img
                     src={`https://flagcdn.com/w40/${suggestion.countryCode.toLowerCase()}.png`}
                     srcSet={`https://flagcdn.com/w80/${suggestion.countryCode.toLowerCase()}.png 2x`}
                     width="24"
