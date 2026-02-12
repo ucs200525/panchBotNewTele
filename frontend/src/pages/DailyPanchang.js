@@ -1,62 +1,67 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '../context/AuthContext';
+import styles from './DailyPanchang.module.css';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { CityAutocomplete } from '../components/forms';
-import { useAuth } from '../context/AuthContext';
-import '../pages/hero-styles.css';
-import styles from './DailyPanchang.module.css';
+import './hero-styles.css';
 
 const DailyPanchang = () => {
-    const { 
-        localCity, 
-        localDate, 
-        selectedLat: globalLat, 
-        selectedLng: globalLng, 
-        setLocationDetails,
-        setCityAndDate
-    } = useAuth();
-
-    const [cityName, setCityName] = useState(localCity || '');
-    const [currentDate, setCurrentDate] = useState(localDate || new Date().toISOString().substring(0, 10));
-    const [selectedLat, setSelectedLat] = useState(globalLat || null);
-    const [selectedLng, setSelectedLng] = useState(globalLng || null);
-    
+    const { localCity, setCityAndDate } = useAuth();
+    const [cityName, setCityName] = useState(localCity || localStorage.getItem('selectedCity') || '');
+    const [currentDate, setCurrentDate] = useState(new Date().toISOString().split('T')[0]);
     const [panchangData, setPanchangData] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    // Sync with AuthContext
-    useEffect(() => {
-        if (localCity && !cityName) setCityName(localCity);
-        if (globalLat && !selectedLat) setSelectedLat(globalLat);
-        if (globalLng && !selectedLng) setSelectedLng(globalLng);
-    }, [localCity, globalLat, globalLng]);
+    const fetchPanchang = useCallback(async () => {
+        if (!cityName || !currentDate) return;
 
-    const fetchPanchang = async () => {
-        if (!cityName) return;
         setIsLoading(true);
         setError(null);
+
         try {
-            let url = `${process.env.REACT_APP_API_URL}/api/getPanchangData?city=${encodeURIComponent(cityName)}&date=${currentDate}`;
-            if (selectedLat && selectedLng) {
-                url += `&lat=${selectedLat}&lng=${selectedLng}`;
+            const lat = localStorage.getItem('selectedLat');
+            const lng = localStorage.getItem('selectedLng');
+
+            let url = `http://localhost:4000/api/getPanchangData?city=${encodeURIComponent(cityName)}&date=${currentDate}`;
+            if (lat && lng && lat !== 'undefined' && lng !== 'undefined') {
+                url += `&lat=${lat}&lng=${lng}`;
             }
-            
+
             const response = await fetch(url);
             if (!response.ok) throw new Error('Failed to fetch Panchang data');
-            const result = await response.json();
-            
-            // Update global context with coordinates if returned
-            if (result._timezone) { // panchangHelper returns _timezone
-                 // Note: result for getPanchangData doesn't strictly have 'coords' object like sunTimes 
-                 // but we can infer lat/lng from what we sent or if it calculates them.
-                 // Actually, let's just make sure we save what we have.
-            }
-            
-            setPanchangData(result);
+
+            const data = await response.json();
+            setPanchangData(data);
         } catch (err) {
             setError(err.message);
+            console.error(err);
         } finally {
             setIsLoading(false);
+        }
+    }, [cityName, currentDate]);
+
+    useEffect(() => {
+        if (cityName) {
+            fetchPanchang();
+        }
+    }, [fetchPanchang]);
+
+    const formatDisplayTime = (timeStr, fallback = '') => {
+        if (!timeStr || timeStr === 'N/A') return fallback;
+        if (timeStr === 'Previous day') return '12:00 AM (Sunrise)';
+        if (timeStr === 'Next day') return 'Sunrise (Next Day)';
+        
+        try {
+            const date = new Date(timeStr);
+            if (isNaN(date.getTime())) return timeStr;
+            return date.toLocaleTimeString('en-IN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            });
+        } catch (e) {
+            return timeStr;
         }
     };
 
@@ -66,41 +71,51 @@ const DailyPanchang = () => {
         fetchPanchang();
     };
 
-    const handleCitySelect = (city) => {
-        setCityName(city.name);
-        setSelectedLat(city.lat);
-        setSelectedLng(city.lng);
-        setLocationDetails({
-            name: city.name,
-            lat: city.lat,
-            lng: city.lng
-        });
-    };
+    const renderTableSection = (title, subtitle, headers, rows) => (
+        <div className={styles.panchangSection}>
+            <h2 className={styles.sectionHeader}>{title}</h2>
+            {subtitle && <p className={styles.sectionSubtitle}>{subtitle}</p>}
+            <div className={styles.tableWrapper}>
+                <table className={styles.panchangTable}>
+                    <thead>
+                        <tr>
+                            {headers.map((h, i) => <th key={i}>{h}</th>)}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {rows.map((row, i) => (
+                            <tr key={i} className={row.className || ''}>
+                                {row.cells.map((cell, j) => (
+                                    <td key={j} className={cell.className || ''}>{cell.content}</td>
+                                ))}
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
 
     return (
         <div className="content">
             <div className="hero-section">
                 <div className="hero-content">
                     <h1 className="hero-title">
-                        Daily Panchang
+                        <span className="hero-icon">🌞</span> DAILY PANCHANG
                     </h1>
-                    <p className="hero-subtitle">
-                        Complete Vedic Calendar with Swiss Ephemeris • Precise Astronomical Calculations
-                    </p>
+                    <p className="hero-subtitle">Premium Vedic calendar and astronomical data for any city</p>
 
                     <form className="hero-form" onSubmit={handleGetPanchang}>
-                        <div className="form-group-inline">
-                            <div className="input-wrapper" style={{ flex: 1 }}>
-                                <label className="input-label">City</label>
+                        <div className="form-row">
+                            <div className="input-wrapper">
+                                <label className="input-label">Select City</label>
                                 <CityAutocomplete
                                     value={cityName}
-                                    onChange={setCityName}
-                                    onSelect={handleCitySelect}
-                                    placeholder="Search city"
+                                    onChange={(newValue) => setCityName(newValue)}
                                 />
                             </div>
-                            <div className="input-wrapper" style={{ flex: 1 }}>
-                                <label className="input-label">Date</label>
+                            <div className="input-wrapper">
+                                <label className="input-label">Select Date</label>
                                 <input
                                     type="date"
                                     className="date-input-hero"
@@ -121,313 +136,175 @@ const DailyPanchang = () => {
             {error && <div className="error-box-hero">{error}</div>}
 
             {panchangData && (
-                <div className="results-section panchangResults">
-
-                    {/* Sun & Moon Info Card */}
-                    <div className={styles.infoCardGrid}>
-                        <div className={`${styles.infoCard} sun-card`}>
-                            <div className={styles.cardContent}>
-                                <h3>Sunrise</h3>
-                                <p className={styles.cardValue}>{panchangData.sunrise}</p>
-                            </div>
-                        </div>
-                        <div className={`${styles.infoCard} moon-card`}>
-                            <div className={styles.cardContent}>
-                                <h3>Sunset</h3>
-                                <p className={styles.cardValue}>{panchangData.sunset}</p>
-                            </div>
-                        </div>
-                        <div className={`${styles.infoCard} vara-card`}>
-                            <div className={styles.cardContent}>
-                                <h3>Weekday (Vara)</h3>
-                                <p className={styles.cardValue}>{panchangData.weekday}</p>
-                                {panchangData.varaLord && (
-                                    <p className={styles.cardSubtext}>{panchangData.varaLord.planet}</p>
-                                )}
-                            </div>
-                        </div>
-                        {panchangData.moonPhase && (
-                            <div className={`${styles.infoCard} phase-card`}>
-                                <div className={styles.cardContent}>
-                                    <h3>Moon Phase</h3>
-                                    <p className={styles.cardValue}>{panchangData.moonPhase.name}</p>
-                                    <p className={styles.cardSubtext}>{panchangData.moonPhase.illumination} illuminated</p>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Vedic Calendar */}
-                    {(panchangData.masa || panchangData.samvatsara || panchangData.rtu) && (
-                        <div className={styles.panchangSection}>
-                            <h2 className={styles.sectionHeader}>
-                                Vedic Calendar
-                            </h2>
-                            <div className={`${styles.infoCardGrid} ${styles.threeCol}`}>
-                                {panchangData.masa && (
-                                    <div className={`${styles.infoCard} ${styles.compact}`}>
-                                        <div className={styles.cardLabel}>Masa (Month)</div>
-                                        <div className={styles.cardValue}>{panchangData.masa.name}</div>
-                                        <div className={styles.cardSubtext}>{panchangData.masa.type}</div>
-                                    </div>
-                                )}
-                                {panchangData.samvatsara && (
-                                    <div className={`${styles.infoCard} ${styles.compact}`}>
-                                        <div className={styles.cardLabel}>Samvatsara</div>
-                                        <div className={styles.cardValue}>{panchangData.samvatsara.name}</div>
-                                        <div className={styles.cardSubtext}>Year {panchangData.samvatsara.year}</div>
-                                    </div>
-                                )}
-                                {panchangData.rtu && (
-                                    <div className={`${styles.infoCard} ${styles.compact}`}>
-                                        <div className={styles.cardLabel}>Rtu (Season)</div>
-                                        <div className={styles.cardValue}>{panchangData.rtu.name}</div>
-                                        <div className={styles.cardSubtext}>{panchangData.rtu.season}</div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
+                <div className={`results-section ${styles.panchangResults}`}>
+                    
+                    {/* Sun & Moon Timings Table */}
+                    {renderTableSection(
+                        "Sun & Moon Timings",
+                        null,
+                        ["Event", "Time"],
+                        [
+                            { cells: [{ content: "Sunrise", className: styles.labelCell }, { content: panchangData.sunrise, className: styles.valueCell }] },
+                            { cells: [{ content: "Sunset", className: styles.labelCell }, { content: panchangData.sunset, className: styles.valueCell }] },
+                            { cells: [{ content: "Moonrise", className: styles.labelCell }, { content: panchangData.moonrise || "N/A", className: styles.valueCell }] },
+                            { cells: [{ content: "Moonset", className: styles.labelCell }, { content: panchangData.moonset || "N/A", className: styles.valueCell }] }
+                        ]
                     )}
 
-                    {/* Core Panchanga Elements */}
-                    <div className={styles.panchangSection}>
-                        <h2 className={styles.sectionHeader}>
-                            Panchanga Elements
-                        </h2>
-                        <div className={styles.elementsGrid}>
-                            <div className={styles.elementCard}>
-                                <div className={styles.elementName}>Tithi</div>
-                                <div className={styles.elementValue}>{panchangData.tithi.name}</div>
-                                <div className={styles.elementDetail}>#{panchangData.tithi.number} • {panchangData.paksha}</div>
-                            </div>
-                            <div className={styles.elementCard}>
-                                <div className={styles.elementName}>Nakshatra</div>
-                                <div className={styles.elementValue}>{panchangData.nakshatra.name}</div>
-                                <div className={styles.elementDetail}>#{panchangData.nakshatra.number}</div>
-                            </div>
-                            <div className={styles.elementCard}>
-                                <div className={styles.elementName}>Yoga</div>
-                                <div className={styles.elementValue}>{panchangData.yoga.name}</div>
-                                <div className={styles.elementDetail}>#{panchangData.yoga.number}</div>
-                            </div>
-                            <div className={styles.elementCard}>
-                                <div className={styles.elementName}>Karana</div>
-                                <div className={styles.elementValue}>{panchangData.karana.name}</div>
-                                <div className={styles.elementDetail}>#{panchangData.karana.number}</div>
-                            </div>
-                        </div>
-                    </div>
+                    {/* Vedic Elements Table */}
+                    {renderTableSection(
+                        "Panchanga Elements",
+                        "Key Vedic calendar details for the day",
+                        ["Element", "Description / Value"],
+                        [
+                            { cells: [{ content: "Weekday (Vara)", className: styles.labelCell }, { content: `${panchangData.weekday} (${panchangData.varaLord?.planet || ""})`, className: styles.valueCell }] },
+                            { cells: [{ content: "Tithi", className: styles.labelCell }, { content: `${panchangData.tithi.name} (#${panchangData.tithi.number}) ${panchangData.tithi.endTime ? `Upto ${formatDisplayTime(panchangData.tithi.endTime)}` : ""}`, className: styles.valueCell }] },
+                            { cells: [{ content: "Nakshatra", className: styles.labelCell }, { content: `${panchangData.nakshatra.name} (#${panchangData.nakshatra.number}) ${panchangData.nakshatra.endTime ? `Upto ${formatDisplayTime(panchangData.nakshatra.endTime)}` : ""}`, className: styles.valueCell }] },
+                            { cells: [{ content: "Yoga", className: styles.labelCell }, { content: `${panchangData.yoga.name} (#${panchangData.yoga.number}) ${panchangData.yoga.endTime ? `Upto ${formatDisplayTime(panchangData.yoga.endTime)}` : ""}`, className: styles.valueCell }] },
+                            { cells: [{ content: "Karana", className: styles.labelCell }, { content: `${panchangData.karana.name} (#${panchangData.karana.number}) ${panchangData.karana.endTime ? `Upto ${formatDisplayTime(panchangData.karana.endTime)}` : ""}`, className: styles.valueCell }] },
+                            { cells: [{ content: "Paksha", className: styles.labelCell }, { content: panchangData.paksha, className: styles.pakshaCell }] },
+                            { cells: [{ content: "Masa (Month)", className: styles.labelCell }, { content: `${panchangData.masa?.name || "N/A"} (${panchangData.masa?.type || ""})`, className: styles.valueCell }] },
+                            { cells: [{ content: "Samvatsara", className: styles.labelCell }, { content: `${panchangData.samvatsara?.name || "N/A"} (Year ${panchangData.samvatsara?.year || ""})`, className: styles.valueCell }] },
+                            { cells: [{ content: "Rtu (Season)", className: styles.labelCell }, { content: `${panchangData.rtu?.name || "N/A"} (${panchangData.rtu?.season || ""})`, className: styles.valueCell }] },
+                            { cells: [{ content: "Moon Phase", className: styles.labelCell }, { content: `${panchangData.moonPhase?.emoji || ""} ${panchangData.moonPhase?.name || ""} (${panchangData.moonPhase?.illumination || ""})`, className: styles.valueCell }] }
+                        ]
+                    )}
 
-                    {/* Auspicious Timings */}
-                    <div className={styles.panchangSection}>
-                        <h2 className={styles.sectionHeader}>
-                            Auspicious Timings
-                        </h2>
-                        <div className={styles.timingsGrid}>
-                            {panchangData.abhijitMuhurat && (
-                                <div className={`${styles.timingCard} shubh`}>
-                                    <div className={styles.timingName}>Abhijit Muhurat</div>
-                                    <div className={styles.timingTime}>
-                                        {panchangData.abhijitMuhurat.start} - {panchangData.abhijitMuhurat.end}
-                                    </div>
-                                    <div className={styles.timingDesc}>Most auspicious period</div>
-                                </div>
-                            )}
-                            {panchangData.brahmaMuhurat && (
-                                <div className={`${styles.timingCard} shubh`}>
-                                    <div className={styles.timingName}>Brahma Muhurat</div>
-                                    <div className={styles.timingTime}>
-                                        {panchangData.brahmaMuhurat.start} - {panchangData.brahmaMuhurat.end}
-                                    </div>
-                                    <div className={styles.timingDesc}>Sacred meditation time</div>
-                                </div>
-                            )}
-                            {panchangData.abhijitLagna && panchangData.abhijitLagna.start !== 'N/A' && (
-                                <div className={`${styles.timingCard} shubh`}>
-                                    <div className={styles.timingName}>Abhijit Lagna</div>
-                                    <div className={styles.timingTime}>
-                                        {panchangData.abhijitLagna.start} - {panchangData.abhijitLagna.end}
-                                    </div>
-                                    <div className={styles.timingDesc}>{panchangData.abhijitLagna.rashi}</div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Pancha Rahita Muhurat */}
-                    {panchangData.panchaRahitaMuhurat && panchangData.panchaRahitaMuhurat.length > 0 && (
-                        <div className={styles.panchangSection}>
-                            <h2 className={styles.sectionHeader}>
-                                Pancha Rahita Muhurat
-                            </h2>
-                            <p className={styles.sectionSubtitle}>
-                                Periods free from all inauspicious timings - Best for important activities
-                            </p>
-                            <div className={styles.rahitaGrid}>
-                                {panchangData.panchaRahitaMuhurat.map((period, idx) => (
-                                    <div key={idx} className={styles.rahitaCard}>
-                                        <div className={styles.rahitaNumber}>{idx + 1}</div>
-                                        <div className={styles.rahitaTime}>
-                                            <span className="start">{period.start}</span>
-                                            <span className={styles.separator}>→</span>
-                                            <span className="end">{period.end}</span>
-                                        </div>
-                                        <div className={styles.rahitaDuration}>{period.duration}</div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                    {/* Auspicious Muhurats */}
+                    {renderTableSection(
+                        "Auspicious Muhurats",
+                        "Best periods for starting new work or spiritual activities",
+                        ["Muhurat", "Time Range", "Status"],
+                        [
+                            panchangData.abhijitMuhurat && { cells: [{ content: "Abhijit Muhurat", className: styles.nameCell }, { content: `${panchangData.abhijitMuhurat.start} - ${panchangData.abhijitMuhurat.end}` }, { content: <span className={styles.bageShubh}>Very Auspicious</span> }] },
+                            panchangData.brahmaMuhurat && { cells: [{ content: "Brahma Muhurat", className: styles.nameCell }, { content: `${panchangData.brahmaMuhurat.start} - ${panchangData.brahmaMuhurat.end}` }, { content: <span className={styles.bageShubh}>Spiritual</span> }] },
+                            panchangData.abhijitLagna && panchangData.abhijitLagna.start !== 'N/A' && { cells: [{ content: "Abhijit Lagna", className: styles.nameCell }, { content: `${panchangData.abhijitLagna.start} - ${panchangData.abhijitLagna.end}` }, { content: <span className={styles.bageShubh}>{panchangData.abhijitLagna.rashi}</span> }] }
+                        ].filter(Boolean)
                     )}
 
                     {/* Inauspicious Timings */}
+                    {renderTableSection(
+                        "Inauspicious Timings",
+                        "Periods considered malefic - Avoid important activities",
+                        ["Period", "Time Range", "Impact"],
+                        [
+                            panchangData.rahuKaal && { cells: [{ content: "Rahu Kaal", className: styles.nameCell }, { content: `${panchangData.rahuKaal.start} - ${panchangData.rahuKaal.end}` }, { content: <span className={styles.bageAshubh}>Avoid</span> }] },
+                            panchangData.yamaganda && { cells: [{ content: "Yamaganda", className: styles.nameCell }, { content: `${panchangData.yamaganda.start} - ${panchangData.yamaganda.end}` }, { content: <span className={styles.bageAshubh}>Obstacles</span> }] },
+                            panchangData.gulika && { cells: [{ content: "Gulika Kalam", className: styles.nameCell }, { content: `${panchangData.gulika.start} - ${panchangData.gulika.end}` }, { content: <span className={styles.bageAshubh}>Delayed</span> }] },
+                            panchangData.varjyam && { cells: [{ content: "Varjyam", className: styles.nameCell }, { content: `${panchangData.varjyam.start} - ${panchangData.varjyam.end}` }, { content: <span className={styles.bageAshubh}>Inauspicious</span> }] },
+                            ...(panchangData.durMuhurat || []).map(dur => ({
+                                cells: [{ content: dur.name, className: styles.nameCell }, { content: `${dur.start} - ${dur.end}` }, { content: <span className={styles.bageAshubh}>Negative</span> }]
+                            }))
+                        ].filter(Boolean)
+                    )}
+
+                    {/* Pancha Rahita Muhurat Table */}
+                    {panchangData.panchaRahitaMuhurat && (
+                        renderTableSection(
+                            "Pancha Rahita Muhurat",
+                            "Periods completely free from all inauspicious elements",
+                            ["#", "Start Time", "End Time", "Duration"],
+                            panchangData.panchaRahitaMuhurat.map((p, idx) => ({
+                                cells: [
+                                    { content: idx + 1, className: styles.detailCell },
+                                    { content: p.start, className: styles.valueCell },
+                                    { content: p.end, className: styles.valueCell },
+                                    { content: <span className={styles.durationBadge}>{p.duration}</span> }
+                                ]
+                            }))
+                        )
+                    )}
+
+                    {/* Choghadiya Day & Night Tables */}
                     <div className={styles.panchangSection}>
-                        <h2 className={styles.sectionHeader}>
-                            Inauspicious Timings (Avoid)
-                        </h2>
-                        <div className={styles.timingsGrid}>
-                            {panchangData.rahuKaal && panchangData.rahuKaal.start && (
-                                <div className={`${styles.timingCard} ashubh`}>
-                                    <div className={styles.timingName}>Rahu Kaal</div>
-                                    <div className={styles.timingTime}>
-                                        {panchangData.rahuKaal.start} - {panchangData.rahuKaal.end}
-                                    </div>
-                                </div>
-                            )}
-                            {panchangData.yamaganda && panchangData.yamaganda.start && (
-                                <div className={`${styles.timingCard} ashubh`}>
-                                    <div className={styles.timingName}>Yamaganda</div>
-                                    <div className={styles.timingTime}>
-                                        {panchangData.yamaganda.start} - {panchangData.yamaganda.end}
-                                    </div>
-                                </div>
-                            )}
-                            {panchangData.gulika && panchangData.gulika.start && (
-                                <div className={`${styles.timingCard} ashubh`}>
-                                    <div className={styles.timingName}>Gulika Kalam</div>
-                                    <div className={styles.timingTime}>
-                                        {panchangData.gulika.start} - {panchangData.gulika.end}
-                                    </div>
-                                </div>
-                            )}
-                            {panchangData.varjyam && panchangData.varjyam.start && (
-                                <div className={`${styles.timingCard} ashubh`}>
-                                    <div className={styles.timingName}>Varjyam</div>
-                                    <div className={styles.timingTime}>
-                                        {panchangData.varjyam.start} - {panchangData.varjyam.end}
-                                    </div>
-                                    <div className={styles.timingDesc}>{panchangData.varjyam.ghatis} ghatis - Tithi-based</div>
-                                </div>
-                            )}
-                            {panchangData.durMuhurat && panchangData.durMuhurat.map((dur, idx) => (
-                                <div key={idx} className={`${styles.timingCard} ashubh`}>
-                                    <div className={styles.timingName}>{dur.name}</div>
-                                    <div className={styles.timingTime}>
-                                        {dur.start} - {dur.end}
-                                    </div>
-                                </div>
-                            ))}
+                        <h2 className={styles.sectionHeader}>Choghadiya (Day & Night)</h2>
+                        <div className={styles.tableWrapper}>
+                            <table className={styles.panchangTable}>
+                                <thead>
+                                    <tr>
+                                        <th>Period</th>
+                                        <th>Muhurat</th>
+                                        <th>Timing</th>
+                                        <th className={styles.chogType}>Quality</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr className={styles.subHeaderRow}>
+                                        <td colSpan="4">🌞 Day Choghadiya</td>
+                                    </tr>
+                                    {panchangData.choghadiya?.day?.map((chog, i) => (
+                                        <tr key={`day-${i}`}>
+                                            <td>{i + 1}</td>
+                                            <td className={styles.nameCell}>{chog.name}</td>
+                                            <td>{chog.start} - {chog.end}</td>
+                                            <td className={chog.type === 'Good' ? styles.goodCell : styles.badCell}>{chog.type}</td>
+                                        </tr>
+                                    ))}
+                                    <tr className={styles.subHeaderRow}>
+                                        <td colSpan="4">🌙 Night Choghadiya</td>
+                                    </tr>
+                                    {panchangData.choghadiya?.night?.map((chog, i) => (
+                                        <tr key={`night-${i}`}>
+                                            <td>{i + 1}</td>
+                                            <td className={styles.nameCell}>{chog.name}</td>
+                                            <td>{chog.start} - {chog.end}</td>
+                                            <td className={chog.type === 'Good' ? styles.goodCell : styles.badCell}>{chog.type}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
 
-                    {/* Choghadiya - Day */}
-                    {panchangData.choghadiya && panchangData.choghadiya.day && panchangData.choghadiya.day.length > 0 && (
-                        <div className={styles.panchangSection}>
-                            <h2 className={styles.sectionHeader}>
-                                Choghadiya (Day)
-                            </h2>
-                            <div className={styles.choghadiyaGrid}>
-                                {panchangData.choghadiya.day.map((chog, idx) => (
-                                    <div key={idx} className={`chog-card ${chog.type.toLowerCase()}`}>
-                                        <div className={styles.chogBadge}>{chog.type === 'Good' ? '✅' : '❌'}</div>
-                                        <div className={styles.chogName}>{chog.name}</div>
-                                        <div className={styles.chogTime}>{chog.start} - {chog.end}</div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                    {/* Lagna Transitions Table */}
+                    {panchangData.lagnas && (
+                        renderTableSection(
+                            "Lagna Times (Ascendant Changes)",
+                            "All 12 rashi (zodiac sign) ascendant changes throughout the day",
+                            ["#", "Lagna (Rashi)", "Start Time", "End Time"],
+                            panchangData.lagnas.map((l, i) => ({
+                                cells: [
+                                    { content: l.number, className: styles.detailCell },
+                                    { content: l.name, className: styles.nameCell },
+                                    { content: l.startTime, className: styles.valueCell },
+                                    { content: l.endTime, className: styles.valueCell }
+                                ]
+                            }))
+                        )
                     )}
 
-                    {/* Choghadiya - Night */}
-                    {panchangData.choghadiya && panchangData.choghadiya.night && panchangData.choghadiya.night.length > 0 && (
-                        <div className={styles.panchangSection}>
-                            <h2 className={styles.sectionHeader}>
-                                Choghadiya (Night)
-                            </h2>
-                            <div className={styles.choghadiyaGrid}>
-                                {panchangData.choghadiya.night.map((chog, idx) => (
-                                    <div key={idx} className={`chog-card ${chog.type.toLowerCase()}`}>
-                                        <div className={styles.chogName}>{chog.name}</div>
-                                        <div className={styles.chogTime}>{chog.start} - {chog.end}</div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Panchanga Transitions */}
-                    {panchangData.lagnas && panchangData.lagnas.length > 0 && (
-                        <div className={styles.panchangSection}>
-                            <h2 className={styles.sectionHeader}>
-                                Lagna Times (Ascendant Changes)
-                            </h2>
-                            <p className={styles.sectionSubtitle}>
-                                All 12 rashi (zodiac sign) ascendant changes throughout the day - Calculated with Swiss Ephemeris
-                            </p>
-                            <div className={styles.lagnaGrid}>
-                                {panchangData.lagnas.map((lagna, idx) => (
-                                    <div key={idx} className={styles.lagnaCard}>
-                                        <div className={styles.lagnaName}>{lagna.name}</div>
-                                        <div className={styles.lagnaNumber}>#{lagna.number}</div>
-                                        <div className={styles.lagnaTime}>
-                                            {lagna.startTime} → {lagna.endTime}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
+                    {/* Tithi Transitions */}
                     {panchangData.tithis && panchangData.tithis.length > 1 && (
-                        <div className={styles.panchangSection}>
-                            <h2 className={styles.sectionHeader}>
-                                Tithi Transitions
-                            </h2>
-                            <div className={styles.transitionsList}>
-                                {panchangData.tithis.map((tithi, idx) => (
-                                    <div key={idx} className={styles.transitionItem}>
-                                        <div className={styles.transName}>{tithi.name} #{tithi.number}</div>
-                                        <div className={styles.transTimes}>
-                                            <span>{tithi.startTime || 'Previous day'}</span>
-                                            <span className={styles.transArrow}>→</span>
-                                            <span>{tithi.endTime || 'Next day'}</span>
-                                        </div>
-                                        <div className={styles.transPaksha}>{tithi.paksha}</div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                        renderTableSection(
+                            "Tithi Transitions",
+                            null,
+                            ["Tithi", "Time Range", "Paksha"],
+                            panchangData.tithis.map(t => ({
+                                cells: [
+                                    { content: `${t.name} (#${t.number})`, className: styles.nameCell },
+                                    { content: <div className={styles.transTimes}><span>{formatDisplayTime(t.startTime, 'Continues...')}</span><span className={styles.transArrow}>→</span><span>{formatDisplayTime(t.endTime, 'Sunrise')}</span></div> },
+                                    { content: t.paksha, className: styles.pakshaCell }
+                                ]
+                            }))
+                        )
                     )}
 
+                    {/* Nakshatra Transitions */}
                     {panchangData.nakshatras && panchangData.nakshatras.length > 1 && (
-                        <div className={styles.panchangSection}>
-                            <h2 className={styles.sectionHeader}>
-                                Nakshatra Transitions
-                            </h2>
-                            <div className={styles.transitionsList}>
-                                {panchangData.nakshatras.map((nak, idx) => (
-                                    <div key={idx} className={styles.transitionItem}>
-                                        <div className={styles.transName}>{nak.name} #{nak.number}</div>
-                                        <div className={styles.transTimes}>
-                                            <span>{nak.startTime || 'Previous day'}</span>
-                                            <span className={styles.transArrow}>→</span>
-                                            <span>{nak.endTime || 'Next day'}</span>
-                                        </div>
-                                        {nak.lord && <div className={styles.transPaksha}>Lord: {nak.lord}</div>}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                        renderTableSection(
+                            "Nakshatra Transitions",
+                            null,
+                            ["Nakshatra", "Time Range", "Lord"],
+                            panchangData.nakshatras.map(n => ({
+                                cells: [
+                                    { content: `${n.name} (#${n.number})`, className: styles.nameCell },
+                                    { content: <div className={styles.transTimes}><span>{formatDisplayTime(n.startTime, 'Continues...')}</span><span className={styles.transArrow}>→</span><span>{formatDisplayTime(n.endTime, 'Sunrise')}</span></div> },
+                                    { content: n.lord || "N/A", className: styles.pakshaCell }
+                                ]
+                            }))
+                        )
                     )}
+
                 </div>
             )}
         </div>

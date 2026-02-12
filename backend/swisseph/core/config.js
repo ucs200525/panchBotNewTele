@@ -29,24 +29,18 @@ let engine = 'unknown';
 try {
     const rawSwisseph = require('swisseph');
     swisseph = rawSwisseph;
-    
-    // Support for modern 'sweph' package (v2+) which removed 'swe_' prefix
-    // and moved constants to a 'constants' property
+
+    // Normalize wrapper for different versions
     if (!swisseph.swe_set_ephe_path) {
-        // If constants are in a sub-property, move them to top-level
         if (swisseph.constants) {
             Object.assign(swisseph, swisseph.constants);
         }
-        
-        // Helper to normalize function results
+
         const wrapNative = (fnName, originalFn) => {
             return (...args) => {
                 const result = originalFn(...args);
-                
-                // If it's the newer object-based result with a data property
                 if (result && result.data !== undefined) {
                     if (fnName.includes('calc')) {
-                        // For calc/calc_ut: return object with named properties
                         return {
                             longitude: result.data[0],
                             latitude: result.data[1],
@@ -57,7 +51,6 @@ try {
                             error: result.error
                         };
                     } else if (fnName.includes('houses')) {
-                        // For houses: return object with houses and ascmc (points)
                         return {
                             houses: result.data.houses,
                             ascmc: result.data.points,
@@ -84,16 +77,14 @@ try {
             };
         };
 
-        // Alias functions to have the 'swe_' prefix expected by the app
         Object.keys(swisseph).forEach(key => {
             if (typeof swisseph[key] === 'function' && !key.startsWith('swe_')) {
                 const wrapped = wrapNative(key, swisseph[key]);
                 swisseph['swe_' + key] = wrapped;
-                swisseph[key] = wrapped; // Also wrap the non-prefixed one for internal consistency
+                swisseph[key] = wrapped;
             }
         });
-        
-        // Ensure common legacy names are also present and wrapped
+
         const ensureWrapped = (legacyName, nativeName) => {
             if (swisseph[nativeName] && !swisseph[legacyName]) {
                 swisseph[legacyName] = swisseph['swe_' + nativeName] || wrapNative(nativeName, swisseph[nativeName]);
@@ -105,21 +96,31 @@ try {
         ensureWrapped('swe_julday', 'julday');
         ensureWrapped('swe_revjul', 'revjul');
         ensureWrapped('swe_houses', 'houses');
+        ensureWrapped('swe_get_ayanamsa_ut', 'get_ayanamsa_ut');
+        ensureWrapped('swe_set_sid_mode', 'set_sid_mode');
     }
 
     engine = 'native';
-    // Configure paths for native engine
+
+    // Configure Swiss Ephemeris
     const ephePath = path.join(__dirname, '..', '..', 'data', 'ephe');
     swisseph.swe_set_ephe_path(ephePath);
-    console.log('🚀 Using Native Swiss Ephemeris Engine (High Accuracy)');
+
+    // ✅ Force Lahiri Ayanamsa (Drik Panchang compatible)
+    if (swisseph.swe_set_sid_mode && swisseph.SE_SIDM_LAHIRI !== undefined) {
+        swisseph.swe_set_sid_mode(swisseph.SE_SIDM_LAHIRI, 0, 0);
+    }
+
+    console.log('🚀 Using Native Swiss Ephemeris Engine with Lahiri Ayanamsa (High Accuracy)');
 } catch (e) {
     console.warn('⚠️  Native Swiss Ephemeris failed, falling back to JS Mathematics Engine');
     console.error('Error details:', e.message);
     engine = 'js';
+
     swisseph = {
         SEFLG_SWIEPH: 2,
         SEFLG_SIDEREAL: 65536,
-        SIDM_LAHIRI: 1,
+        SE_SIDM_LAHIRI: 1,
         SE_SUN: 0,
         SE_MOON: 1,
         SE_MARS: 4,
@@ -132,15 +133,16 @@ try {
         SE_CALC_SET: 2,
         SE_GREG_CAL: 1,
 
-        swe_set_sid_mode: (mode) => {},
+        swe_set_sid_mode: () => {},
+        // ⚠️ Fallback still uses approximate ayanamsa
         swe_get_ayanamsa_ut: (jd) => astroMath.getAyanamsa(jd),
-        
+
         swe_calc_ut: (jd, planet) => {
             let pos;
             if (planet === 0) pos = astroMath.getSunPosition(jd);
             else if (planet === 1) pos = astroMath.getMoonPosition(jd);
             else pos = astroMath.getPlanetPosition(jd, planet);
-            
+
             return {
                 longitude: pos.longitude,
                 latitude: pos.latitude || 0,
@@ -156,37 +158,28 @@ try {
 
         swe_revjul: (jd) => {
             const date = new Date(Math.round((jd - 2440587.5) * 86400000));
-            return { 
-                year: date.getUTCFullYear(), 
-                month: date.getUTCMonth() + 1, 
-                day: date.getUTCDate(), 
+            return {
+                year: date.getUTCFullYear(),
+                month: date.getUTCMonth() + 1,
+                day: date.getUTCDate(),
                 hour: date.getUTCHours() + date.getUTCMinutes() / 60 + date.getUTCSeconds() / 3600
             };
         },
 
         swe_houses: (jd, lat, lng) => {
-            // Proper Ascendant calculation following astronomical standards
-            const lst = astroMath.getLST(jd, lng); // Local Sidereal Time in degrees
-            const eps = astroMath.getObliquity(jd); // Obliquity of ecliptic in degrees
-            const phi = lat; // Geographic latitude in degrees
-            
-            // Convert to radians
+            const lst = astroMath.getLST(jd, lng);
+            const eps = astroMath.getObliquity(jd);
+            const phi = lat;
+
             const lstRad = astroMath.rad(lst);
             const epsRad = astroMath.rad(eps);
             const phiRad = astroMath.rad(phi);
-            
-            // MC (Midheaven) = LST (for simple equal house or starting point)
-            const mc = lst;
-            
-            // Ascendant calculation (ecliptic point rising on eastern horizon)
-            // Corrected formula after testing: both x and y need negation
+
             const x = -(Math.cos(epsRad) * Math.sin(lstRad) + Math.sin(epsRad) * Math.tan(phiRad));
             const y = Math.cos(lstRad);
             let asc = astroMath.deg(Math.atan2(y, x));
-            
-            // Normalize to 0-360
             if (asc < 0) asc += 360;
-            
+
             const houses = new Array(13).fill(0).map((_, i) => (asc + (i - 1) * 30) % 360);
             return { ascendant: asc, houses, ascmc: [asc, 0, 0, 0] };
         },
@@ -196,16 +189,12 @@ try {
             const lng = pos[0];
             const rs = astroMath.calculateRiseSet(jd, lat, lng, body);
             if (!rs) return { transitTime: jd, error: 'Circumpolar' };
-            
+
             let hourOffset;
-            if (rsmi === 1) { // SE_CALC_RISE
-                hourOffset = rs.rise;
-            } else if (rsmi === 2) { // SE_CALC_SET
-                hourOffset = rs.set;
-            } else {
-                hourOffset = rs.transit;
-            }
-            
+            if (rsmi === 1) hourOffset = rs.rise;
+            else if (rsmi === 2) hourOffset = rs.set;
+            else hourOffset = rs.transit;
+
             const dayStart = Math.floor(jd + 0.5) - 0.5;
             return { transitTime: dayStart + (hourOffset / 24) };
         }

@@ -1,285 +1,182 @@
-/* DailyPanchang - Minimal Module Styles */
-
-.panchangHero {
-    padding: 2rem 0;
-}
+/* DailyPanchang - Premium Table Styles */
 
 .panchangResults {
-    max-width: 1400px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 2rem 1rem;
-}
-
-/* Info Cards Grid */
-.infoCardGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.infoCardGrid.threeCol {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-}
-
-.infoCard {
-    padding: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.infoCard .cardIcon {
-    font-size: 3rem;
-    line-height: 1;
-}
-
-.infoCard .cardContent {
-    flex: 1;
-}
-
-.infoCard .cardContent h3 {
-    margin: 0 0 0.5rem 0;
-}
-
-.infoCard .cardValue {
-    margin: 0;
-}
-
-.infoCard .cardSubtext {
-    margin: 0.25rem 0 0 0;
-}
-
-.infoCard.compact {
-    flex-direction: column;
-    align-items: flex-start;
-    text-align: left;
-    padding: 1.25rem;
-}
-
-.infoCard.compact .cardLabel {
-    margin-bottom: 0.5rem;
+    color: #1e293b;
 }
 
 /* Section Styling */
 .panchangSection {
+    background: #ffffff;
+    border-radius: 12px;
     padding: 2rem;
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
 }
 
 .sectionHeader {
-    margin: 0 0 0.5rem 0;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #3b82f6;
     display: flex;
     align-items: center;
     gap: 0.75rem;
-}
-
-.headerIcon {
-    font-size: 2rem;
 }
 
 .sectionSubtitle {
-    margin: 0 0 1.5rem 0;
+    font-size: 1rem;
+    color: #64748b;
+    margin-bottom: 1.5rem;
+    margin-top: -1rem;
 }
 
-/* Panchanga Elements Grid */
-.elementsGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.5rem;
+/* Table Wrapper for horizontal scroll on mobile */
+.tableWrapper {
+    width: 100%;
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 1rem;
 }
 
-.elementCard {
-    padding: 1.5rem;
-    text-align: center;
+/* Premium Panchang Table */
+.panchangTable {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    font-size: 1rem;
 }
 
-.elementIcon {
-    font-size: 2.5rem;
-    margin-bottom: 0.75rem;
+.panchangTable th {
+    background-color: #f8fafc;
+    color: #475569;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 2px solid #e2e8f0;
 }
 
-.elementName {
-    margin-bottom: 0.5rem;
+.panchangTable td {
+    padding: 1rem;
+    border-bottom: 1px solid #f1f5f9;
+    color: #1e293b;
+    vertical-align: middle;
 }
 
-.elementValue {
-    margin-bottom: 0.5rem;
+.panchangTable tr:last-child td {
+    border-bottom: none;
 }
 
-/* Lagna Times Grid */
-.lagnaGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 1.25rem;
+.panchangTable tr:hover {
+    background-color: #f8faff;
 }
 
-.lagnaCard {
-    padding: 1.25rem;
-    text-align: center;
+/* Specific Cell Styles */
+.nameCell {
+    font-weight: 800;
+    color: #1e293b;
 }
 
-.lagnaSymbol {
-    font-size: 3rem;
-    margin-bottom: 0.5rem;
-}
-
-.lagnaName {
-    margin-bottom: 0.25rem;
-}
-
-.lagnaNumber {
-    margin-bottom: 0.75rem;
-}
-
-.lagnaTime {
-    padding: 0.5rem;
-}
-
-/* Timings Grid */
-.timingsGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1.25rem;
-}
-
-.timingCard {
-    padding: 1.25rem;
-}
-
-.timingIcon {
-    font-size: 2rem;
-    margin-bottom: 0.75rem;
-}
-
-.timingName {
-    margin-bottom: 0.5rem;
-}
-
-.timingTime {
-    margin-bottom: 0.5rem;
-}
-
-/* Pancha Rahita Grid */
-.rahitaGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 1.25rem;
-}
-
-.rahitaCard {
-    padding: 1.5rem;
-    position: relative;
-}
-
-.rahitaNumber {
-    position: absolute;
-    top: -12px;
-    right: -12px;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.rahitaTime {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 0.75rem;
-}
-
-.rahitaTime .separator {
+.valueCell {
     font-weight: 700;
 }
 
-.rahitaDuration {
+.detailCell {
+    font-size: 0.9rem;
+    color: #64748b;
+}
+
+.labelCell {
+    color: #475569;
+    font-weight: 700;
+    width: 250px;
+    background-color: #f8fafc;
+    border-right: 1px solid #e2e8f0;
+}
+
+.subHeaderRow td {
+    background-color: #f1f5f9;
+    color: #334155;
+    font-weight: 800;
     text-align: center;
-    padding: 0.5rem;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    padding: 0.75rem !important;
 }
 
-/* Choghadiya Grid */
-.choghadiyaGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 1rem;
+/* Status Colors for Table Rows/Cells */
+.shubhRow {
+    border-left: 4px solid #10b981;
 }
 
-.chogCard {
-    padding: 1rem;
-    text-align: center;
-    position: relative;
+.ashubhRow {
+    border-left: 4px solid #ef4444;
 }
 
-.chogBadge {
-    margin-bottom: 0.5rem;
+.goodCell {
+    color: #065f46;
+    font-weight: 800;
+    background-color: #d1fae5;
+    text-align: center !important;
 }
 
-.chogName {
-    margin-bottom: 0.5rem;
+.badCell {
+    color: #991b1b;
+    font-weight: 800;
+    background-color: #fee2e2;
+    text-align: center !important;
 }
 
-/* Transitions List */
-.transitionsList {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+.durationBadge {
+    background: #f1f5f9;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #475569;
 }
 
-.transitionItem {
-    padding: 1.25rem;
-    display: grid;
-    grid-template-columns: 1fr 2fr 1fr;
-    gap: 1rem;
-    align-items: center;
+/* Badge System */
+.bageShubh { background: #10b981; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; }
+.bageAshubh { background: #ef4444; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; }
+
+/* Transitions Table Specifics */
+.transArrow {
+    padding: 0 0.5rem;
+    color: #3b82f6;
+    font-weight: 900;
 }
 
-.transTimes {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    justify-content: center;
+.pakshaCell {
+    font-weight: 700;
+    color: #3b82f6;
 }
 
-.transPaksha {
-    text-align: right;
+/* Choghadiya Table specific */
+.chogType {
+    width: 80px;
+    text-align: center !important;
 }
 
-/* Responsive Design */
+/* Responsive */
 @media (max-width: 768px) {
-    .infoCardGrid {
-        grid-template-columns: 1fr;
-    }
-
-    .elementsGrid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .timingsGrid {
-        grid-template-columns: 1fr;
-    }
-
-    .choghadiyaGrid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .transitionItem {
-        grid-template-columns: 1fr;
-        gap: 0.75rem;
-        text-align: center;
-    }
-
-    .transTimes {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    .transPaksha {
-        text-align: center;
-    }
-
     .panchangSection {
-        padding: 1.5rem;
+        padding: 1.25rem;
+    }
+    
+    .panchangTable th, 
+    .panchangTable td {
+        padding: 0.75rem;
+        font-size: 0.9rem;
     }
 }

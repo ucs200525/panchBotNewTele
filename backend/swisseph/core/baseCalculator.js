@@ -9,6 +9,15 @@ const { dateToJulianDay } = require('./julianDay');
 class BaseCalculator {
     constructor() {
         this.swisseph = config.swisseph;
+
+        // ✅ Ensure Lahiri Ayanamsa mode is set for native Swiss Ephemeris
+        if (this.swisseph.swe_set_sid_mode && this.swisseph.SE_SIDM_LAHIRI !== undefined) {
+            try {
+                this.swisseph.swe_set_sid_mode(this.swisseph.SE_SIDM_LAHIRI, 0, 0);
+            } catch (e) {
+                console.warn('⚠️ Failed to set sidereal mode (Lahiri):', e.message);
+            }
+        }
     }
 
     /**
@@ -17,6 +26,21 @@ class BaseCalculator {
      * @returns {number}
      */
     getJD(date) {
+        // If Swiss Ephemeris is available, prefer its JD for consistency
+        if (this.swisseph.swe_julday) {
+            const year = date.getUTCFullYear();
+            const month = date.getUTCMonth() + 1;
+            const day = date.getUTCDate();
+            const hour =
+                date.getUTCHours() +
+                date.getUTCMinutes() / 60 +
+                date.getUTCSeconds() / 3600 +
+                date.getUTCMilliseconds() / 3600000;
+
+            return this.swisseph.swe_julday(year, month, day, hour, this.swisseph.SE_GREG_CAL);
+        }
+
+        // Fallback
         return dateToJulianDay(date);
     }
 
@@ -27,15 +51,22 @@ class BaseCalculator {
      */
     julianDayToDate(jd) {
         const swisseph = this.swisseph;
-        const date = swisseph.swe_revjul(jd, swisseph.SE_GREG_CAL);
-        // Correct time construction
-        const timeDec = date.hour;
-        const hour = Math.floor(timeDec);
-        const minDec = (timeDec - hour) * 60;
-        const min = Math.floor(minDec);
-        const sec = Math.floor((minDec - min) * 60);
-        
-        return new Date(Date.UTC(date.year, date.month - 1, date.day, hour, min, sec));
+
+        if (swisseph.swe_revjul) {
+            const date = swisseph.swe_revjul(jd, swisseph.SE_GREG_CAL);
+
+            const timeDec = date.hour;
+            const hour = Math.floor(timeDec);
+            const minDec = (timeDec - hour) * 60;
+            const min = Math.floor(minDec);
+            const sec = Math.floor((minDec - min) * 60);
+
+            return new Date(Date.UTC(date.year, date.month - 1, date.day, hour, min, sec));
+        }
+
+        // Fallback (approx)
+        const ms = (jd - 2440587.5) * 86400000;
+        return new Date(ms);
     }
 
     /**
@@ -44,7 +75,13 @@ class BaseCalculator {
      * @returns {number} Ayanamsa in degrees
      */
     getAyanamsa(jd) {
-        return config.swisseph.swe_get_ayanamsa_ut(jd);
+        // ✅ Always use Swiss Ephemeris native ayanamsa when available
+        if (this.swisseph.swe_get_ayanamsa_ut) {
+            return this.swisseph.swe_get_ayanamsa_ut(jd);
+        }
+
+        // Fallback (should rarely happen now)
+        return 0;
     }
 
     /**
@@ -95,8 +132,8 @@ class BaseCalculator {
      * @param {number} maxIterations 
      * @returns {Date} Exact crossing time
      */
-    binarySearch(startTime, endTime, valueGetter, boundary, maxIterations = 20) {
-        const threshold = 10 * 1000; // 10 seconds
+    binarySearch(startTime, endTime, valueGetter, boundary, maxIterations = 30) {
+        const threshold = 5 * 1000; // 🎯 Improve precision to 5 seconds
         let iterations = 0;
 
         while ((endTime - startTime) > threshold && iterations < maxIterations) {
