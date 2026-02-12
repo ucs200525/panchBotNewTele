@@ -63,14 +63,20 @@ const formatTimeRange = (start, end) => {
 };
 
 const TimeConverterApp = () => {
-  const { setCityAndDate } = useAuth();
+  const { 
+    localCity, 
+    localDate, 
+    selectedLat: globalLat, 
+    selectedLng: globalLng, 
+    is12HourFormat,
+    setIs12HourFormat,
+    setLocationDetails,
+    setCityAndDate
+  } = useAuth();
 
-  // Load city from localStorage on mount, fallback to empty string
-  const [cityName, setCityName] = useState(() => {
-    return localStorage.getItem('selectedCity') || '';
-  });
-
-  const [currentDate, setCurrentDate] = useState(new Date().toISOString().substring(0, 10));
+  // Load city from AuthContext, fallback to empty string
+  const [cityName, setCityName] = useState(localCity || '');
+  const [currentDate, setCurrentDate] = useState(localDate || new Date().toISOString().substring(0, 10));
 
   const [data, setData] = useState(() => {
     const storedData = sessionStorage.getItem('data');
@@ -82,22 +88,22 @@ const TimeConverterApp = () => {
   const [moonrise, setMoonrise] = useState(() => sessionStorage.getItem('moonrise') || '');
   const [moonset, setMoonset] = useState(() => sessionStorage.getItem('moonset') || '');
 
-  const [selectedLat, setSelectedLat] = useState(() => {
-    const saved = sessionStorage.getItem('selectedLat');
-    return (saved === 'null' || !saved) ? null : saved;
-  });
-  const [selectedLng, setSelectedLng] = useState(() => {
-    const saved = sessionStorage.getItem('selectedLng');
-    return (saved === 'null' || !saved) ? null : saved;
-  });
+  const [selectedLat, setSelectedLat] = useState(globalLat || null);
+  const [selectedLng, setSelectedLng] = useState(globalLng || null);
 
   const [weekday, setWeekday] = useState(() => sessionStorage.getItem('weekday') || '');
-  const [is12HourFormat, setIs12HourFormat] = useState(true);
   const [showNonBlue, setShowNonBlue] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [hasData, setHasData] = useState(false);
+
+  // Sync with AuthContext changes (e.g. if loaded from localStorage)
+  useEffect(() => {
+    if (localCity && !cityName) setCityName(localCity);
+    if (globalLat && !selectedLat) setSelectedLat(globalLat);
+    if (globalLng && !selectedLng) setSelectedLng(globalLng);
+  }, [localCity, globalLat, globalLng]);
 
   useEffect(() => {
     sessionStorage.setItem('data', JSON.stringify(data));
@@ -119,6 +125,7 @@ const TimeConverterApp = () => {
       if (selectedLat && selectedLng) {
         url += `?lat=${selectedLat}&lng=${selectedLng}`;
       }
+      console.log("url", url);
       const response = await fetch(url);
 
       if (!response.ok) {
@@ -134,6 +141,16 @@ const TimeConverterApp = () => {
       setSunriseTmrw(sunData.sunriseTmrw);
       setMoonrise(sunData.moonriseToday || 'N/A');
       setMoonset(sunData.moonsetToday || 'N/A');
+
+      // Update global context with coordinates and timezone if returned
+      if (result.coords) {
+        setLocationDetails({
+          name: cityName,
+          lat: result.coords.lat,
+          lng: result.coords.lng,
+          timeZone: result.coords.timeZone
+        });
+      }
 
       // Fetch table data
       await fetchTableData(
@@ -176,15 +193,20 @@ const TimeConverterApp = () => {
     setCityName(city.name);
     setSelectedLat(city.lat);
     setSelectedLng(city.lng);
-    // Save to localStorage for persistence
-    localStorage.setItem('selectedCity', city.name);
-    localStorage.setItem('selectedLat', city.lat);
-    localStorage.setItem('selectedLng', city.lng);
+    
+    // Update global context
+    setLocationDetails({
+      name: city.name,
+      lat: city.lat,
+      lng: city.lng
+    });
   };
 
   const handleGetPanchang = async (e) => {
     e.preventDefault();
     if (cityName && currentDate) {
+      // Update global date
+      setCityAndDate(cityName, currentDate);
       await Getpanchangam();
     }
   };

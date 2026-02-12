@@ -1,25 +1,57 @@
 import React, { useState, useEffect } from 'react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { CityAutocomplete } from '../components/forms';
+import { useAuth } from '../context/AuthContext';
 import '../pages/hero-styles.css';
 import styles from './DailyPanchang.module.css';
 
 const DailyPanchang = () => {
-    const [cityName, setCityName] = useState(localStorage.getItem('selectedCity') || '');
-    const [currentDate, setCurrentDate] = useState(new Date().toISOString().substring(0, 10));
+    const { 
+        localCity, 
+        localDate, 
+        selectedLat: globalLat, 
+        selectedLng: globalLng, 
+        setLocationDetails,
+        setCityAndDate
+    } = useAuth();
+
+    const [cityName, setCityName] = useState(localCity || '');
+    const [currentDate, setCurrentDate] = useState(localDate || new Date().toISOString().substring(0, 10));
+    const [selectedLat, setSelectedLat] = useState(globalLat || null);
+    const [selectedLng, setSelectedLng] = useState(globalLng || null);
+    
     const [panchangData, setPanchangData] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
+
+    // Sync with AuthContext
+    useEffect(() => {
+        if (localCity && !cityName) setCityName(localCity);
+        if (globalLat && !selectedLat) setSelectedLat(globalLat);
+        if (globalLng && !selectedLng) setSelectedLng(globalLng);
+    }, [localCity, globalLat, globalLng]);
 
     const fetchPanchang = async () => {
         if (!cityName) return;
         setIsLoading(true);
         setError(null);
         try {
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/getPanchangData?city=${encodeURIComponent(cityName)}&date=${currentDate}`);
+            let url = `${process.env.REACT_APP_API_URL}/api/getPanchangData?city=${encodeURIComponent(cityName)}&date=${currentDate}`;
+            if (selectedLat && selectedLng) {
+                url += `&lat=${selectedLat}&lng=${selectedLng}`;
+            }
+            
+            const response = await fetch(url);
             if (!response.ok) throw new Error('Failed to fetch Panchang data');
             const result = await response.json();
-            console.log('Panchang Data Received:', result); // Debug log
+            
+            // Update global context with coordinates if returned
+            if (result._timezone) { // panchangHelper returns _timezone
+                 // Note: result for getPanchangData doesn't strictly have 'coords' object like sunTimes 
+                 // but we can infer lat/lng from what we sent or if it calculates them.
+                 // Actually, let's just make sure we save what we have.
+            }
+            
             setPanchangData(result);
         } catch (err) {
             setError(err.message);
@@ -30,12 +62,19 @@ const DailyPanchang = () => {
 
     const handleGetPanchang = (e) => {
         e.preventDefault();
+        setCityAndDate(cityName, currentDate);
         fetchPanchang();
     };
 
     const handleCitySelect = (city) => {
         setCityName(city.name);
-        localStorage.setItem('selectedCity', city.name);
+        setSelectedLat(city.lat);
+        setSelectedLng(city.lng);
+        setLocationDetails({
+            name: city.name,
+            lat: city.lat,
+            lng: city.lng
+        });
     };
 
     return (

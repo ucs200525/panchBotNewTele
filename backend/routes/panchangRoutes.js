@@ -1717,15 +1717,27 @@ router.get('/getSunTimesForCity/:city/:date', async (req, res) => {
 // New endpoint for comprehensive Panchang data
 router.get('/getPanchangData', async (req, res) => {
     logger.info({ message: 'Route /getPanchangData called', query: req.query });
-    const { city, date } = req.query;
+    const { city, date, lat, lng } = req.query;
 
     if (!city || !date) {
         return res.status(400).json({ error: 'City and date are required' });
     }
 
     try {
-        // Get coordinates for the city
-        const coords = await fetchCoordinates(city);
+        let coords;
+        if (lat && lng && lat !== 'null' && lng !== 'null') {
+            const { getTimezoneFromCoordinates } = require('../utils/panchangHelper');
+            coords = {
+                lat: parseFloat(lat),
+                lng: parseFloat(lng),
+                timeZone: getTimezoneFromCoordinates(parseFloat(lat), parseFloat(lng))
+            };
+            logger.info({ message: 'Using coordinates from query for /getPanchangData', coords });
+        } else {
+            // Get coordinates for the city
+            coords = await fetchCoordinates(city);
+        }
+
         if (!coords) {
             return res.status(404).json({ error: 'City not found' });
         }
