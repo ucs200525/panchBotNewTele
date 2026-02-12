@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { CityAutocomplete } from '../components/forms';
 import TableScreenshot from '../components/TableScreenshot';
 import LivePeriodTracker from '../components/LivePeriodTracker';
+import LoadingSpinner from '../components/LoadingSpinner';
 import { useAuth } from '../context/AuthContext';
+import styles from './Combine.module.css';
 
 const CombinePage = () => {
   const { localCity, localDate, setCityAndDate } = useAuth();
@@ -36,6 +38,10 @@ const CombinePage = () => {
   };
 
   const fetchMuhuratData = async (cityName, dateValue) => {
+    if (!cityName) {
+      setError("Please select a city first.");
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -47,6 +53,10 @@ const CombinePage = () => {
           `${process.env.REACT_APP_API_URL}/api/getBharagvTable?city=${cityName}&date=${dateValue}&showNonBlue=${showNonBlue}&is12HourFormat=${is12HourFormat}`
         ),
       ]);
+
+      if (!muhurthaResponse.ok || !bharagvResponse.ok) {
+        throw new Error('Failed to fetch data from server');
+      }
 
       const mData = await muhurthaResponse.json();
       const bData = await bharagvResponse.json();
@@ -63,6 +73,9 @@ const CombinePage = () => {
           date: dateValue,
         }),
       });
+
+      if (!combinedResponse.ok) throw new Error('Failed to process combined data');
+
       const cData = await combinedResponse.json();
       setCombinedData(cData);
 
@@ -70,7 +83,7 @@ const CombinePage = () => {
       setWeekday(wDay);
       setCityAndDate(cityName, dateValue);
     } catch (error) {
-      setError("Error fetching data. Please try again.");
+      setError("Error fetching data. Please ensure the backend is running and the city exists.");
       console.error("Error fetching data", error);
     } finally {
       setLoading(false);
@@ -82,9 +95,11 @@ const CombinePage = () => {
       {/* Hero Section */}
       <div className="hero-section">
         <div className="hero-content">
-          <h1 className="hero-title">Combined Insights</h1>
+          <h1 className="hero-title">
+            <span className="hero-icon">🔄</span> Combined Insights
+          </h1>
           <p className="hero-subtitle">
-            Unified view of Muhurat timings and Bhargava Panchang calculations
+            Unified high-precision view of Muhurat timings and Bhargava calculations
           </p>
         </div>
 
@@ -94,7 +109,7 @@ const CombinePage = () => {
             e.preventDefault();
             fetchMuhuratData(city, date);
           }}>
-            <div className="form-group-inline">
+            <div className="form-row">
               <div className="input-wrapper">
                 <label className="input-label">Location</label>
                 <CityAutocomplete
@@ -122,7 +137,7 @@ const CombinePage = () => {
                   checked={showNonBlue}
                   onChange={(e) => setShowNonBlue(e.target.checked)}
                 />
-                <span className="checkbox-label">Good Timings Only</span>
+                <span className="checkbox-label">Auspicious (Good) Periods Only</span>
               </label>
             </div>
 
@@ -131,67 +146,52 @@ const CombinePage = () => {
               className="get-panchang-btn-hero"
               disabled={loading}
             >
-              {loading ? (
-                <>
-                  <span className="spinner-small"></span>
-                  Gatrhering Data...
-                </>
-              ) : (
-                <>
-                  Generate Combined View
-                </>
-              )}
+              {loading ? 'Gathering Insights...' : 'Generate Combined View'}
             </button>
           </form>
         </div>
       </div>
 
-      <div className="results-section">
-        {error && (
-          <div className="error-box-hero">
-            {error}
-          </div>
-        )}
+      <div className={`results-section ${styles.panchangResults}`}>
+        {error && <div className="error-box-hero">{error}</div>}
 
-        {loading && (
-          <div className="loading-spinner">
-            <div className="spinner"></div>
-          </div>
-        )}
+        {loading && <LoadingSpinner />}
 
         <div id="tableToCapture">
           {/* Live Period Tracker */}
           {bharagvData && Array.isArray(bharagvData) && bharagvData.length > 0 && (
-            <div className="section-margin">
+            <div className={styles.panchangSection}>
+              <h2 className={styles.sectionHeader}>Live Progress Tracker</h2>
               <LivePeriodTracker data={bharagvData} selectedDate={date} />
             </div>
           )}
 
           {combinedData && !loading && (
-            <div className="table-section">
-              <div className="table-wrapper">
-                <table>
+            <div className={styles.panchangSection}>
+              <h2 className={styles.sectionHeader}>Unified Muhurat Report</h2>
+              <div className={styles.tableWrapper}>
+                <table className={styles.panchangTable}>
                   <thead>
                     <tr>
-                      <th>#</th>
-                      <th>Type</th>
+                      <th className={styles.sno}>#</th>
+                      <th className={styles.typeCell}>Type</th>
                       <th>Description</th>
-                      <th>Time & Interval</th>
-                      <th>Weekday Availability</th>
+                      <th>Interval</th>
+                      <th>Availability</th>
                     </tr>
                   </thead>
                   <tbody>
                     {combinedData.map((row, index) => (
                       <tr key={index}>
-                        <td>{row.sno}</td>
-                        <td style={{ fontWeight: 700 }}>{row.type}</td>
-                        <td>{row.description}</td>
-                        <td className="time-cell">{row.timeInterval}</td>
+                        <td className={styles.sno}>{row.sno}</td>
+                        <td className={styles.typeCell}>{row.type}</td>
+                        <td className={styles.descCell}>{row.description}</td>
+                        <td className={styles.timeCell}>{row.timeInterval}</td>
                         <td>
                           {row.weekdays && row.weekdays.length > 0 ? (
-                            <div className="mini-weekday-list">
+                            <div className={styles.weekdaysContainer}>
                               {row.weekdays.map((wd, subIndex) => (
-                                <div key={subIndex} className="mini-weekday-item">
+                                <div key={subIndex} className={styles.miniWeekdayItem}>
                                   <strong>{wd.weekday}</strong>: {wd.time}
                                 </div>
                               ))}
@@ -210,9 +210,9 @@ const CombinePage = () => {
                 <TableScreenshot tableId="tableToCapture" city={city} date={date} weekday={weekday} />
               </div>
 
-              <div className="information">
-                <p className="info">This combined view merges drik-panchang muhurats with Bhargava astrological calculations for a more complete picture of the day's quality.</p>
-              </div>
+              <p className={styles.info}>
+                This combined report fuses <strong>Swiss Ephemeris</strong> based Muhurat calculations with Bhargava Panchang timings for high-precision planning.
+              </p>
             </div>
           )}
         </div>

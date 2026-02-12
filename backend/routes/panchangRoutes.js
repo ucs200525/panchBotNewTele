@@ -753,31 +753,17 @@ const createDrikTable = async (city, date) => {
 
     // Create the drikTable by mapping over filteredData
     const drikTable = filteredData.map((row) => {
-        const [startTime, endTime] = row.time.split(" to ");
+        // Handle both formats: New Swiss API (start, end) and legacy scraper (time: "start to end")
+        let startTime = row.start;
+        let endTime = row.end;
 
-        let endTimeWithoutDate, endDatePart;
-
-        if (endTime.includes(", ")) {
-            [endTimeWithoutDate, endDatePart] = endTime.split(", ");
-        } else {
-            endTimeWithoutDate = endTime; // If no comma, the entire string is the time
-            endDatePart = null;          // No date part available
+        if (row.time && !startTime && !endTime) {
+            const parts = row.time.split(" to ");
+            startTime = parts[0];
+            endTime = parts[1] || "";
         }
 
-        // Use the provided date
-        let adjustedStartTime = startTime.includes("PM")
-            ? `${startTime}`
-            : startTime.includes("AM") && endTime.includes(",")
-                ? `${endDatePart} , ${startTime}`
-                : startTime;
-
-        let adjustedEndTime = endTime.includes("AM") && endTime.includes(",")
-            ? `${endDatePart} , ${endTimeWithoutDate}`
-            : endTime.includes("PM")
-                ? `${endTimeWithoutDate}`
-                : endTime;
-
-        const timeIntervalFormatted = `${adjustedStartTime} to ${adjustedEndTime}`;
+        const timeIntervalFormatted = `${startTime} to ${endTime}`;
 
         return {
             category: row.category,

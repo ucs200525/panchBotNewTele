@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import styles from './PlanetaryPage.module.css';
 import '../pages/hero-styles.css';
 import { CityAutocomplete } from '../components/forms';
-import { Section } from '../components/layout';
+import LoadingSpinner from '../components/LoadingSpinner';
 import { saveProfile, getProfile, getAllProfiles } from '../utils/profileStorage';
-
 
 const PlanetaryPage = () => {
   const [name, setName] = useState('');
@@ -58,7 +57,6 @@ const PlanetaryPage = () => {
       saveProfile(name, { cityName: selectedCity.name, birthDate: date, birthTime: time });
       setSavedProfiles(getAllProfiles());
 
-      // First, get exact coordinates and timezone from backend if not already fully populated
       const geoResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/fetchCoordinates/${selectedCity.name}`);
       if (!geoResponse.ok) throw new Error('Could not find city details');
       const coords = await geoResponse.json();
@@ -105,18 +103,41 @@ const PlanetaryPage = () => {
     }
   };
 
-  const getPlanetIcon = (planet) => {
-    return '';
-  };
+  const renderTableSection = (title, subtitle, headers, rows) => (
+    <div className={styles.panchangSection}>
+      <h2 className={styles.sectionHeader}>{title}</h2>
+      {subtitle && <p className={styles.sectionSubtitle}>{subtitle}</p>}
+      <div className={styles.tableWrapper}>
+        <table className={styles.panchangTable}>
+          <thead>
+            <tr>
+              {headers.map((h, i) => <th key={i}>{h}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, i) => (
+              <tr key={i} className={row.className || ''}>
+                {row.cells.map((cell, j) => (
+                  <td key={j} className={cell.className || ''}>{cell.content}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
 
   return (
     <div className="content">
       {/* Hero Section */}
       <div className="hero-section">
         <div className="hero-content">
-          <h1 className="hero-title">Planetary Positions</h1>
+          <h1 className="hero-title">
+            <span className="hero-icon">🪐</span> Planetary Positions
+          </h1>
           <p className="hero-subtitle">
-            Precise sidereal positions of all nine planets in zodiac signs with degrees
+            Precise sidereal positions of all nine planets with high-accuracy astronomical metadata
           </p>
         </div>
 
@@ -179,163 +200,95 @@ const PlanetaryPage = () => {
       </div>
 
       {/* Results Section */}
-      <div className="results-section">
-        {error && (
-          <div className="error-card">
-            <p className="error-text">{error}</p>
-            <button onClick={() => setError(null)} className="error-dismiss">Dismiss</button>
-          </div>
-        )}
+      <div className={`results-section ${styles.panchangResults}`}>
+        {error && <div className="error-box-hero">{error}</div>}
 
         {/* Saved Profiles Quick Select */}
         {savedProfiles.length > 0 && !planetaryData && !isLoading && !error && (
-          <div className="floating-section" style={{ maxWidth: '800px', margin: '0 auto 2rem' }}>
-            <Section title="Quick Load Profile">
-              <div className="profile-pills">
-                {savedProfiles.slice(0, 5).map((p, i) => (
-                  <button
-                    key={i}
-                    className="profile-pill"
-                    onClick={() => loadProfile(p)}
-                  >
-                    <span className="pill-name">{p.name}</span>
-                    <span className="pill-meta">{p.cityName}</span>
-                  </button>
-                ))}
-              </div>
-            </Section>
+          <div className={styles.panchangSection}>
+            <h2 className={styles.sectionHeader}>Quick Load Profile</h2>
+            <div className={styles.profilePills}>
+              {savedProfiles.slice(0, 8).map((p, i) => (
+                <button
+                  key={i}
+                  className={styles.profilePill}
+                  onClick={() => loadProfile(p)}
+                >
+                  <span className={styles.pillName}>{p.name}</span>
+                  <span className={styles.pillMeta}>{p.cityName}</span>
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
-        {!planetaryData && !isLoading && !error && (
-          <div className="empty-state">
-            <h3 className="empty-title">No Data Yet</h3>
-            <p className="empty-text">
-              Enter a location, date, and time above to calculate planetary positions
-            </p>
-          </div>
-        )}
-
-        {isLoading && (
-          <div className="loading-state">
-            <div className="spinner-modern"></div>
-            <p className="loading-text">Calculating planetary positions...</p>
-          </div>
-        )}
+        {isLoading && <LoadingSpinner />}
 
         {planetaryData && !isLoading && (
           <div className="planetary-results">
             {birthDetails && (
-              <Section title="Birth Panchanga Details">
-                <div className="birth-panchang-grid">
-                  <div className="panchang-item">
-                    <span className="panchang-label">Tithi</span>
-                    <span className="panchang-value">{birthDetails.tithi?.name}</span>
-                    <span className="panchang-meta">{birthDetails.tithi?.paksha}</span>
-                  </div>
-                  <div className="panchang-item">
-                    <span className="panchang-label">Nakshatra</span>
-                    <span className="panchang-value">{birthDetails.nakshatra?.name}</span>
-                    <span className="panchang-meta">Pada {birthDetails.nakshatra?.pada} ({birthDetails.nakshatra?.lord})</span>
-                  </div>
-                  <div className="panchang-item">
-                    <span className="panchang-label">Yoga</span>
-                    <span className="panchang-value">{birthDetails.yoga?.name}</span>
-                  </div>
-                  <div className="panchang-item">
-                    <span className="panchang-label">Karana</span>
-                    <span className="panchang-value">{birthDetails.karana?.name}</span>
-                  </div>
-                  <div className="panchang-item highlight">
-                    <span className="panchang-label">Birth Hora</span>
-                    <span className="panchang-value">{birthDetails.hora?.lord}</span>
-                  </div>
-                </div>
-              </Section>
+              renderTableSection(
+                "Birth Panchanga Details",
+                "Core Vedic pointers calculated for the birth time",
+                ["Element", "Description / Value"],
+                [
+                  { cells: [{ content: "Tithi", className: styles.labelCell }, { content: <div><span className={styles.valueCell}>{birthDetails.tithi?.name}</span> <span className={styles.metaCell}>({birthDetails.tithi?.paksha})</span></div> }] },
+                  { cells: [{ content: "Nakshatra", className: styles.labelCell }, { content: <div><span className={styles.valueCell}>{birthDetails.nakshatra?.name}</span> <span className={styles.metaCell}>Pada {birthDetails.nakshatra?.pada} ({birthDetails.nakshatra?.lord})</span></div> }] },
+                  { cells: [{ content: "Yoga", className: styles.labelCell }, { content: birthDetails.yoga?.name, className: styles.valueCell }] },
+                  { cells: [{ content: "Karana", className: styles.labelCell }, { content: birthDetails.karana?.name, className: styles.valueCell }] },
+                  { cells: [{ content: "Birth Hora", className: styles.labelCell }, { content: birthDetails.hora?.lord, className: styles.valueCell }] }
+                ]
+              )
             )}
 
-            <div className="planets-grid">
-              {planetaryData.planets?.map((planet, idx) => (
-                <div key={idx} className={`planet-card ${planet.dignity?.toLowerCase().replace(' ', '-')}`}>
-                  <div className="planet-header">
-                    <div className="planet-icon">{getPlanetIcon(planet.name)}</div>
-                    <div>
-                      <h3 className="planet-name">{planet.name}</h3>
-                      <div className="planet-status-tags">
-                        {planet.dignity !== 'Neutral' && (
-                          <span className={`status-tag ${planet.dignity.toLowerCase().replace(' ', '-')}`}>
-                            {planet.dignity}
-                          </span>
-                        )}
-                        {planet.isCombust && <span className="status-tag combust">Combust</span>}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="planet-details">
-                    <div className="detail-row">
-                      <span className="detail-label">Rashi</span>
-                      <span className="detail-value rashi">{planet.rashi}</span>
-                    </div>
-
-                    <div className="detail-row">
-                      <span className="detail-label">Degree</span>
-                      <span className="detail-value">{planet.formatted}</span>
-                    </div>
-
-                    <div className="detail-row">
-                      <span className="detail-label">Status</span>
-                      <span className="detail-value">
-                        {planet.isRetrograde ? 'Retrograde' : 'Forward'}
+            {renderTableSection(
+              "Planetary Positions",
+              "Individual planetary placements in the zodiac",
+              ["Planet", "Rashi (Sign)", "Degree", "Status / Dignity"],
+              planetaryData.planets?.map(p => ({
+                cells: [
+                  { content: p.name, className: styles.planetNameCell },
+                  { content: p.rashi, className: styles.rashiCell },
+                  { content: p.formatted, className: styles.degreeCell },
+                  { content: (
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <span className={p.isRetrograde ? styles.statusVakri : styles.statusMarga}>
+                        {p.isRetrograde ? 'Vakri (R)' : 'Marga (F)'}
                       </span>
+                      {p.dignity !== 'Neutral' && (
+                        <span className={styles.combustBadge} style={{ background: '#f5f3ff', color: '#7c3aed', border: '1px solid #ddd6fe' }}>
+                          {p.dignity}
+                        </span>
+                      )}
+                      {p.isCombust && <span className={styles.combustBadge}>Combust</span>}
                     </div>
-                  </div>
-
-                  <div className="degree-bar">
-                    <div
-                      className="degree-fill"
-                      style={{ width: `${(planet.degrees / 30) * 100}%` }}
-                    ></div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                  )}
+                ]
+              })) || []
+            )}
 
             {/* Detailed Table for Professionals */}
-            <Section title="Detailed Planetary Metadata">
-              <div className={styles.tableWrapper}>
-                <table className="ss-table">
-                  <thead>
-                    <tr>
-                      <th>Planet</th>
-                      <th>Rashi</th>
-                      <th>Degree</th>
-                      <th>Status</th>
-                      <th>Dignity</th>
-                      <th>Combust</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {planetaryData.planets?.map((planet, idx) => (
-                      <tr key={idx}>
-                        <td>{planet.name}</td>
-                        <td>{planet.rashi}</td>
-                        <td>{planet.formatted}</td>
-                        <td>{planet.isRetrograde ? 'Vakri (R)' : 'Marga'}</td>
-                        <td className={`dignity-cell ${planet.dignity?.toLowerCase()}`}>{planet.dignity}</td>
-                        <td>{planet.isCombust ? 'Yes' : 'No'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </Section>
+            {renderTableSection(
+              "Detailed Planetary Metadata",
+              "Technical ephemeris data including combustion and retrograde status",
+              ["Planet", "Rashi", "Degree", "Status", "Dignity", "Combust"],
+              planetaryData.planets?.map((planet, idx) => ({
+                cells: [
+                  { content: planet.name, className: styles.nameCell },
+                  { content: planet.rashi, className: styles.rashiCell },
+                  { content: planet.formatted, className: styles.degreeCell },
+                  { content: planet.isRetrograde ? 'Vakri (R)' : 'Marga', className: planet.isRetrograde ? styles.statusVakri : styles.statusMarga },
+                  { content: planet.dignity, className: styles.valueCell },
+                  { content: planet.isCombust ? <span className={styles.combustBadge}>Yes</span> : 'No' }
+                ]
+              })) || []
+            )}
 
             <div className="info-note">
               <div>
                 <p>All positions are calculated using the <strong>Sidereal Zodiac</strong> with high-accuracy Swiss Ephemeris algorithms.</p>
                 {planetaryData.planets?.[0] && (
-                  <p className="ayanamsa-meta">
+                  <p className="ayanamsa-meta" style={{ marginTop: '0.5rem', opacity: 0.8 }}>
                     Current Ayanamsa: <strong>{planetaryData.ayanamsa || '24° 0\' 0"'}</strong> (Lahiri)
                   </p>
                 )}

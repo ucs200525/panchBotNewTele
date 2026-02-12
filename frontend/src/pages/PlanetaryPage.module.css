@@ -1,39 +1,200 @@
-/* Generic minimal module for simple pages with hero section */
+/* PlanetaryPage - Premium Table Styles */
 
-.pageContainer {
-    padding: 2rem 0;
-}
-
-.pageContent {
+.panchangResults {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 1rem;
+    padding: 2rem 1rem;
+    color: #1e293b;
 }
 
-.dataGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-    margin: 2rem 0;
+/* Section Styling */
+.panchangSection {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
 }
 
-.dataCard {
-    padding: 1.5rem;
-    text-align: center;
+.sectionHeader {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #3b82f6;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
 }
 
+.sectionSubtitle {
+    font-size: 1rem;
+    color: #64748b;
+    margin-bottom: 1.5rem;
+    margin-top: -1rem;
+}
+
+/* Table Wrapper for horizontal scroll on mobile */
 .tableWrapper {
+    width: 100%;
     overflow-x: auto;
-    margin: 2rem 0;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 1rem;
 }
 
-@media (max-width: 768px) {
-    .pageContent {
-        padding: 0 0.5rem;
-    }
+/* Premium Panchang Table */
+.panchangTable {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    font-size: 1rem;
+}
 
-    .dataGrid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
+.panchangTable th {
+    background-color: #f8fafc;
+    color: #475569;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.panchangTable td {
+    padding: 1rem;
+    border-bottom: 1px solid #f1f5f9;
+    color: #1e293b;
+    vertical-align: middle;
+}
+
+.panchangTable tr:last-child td {
+    border-bottom: none;
+}
+
+.panchangTable tr:hover {
+    background-color: #f8faff;
+}
+
+/* Small Table for Birth details */
+.summaryTable {
+    width: 100%;
+    margin-bottom: 2rem;
+}
+
+.labelCell {
+    color: #475569;
+    font-weight: 700;
+    width: 200px;
+    background-color: #f8fafc;
+    border-right: 1px solid #e2e8f0;
+}
+
+.valueCell {
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.metaCell {
+    color: #64748b;
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+/* Planet Specific Styles */
+.planetNameCell {
+    font-weight: 800;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.rashiCell {
+    font-weight: 700;
+    color: #3b82f6;
+}
+
+.degreeCell {
+    font-family: monospace;
+    font-weight: 600;
+}
+
+.statusMarga {
+    color: #059669;
+    font-weight: 700;
+}
+
+.statusVakri {
+    color: #dc2626;
+    font-weight: 700;
+}
+
+.combustBadge {
+    background-color: #fef2f2;
+    color: #dc2626;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    border: 1px solid #fecaca;
+}
+
+/* Profile Pills */
+.profilePills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.profilePill {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.profilePill:hover {
+    background: #eff6ff;
+    border-color: #3b82f6;
+    transform: translateY(-2px);
+}
+
+.pillName {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #1e293b;
+}
+
+.pillMeta {
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .panchangSection {
+        padding: 1.25rem;
+    }
+    
+    .panchangTable th, 
+    .panchangTable td {
+        padding: 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    .labelCell {
+        width: 120px;
     }
 }
