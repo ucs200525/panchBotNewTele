@@ -70,7 +70,7 @@ const SwissPanchaka = () => {
     if (cat.includes('good')) return 'cat-good';
     if (cat.includes('danger')) return 'cat-danger';
     if (cat.includes('risk')) return 'cat-risk';
-    if (cat.includes('bad')) return 'cat-bad';
+    if (cat.includes('bad') || cat.includes('disease')) return 'cat-bad';
     if (cat.includes('evil')) return 'cat-evil';
     return '';
   };
@@ -80,7 +80,7 @@ const SwissPanchaka = () => {
       {/* Hero Section */}
       <div className="hero-section">
         <div className="hero-content">
-          <h1 className="hero-title">Panchaka Rahitam (Swiss)</h1>
+          <h1 className="hero-title">Panchaka Rahitam</h1>
           <p className="hero-subtitle">
             High-precision Vedic auspicious timings calculated using Swiss Ephemeris.
           </p>
@@ -185,7 +185,14 @@ const SwissPanchaka = () => {
                                 {item.category}
                               </span>
                             </td>
-                            <td className="time-cell">{item.time}</td>
+                            <td className="time-cell">
+                              {item.time || (
+                                <>
+                                  <div className="time-range">{item.start} - {item.end}</div>
+                                  <div className="duration-small">{item.duration}</div>
+                                </>
+                              )}
+                            </td>
                           </tr>
                         ))}
                       </tbody>

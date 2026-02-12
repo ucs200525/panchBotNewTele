@@ -763,8 +763,8 @@ function calculateSwissPanchakaRahita(dateObj, lat, lng, timezone, sunriseStr, s
             const lagna = lagnaCalc.getLagnaAtTime(mid, lat, lng);
 
             // Calculation: (Tithi(1-15) + Vara(1-7) + Nakshatra(1-27) + Lagna(1-12)) % 9
-            const tIndex = (tithi.number % 15) + 1;
-            const vIndex = varaIndex;
+            const tIndex = (tithi.number) + 1;
+            const vIndex = varaIndex ;
             const nIndex = naks.number + 1;
             const lIndex = lagna.index + 1;
 

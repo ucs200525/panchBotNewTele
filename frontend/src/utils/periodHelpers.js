@@ -16,8 +16,9 @@ export const parseTimeToMinutes = (timeStr) => {
   if (isNaN(hours) || isNaN(minutes)) return null;
   
   // Convert to 24-hour format
-  if (period === 'PM' && hours !== 12) hours += 12;
-  if (period === 'AM' && hours === 12) hours = 0;
+  const normalizedPeriod = period.toUpperCase();
+  if (normalizedPeriod === 'PM' && hours !== 12) hours += 12;
+  if (normalizedPeriod === 'AM' && hours === 12) hours = 0;
   
   let totalMinutes = hours * 60 + minutes;
   
@@ -110,6 +111,43 @@ export const findCurrentPeriod = (data, currentTime) => {
         isColored: row.isColored,
         isWednesdayColored: row.isWednesdayColored
       };
+    }
+    // For Swiss calculation format: start and end fields
+    if (row.start && row.end) {
+      const start = parseTimeToMinutes(row.start);
+      const end = parseTimeToMinutes(row.end);
+
+      if (start !== null && end !== null) {
+        // Handle overnight periods
+        if (end > 24 * 60) {
+          if (now >= start || now < (end - 24 * 60)) {
+            return {
+              index: i,
+              column: 'swiss',
+              start: start,
+              end: end > 24 * 60 ? end - 24 * 60 : end,
+              startTime: row.start,
+              endTime: row.end,
+              weekday: row.muhurat || row.category || '',
+              category: row.category
+            };
+          }
+        } else {
+          // Normal period within same day
+          if (now >= start && now < end) {
+            return {
+              index: i,
+              column: 'swiss',
+              start: start,
+              end: end,
+              startTime: row.start,
+              endTime: row.end,
+              weekday: row.muhurat || row.category || '',
+              category: row.category
+            };
+          }
+        }
+      }
     }
   }
   

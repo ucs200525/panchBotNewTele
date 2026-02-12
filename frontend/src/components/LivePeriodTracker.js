@@ -127,6 +127,14 @@ const LivePeriodTracker = ({ data, selectedDate }) => {
       };
     }
 
+    // For Swiss calculation format
+    if (nextRow.start) {
+      return {
+        weekday: nextRow.muhurat || nextRow.category || '',
+        startTime: nextRow.start
+      };
+    }
+
     return null;
   };
 
@@ -150,6 +158,15 @@ const LivePeriodTracker = ({ data, selectedDate }) => {
   let statusClass = 'status-normal';
   if (currentPeriod.isColored) statusClass = 'status-ashubh';
   if (currentPeriod.isWednesdayColored) statusClass = 'status-special';
+  
+  // Swiss categories
+  if (currentPeriod.category) {
+    const cat = currentPeriod.category.toLowerCase();
+    if (cat.includes('good')) statusClass = 'status-good';
+    if (cat.includes('danger')) statusClass = 'status-danger';
+    if (cat.includes('risk')) statusClass = 'status-risk';
+    if (cat.includes('bad') || cat.includes('evil') || cat.includes('disease')) statusClass = 'status-ashubh';
+  }
 
   return (
     <div className={`live-tracker-premium ${statusClass}`}>

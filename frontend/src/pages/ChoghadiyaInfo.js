@@ -161,11 +161,11 @@ const ChoghadiyaPage = () => {
                     {/* Night Choghadiya Table */}
                     {choghadiyaData.choghadiya.night && choghadiyaData.choghadiya.night.length > 0 && (
                         <div className={`${styles.floatingSection} ${styles.nightTable}`}>
-                            <h2 className={styles.sectionTitle} style={{ color: '#fff' }}>🌙 Night Choghadiya (Sunset to Sunrise)</h2>
-                            <p className={styles.sectionSubtitle} style={{ color: '#94a3b8' }}>Auspicious and Inauspicious periods of the night divided into 8 parts</p>
+                            <h2 className={styles.sectionTitle}>🌙 Night Choghadiya (Sunset to Sunrise)</h2>
+                            <p className={styles.sectionSubtitle}>Auspicious and Inauspicious periods of the night divided into 8 parts</p>
                             <div className={styles.tableWrapper}>
                                 <table className={styles.panchangTable}>
-                                    <thead style={{ background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)' }}>
+                                    <thead>
                                         <tr>
                                             <th>#</th>
                                             <th>Muhurat</th>
@@ -178,15 +178,15 @@ const ChoghadiyaPage = () => {
                                     <tbody>
                                         {choghadiyaData.choghadiya.night.map((chog, idx) => (
                                             <tr key={idx} className={chog.type === 'Good' ? styles.nightGoodRow : styles.nightBadRow}>
-                                                <td style={{ fontWeight: 700, color: '#f1f5f9' }}>{idx + 1}</td>
-                                                <td style={{ fontWeight: 700, fontSize: '16px', color: '#fff' }}>{chog.name}</td>
+                                                <td style={{ fontWeight: 700 }}>{idx + 1}</td>
+                                                <td style={{ fontWeight: 700, fontSize: '16px' }}>{chog.name}</td>
                                                 <td>
                                                     <span className={`${styles.typeBadge} ${chog.type.toLowerCase() === 'good' ? styles.badgeSuccess : styles.badgeDanger}`}>
                                                         {chog.type}
                                                     </span>
                                                 </td>
-                                                <td className={styles.timeValue} style={{ color: '#60a5fa' }}>{chog.start} - {chog.end}</td>
-                                                <td style={{ color: '#cbd5e1' }}>
+                                                <td className={styles.timeValue}>{chog.start} - {chog.end}</td>
+                                                <td>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                                                         {chog.name === 'Amrit' && <><span>🌙</span> Moon</>}
                                                         {chog.name === 'Shubh' && <><span>♃</span> Jupiter</>}
@@ -197,7 +197,7 @@ const ChoghadiyaPage = () => {
                                                         {chog.name === 'Udveg' && <><span>☉</span> Sun</>}
                                                     </div>
                                                 </td>
-                                                <td style={{ fontSize: '14px', lineHeight: '1.4', color: '#cbd5e1' }}>
+                                                <td style={{ fontSize: '14px', lineHeight: '1.4' }}>
                                                     {chog.name === 'Amrit' && 'Best for all types of auspicious work, new ventures, and ceremonies.'}
                                                     {chog.name === 'Shubh' && 'Marriage, auspicious ceremonies, and religious activities.'}
                                                     {chog.name === 'Labh' && 'Starting new business, gains, education, and trade.'}

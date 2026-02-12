@@ -11,21 +11,26 @@
 }
 
 .nightTable {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-    border: 1px solid #334155;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
 }
 
 .nightTable .sectionTitle {
-    color: #f1f5f9;
-    border-bottom-color: #60a5fa;
+    color: #1e293b;
+    border-bottom-color: #3b82f6;
+}
+
+.nightTable .sectionSubtitle {
+    color: #64748b;
 }
 
 .nightTable .panchangTable {
-    color: #f1f5f9;
+    color: #1e293b;
 }
 
 .nightTable .panchangTable thead {
-    background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: #ffffff;
 }
 
 .sectionTitle {
@@ -70,8 +75,8 @@
 }
 
 .nightTable .panchangTable td {
-    color: #f1f5f9;
-    border-bottom-color: #475569;
+    color: #1e293b;
+    border-bottom-color: #e2e8f0;
     background: transparent;
 }
 
@@ -84,7 +89,7 @@
 }
 
 .nightTable .panchangTable tbody tr:hover {
-    background: rgba(96, 165, 250, 0.1);
+    background: rgba(59, 130, 246, 0.08);
 }
 
 .panchangTable tbody tr:last-child td {
@@ -97,7 +102,7 @@
 }
 
 .nightTable .timeCell {
-    color: #60a5fa;
+    color: #3b82f6;
 }
 
 /* Row Color Coding */
@@ -168,7 +173,7 @@
 
 /* Night Row variants */
 .nightGoodRow {
-    background: rgba(16, 185, 129, 0.1);
+    background: rgba(77, 30, 229, 0);
 }
 
 .nightBadRow {

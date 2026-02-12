@@ -70,7 +70,7 @@ const PanchakaMuhurth = () => {
     if (cat.includes('good')) return 'cat-good';
     if (cat.includes('danger')) return 'cat-danger';
     if (cat.includes('risk')) return 'cat-risk';
-    if (cat.includes('bad')) return 'cat-bad';
+    if (cat.includes('bad') || cat.includes('disease')) return 'cat-bad';
     if (cat.includes('evil')) return 'cat-evil';
     return '';
   };
