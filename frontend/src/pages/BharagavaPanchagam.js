@@ -229,7 +229,7 @@ const TimeConverterApp = () => {
         <div className="hero-content">
           <h1 className="hero-title">Bhargava Panchangam</h1>
           <p className="hero-subtitle">
-            Ancient Vedic wisdom for modern living. Find your auspicious moments based on 24-minute precise periods.
+            "Bhargava Panchangam – Your daily guide to auspicious timings based on authentic Vedic astrology."         
           </p>
 
           <div className="hero-form-wrapper">

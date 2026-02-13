@@ -20,38 +20,46 @@ async function fetchCoordinates(city) {
         return coordCache.get(cityKey);
     }
 
-    logger.info({ message: 'fetchCoordinates called', city });
-    const apiKey = '699522e909454a09b82d1c728fc79925'; // Your API key
+    logger.info({ message: 'fetchCoordinates (GeoNames) called', city });
+    const username = 'ucs05';
+
     try {
-        const response = await fetch(`https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(city)}&key=${apiKey}`);
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        const data = await response.json();
-        if (data.results.length > 0) {
-            const { limit, remaining, reset } = data.rate;
-            logger.info({ message: 'OpenCage Rate Limit', limit, remaining, reset });
+        // 1. Search for the city
+        const searchUrl = `http://api.geonames.org/searchJSON?q=${encodeURIComponent(city)}&maxRows=1&username=${username}`;
+        const searchResponse = await axios.get(searchUrl);
 
-            // Track OpenCage usage
-            trackOpenCageRequest('geocode', { limit, remaining, reset }).catch(err =>
-                logger.error({ message: 'Error tracking OpenCage', error: err.message })
-            );
+        if (searchResponse.data.geonames && searchResponse.data.geonames.length > 0) {
+            const { lat, lng } = searchResponse.data.geonames[0];
 
-            const { lat, lng } = data.results[0].geometry;
-            const timeZone = data.results[0].annotations.timezone.name;
-            const result = { lat, lng, timeZone, limit, remaining, reset };
+            // 2. Get timezone for the coordinates
+            const tzUrl = `http://api.geonames.org/timezoneJSON?lat=${lat}&lng=${lng}&username=${username}`;
+            const tzResponse = await axios.get(tzUrl);
+
+            const timeZone = tzResponse.data.timezoneId;
+            
+            if (!timeZone) {
+                 logger.warn({ message: 'Timezone not found via GeoNames', city });
+                 throw new Error('Timezone not found');
+            }
+
+            const result = { 
+                lat: parseFloat(lat), 
+                lng: parseFloat(lng), 
+                timeZone,
+                source: 'geonames' 
+            };
 
             // Save to cache
             coordCache.set(cityKey, result);
 
-            logger.info({ message: 'Coordinates fetched', city, lat, lng, timeZone });
-            return result; // Return all required values
+            logger.info({ message: 'Coordinates fetched via GeoNames', city, lat, lng, timeZone });
+            return result;
         } else {
-            logger.warn({ message: 'City not found', city });
+            logger.warn({ message: 'City not found via GeoNames', city });
             throw new Error('City not found');
         }
     } catch (error) {
-        logger.error({ message: 'Error fetching coordinates', error: error.message, city });
+        logger.error({ message: 'Error fetching coordinates via GeoNames', error: error.message, city });
         return null;
     }
 }
@@ -642,9 +650,16 @@ router.post('/update-table', (req, res) => {
 
 //     return tableData;
 // };
-const createBharagvTable = async (city, date, showNonBlue, is12HourFormat) => {
-    logger.info({ message: 'createBharagvTable called', city, date, showNonBlue, is12HourFormat });
-    const sun = await getSunTimesForCity(city, date);
+const createBharagvTable = async (city, date, showNonBlue, is12HourFormat, lat, lng, timeZone) => {
+    logger.info({ message: 'createBharagvTable called', city, date, showNonBlue, is12HourFormat, lat, lng, timeZone });
+    const sun = await getSunTimesForCity(city, date, lat, lng); // getSunTimesForCity already handles lat/lng logic but we might need to update it to use timeZone if passed.
+    // Actually getSunTimesForCity calls getTimezoneFromCoordinates if lat/lng are passed. 
+    // If we have timeZone, we should pass it too? 
+    // getSunTimesForCity definition at line 174: async function getSunTimesForCity(city, date, lat, lng)
+    // Inside it (line 184): timeZone: getTimezoneFromCoordinates(parseFloat(lat), parseFloat(lng))
+    // It ignores passed timeZone. But that's okay for now as getTimezoneFromCoordinates is local/fast?
+    // Wait, getTimezoneFromCoordinates uses geo-tz (local library). So it is fast.
+    
     if (!sun) {
         logger.warn({ message: 'Sun times not available', city, date });
         return [];
@@ -722,7 +737,7 @@ const createBharagvTable = async (city, date, showNonBlue, is12HourFormat) => {
 
 // API endpoint to get the Bharagv table based on city, date, showNonBlue, and is12HourFormat
 router.get('/getBharagvTable', async (req, res) => {
-    const { city, date, showNonBlue, is12HourFormat } = req.query;
+    const { city, date, showNonBlue, is12HourFormat, lat, lng, timeZone } = req.query;
     logger.info({ message: 'Route /getBharagvTable called', query: req.query });
 
     if (!city || !date) {
@@ -734,7 +749,7 @@ router.get('/getBharagvTable', async (req, res) => {
     }
 
     try {
-        const table = await createBharagvTable(city, date, showNonBlue === 'true', is12HourFormat === 'true');
+        const table = await createBharagvTable(city, date, showNonBlue === 'true', is12HourFormat === 'true', lat, lng, timeZone);
         res.json(table); // Send the table data as a JSON response
     } catch (error) {
         logger.error({ message: 'Route /getBharagvTable error', error: error.message });
@@ -746,10 +761,10 @@ router.get('/getBharagvTable', async (req, res) => {
 
 // Function to create the dummy table with formatted time intervals
 // Function to create the dummy table with formatted time intervals
-const createDrikTable = async (city, date) => {
-    logger.info({ message: 'createDrikTable called', city, date });
+const createDrikTable = async (city, date, lat, lng, timeZone) => {
+    logger.info({ message: 'createDrikTable called', city, date, lat, lng });
     // Fetch the muhurat data using the city and date
-    const filteredData = await fetchmuhurat(city, date); // Assuming fetchmuhurat is an async function
+    const filteredData = await fetchmuhurat(city, date, lat, lng, timeZone); // Assuming fetchmuhurat is an async function
 
     // Create the drikTable by mapping over filteredData
     const drikTable = filteredData.map((row) => {
@@ -777,7 +792,7 @@ const createDrikTable = async (city, date) => {
     return drikTable;
 };
 router.get('/getDrikTable', async (req, res) => {
-    const { city, date, goodTimingsOnly } = req.query;
+    const { city, date, goodTimingsOnly, lat, lng, timeZone } = req.query;
     logger.info({ message: 'Route /getDrikTable called', query: req.query });
 
     // If goodTimingsOnly is not provided, set it to true by default
@@ -789,7 +804,7 @@ router.get('/getDrikTable', async (req, res) => {
 
     try {
         // Fetch the complete table
-        const table = await createDrikTable(city, date);
+        const table = await createDrikTable(city, date, lat, lng, timeZone);
 
         // If goodTimingsOnly is true, filter the table to include only "Good" category
         if (isGoodTimingsOnly) {
@@ -1502,15 +1517,26 @@ const fetchmuhurat_old = async (city, date) => {
     }
 };
 
-const fetchmuhurat = async (city, date) => {
-    logger.info({ message: 'fetchmuhurat (Swiss) called', city, date });
+const fetchmuhurat = async (city, date, lat, lng, timeZone) => {
+    logger.info({ message: 'fetchmuhurat (Swiss) called', city, date, lat, lng, timeZone });
     try {
         // Convert DD/MM/YYYY to YYYY-MM-DD for consistency
         const [day, month, year] = date.split('/');
         const isoDate = `${year}-${month}-${day}`;
 
-        // 1. Get coordinates
-        const coords = await fetchCoordinates(city);
+        let coords;
+        if (lat && lng) {
+             const { getTimezoneFromCoordinates } = require('../utils/panchangHelper');
+             coords = {
+                 lat: parseFloat(lat),
+                 lng: parseFloat(lng),
+                 timeZone: timeZone || getTimezoneFromCoordinates(parseFloat(lat), parseFloat(lng))
+             };
+        } else {
+            // 1. Get coordinates
+            coords = await fetchCoordinates(city);
+        }
+
         if (!coords) throw new Error('City not found');
 
         // 2. Get sun times (we need sunrise today and tomorrow for the Vedic day)

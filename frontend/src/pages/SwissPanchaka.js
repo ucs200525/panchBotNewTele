@@ -82,7 +82,7 @@ const SwissPanchaka = () => {
         <div className="hero-content">
           <h1 className="hero-title">Panchaka Rahitam</h1>
           <p className="hero-subtitle">
-            High-precision Vedic auspicious timings calculated using Swiss Ephemeris.
+            High-precision Vedic auspicious timings calculated .
           </p>
         </div>
 
@@ -204,10 +204,10 @@ const SwissPanchaka = () => {
                   </div>
 
                   <div className="information">
-                    <p className="info">This page uses high-precision Swiss Ephemeris data to calculate Panchaka Rahitam timings mathematically. Choose "Good" (Rahitam) periods for important ventures.</p>
+                    <p className="info">This page uses high-precision astronomical data to calculate Panchaka Rahitam timings mathematically. Choose "Good" (Rahitam) periods for important ventures.</p>
                   </div>
 
-                  {/* Comprehensive Swiss Documentation */}
+                  {/* Comprehensive Technical Documentation */}
                   <div className="swiss-doc">
                     <div className="doc-section">
                       <h3>Transition Engine</h3>

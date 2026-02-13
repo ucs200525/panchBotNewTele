@@ -77,7 +77,11 @@ async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr
         };
 
         // Format lagnas
-        const formattedLagnas = (panchangaData.lagnas || lagnaModule.calculateDayLagnas(dateObj, lat, lng, timezone, sunriseStr)).map(lagna => ({
+        // Format lagnas
+        // Calculate Lagnas ONCE (Heavy operation)
+        const rawLagnas = panchangaData.lagnas || lagnaModule.calculateDayLagnas(dateObj, lat, lng, timezone, sunriseStr);
+        
+        const formattedLagnas = rawLagnas.map(lagna => ({
             ...lagna,
             startTime: formatLagnaTime(lagna.startTime),
             endTime: formatLagnaTime(lagna.endTime)
@@ -132,7 +136,7 @@ async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr
             lagnas: formattedLagnas,
 
             // Calculate Abhijit Lagna (auspicious midday lagna)
-            abhijitLagna: calculateAbhijitLagna(dateObj, lat, lng, timezone, sunriseStr, sunsetStr),
+            abhijitLagna: calculateAbhijitLagna(dateObj, lat, lng, timezone, sunriseStr, sunsetStr, rawLagnas),
 
             // Calculate Brahma Muhurta
             brahmaMuhurat: calculateBrahmaMuhurta(sunriseStr),
@@ -150,7 +154,7 @@ async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr
             varjyam: calculateVarjyam(dateObj, sunriseStr, sunsetStr, panchangaData.tithis?.[0]?.number),
 
             // Calculate Pancha Rahita Muhurat (periods free from ALL 5 inauspicious timings)
-            panchaRahitaMuhurat: calculateSwissPanchakaRahita(dateObj, lat, lng, timezone, sunriseStr, sunsetStr, nextSunriseStr),
+            panchaRahitaMuhurat: calculateSwissPanchakaRahita(dateObj, lat, lng, timezone, sunriseStr, sunsetStr, nextSunriseStr, rawLagnas),
 
             // Additional Vedic calendar info
             masa: panchanga.getMasa ? panchanga.getMasa(dateObj) : { name: 'Pausha', type: 'Lunar' },
@@ -609,7 +613,7 @@ function getMoonEmoji(tithiNumber) {
     return '🌘';
 }
 
-function calculateAbhijitLagna(dateObj, lat, lng, timezone, sunriseStr, sunsetStr) {
+function calculateAbhijitLagna(dateObj, lat, lng, timezone, sunriseStr, sunsetStr, existingLagnas) {
     try {
         // Abhijit Lagna is when Cancer (Karkata) rises, which is auspicious
         // It occurs around midday for about 24 minutes
@@ -639,17 +643,17 @@ function calculateAbhijitLagna(dateObj, lat, lng, timezone, sunriseStr, sunsetSt
             });
         };
 
-        // Try to use lagnaModule to get exact Cancer lagna timing
-        if (lagnaModule && lagnaModule.calculateDayLagnas) {
+        // Try to use existingLagnas first or lagnaModule
+        if (existingLagnas || (lagnaModule && lagnaModule.calculateDayLagnas)) {
             try {
-                const lagnas = lagnaModule.calculateDayLagnas(dateObj, lat, lng, timezone, sunriseStr);
+                const lagnas = existingLagnas || lagnaModule.calculateDayLagnas(dateObj, lat, lng, timezone, sunriseStr);
                 // Find Karkata (Cancer) lagna
                 const cancerLagna = lagnas.find(l => l.name === 'Karkata' || l.number === 4);
 
                 if (cancerLagna && cancerLagna.startTime && cancerLagna.endTime) {
                     return {
                         name: 'Abhijit Lagna (Karkata)',
-                        start: cancerLagna.startTime,
+                        start: cancerLagna.startTime, // Should be date or time string. If rawLagnas passed, it might be string.
                         end: cancerLagna.endTime,
                         rashi: cancerLagna.name,
                         description: 'Most auspicious Cancer lagna period'
@@ -683,7 +687,7 @@ function calculateAbhijitLagna(dateObj, lat, lng, timezone, sunriseStr, sunsetSt
     }
 }
 
-function calculateSwissPanchakaRahita(dateObj, lat, lng, timezone, sunriseStr, sunsetStr, nextSunriseStr) {
+function calculateSwissPanchakaRahita(dateObj, lat, lng, timezone, sunriseStr, sunsetStr, nextSunriseStr, existingLagnas) {
     try {
         const tithiCalc = new panchanga.TithiCalculator();
         const naksCalc = new panchanga.NakshatraCalculator();
@@ -731,7 +735,7 @@ function calculateSwissPanchakaRahita(dateObj, lat, lng, timezone, sunriseStr, s
         addInRange(naksCalc.calculateDayNakshatras(dateObj, timezone));
         addInRange(naksCalc.calculateDayNakshatras(tomorrow, timezone));
 
-        addInRange(lagnaCalc.calculateDayLagnas(dateObj, lat, lng, timezone, sunriseStr));
+        addInRange(existingLagnas || lagnaCalc.calculateDayLagnas(dateObj, lat, lng, timezone, sunriseStr));
 
         // 3. Create sorted unique transition timestamps
         const sortedTimes = Array.from(transitions).sort((a, b) => a - b);

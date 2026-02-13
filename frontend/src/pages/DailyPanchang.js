@@ -6,12 +6,17 @@ import { CityAutocomplete } from '../components/forms';
 import './hero-styles.css';
 
 const DailyPanchang = () => {
-    const { localCity, setCityAndDate } = useAuth();
-    const [cityName, setCityName] = useState(localCity || localStorage.getItem('selectedCity') || '');
+    const { localCity, setCityAndDate, selectedLat, selectedLng, setLocationDetails, timeZone } = useAuth();
+    const [cityName, setCityName] = useState(localCity || '');
     const [currentDate, setCurrentDate] = useState(new Date().toISOString().split('T')[0]);
     const [panchangData, setPanchangData] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
+
+    // Sync local state with context when context changes
+    useEffect(() => {
+        if (localCity) setCityName(localCity);
+    }, [localCity]);
 
     const fetchPanchang = useCallback(async () => {
         if (!cityName || !currentDate) return;
@@ -20,12 +25,12 @@ const DailyPanchang = () => {
         setError(null);
 
         try {
-            const lat = localStorage.getItem('selectedLat');
-            const lng = localStorage.getItem('selectedLng');
-
             let url = `http://localhost:4000/api/getPanchangData?city=${encodeURIComponent(cityName)}&date=${currentDate}`;
-            if (lat && lng && lat !== 'undefined' && lng !== 'undefined') {
-                url += `&lat=${lat}&lng=${lng}`;
+            
+            // Use coordinates and timezone from context if available and matching current city
+            if (selectedLat && selectedLng && selectedLat !== 'undefined' && selectedLng !== 'undefined') {
+                url += `&lat=${selectedLat}&lng=${selectedLng}`;
+                if (timeZone) url += `&timeZone=${timeZone}`;
             }
 
             const response = await fetch(url);
@@ -39,7 +44,7 @@ const DailyPanchang = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [cityName, currentDate]);
+    }, [cityName, currentDate, selectedLat, selectedLng]);
 
     // Removed automatic fetch on mount to allow user to click Calculate manually
     /*
@@ -115,6 +120,15 @@ const DailyPanchang = () => {
                                 <CityAutocomplete
                                     value={cityName}
                                     onChange={(newValue) => setCityName(newValue)}
+                                    onSelect={(cityData) => {
+                                        setCityName(cityData.name);
+                                        setLocationDetails({
+                                            name: cityData.name,
+                                            lat: cityData.lat,
+                                            lng: cityData.lng,
+                                            // timeZone: cityData.timeZone // If CityAutocomplete provides this
+                                        });
+                                    }}
                                 />
                             </div>
                             <div className="input-wrapper">

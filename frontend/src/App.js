@@ -29,7 +29,7 @@ function App() {
           <Route path="/panchaka" element={<PanchakaMuhurth />} />
           <Route path="/panchaka-swiss" element={<SwissPanchaka />} />
           <Route path="/panchang" element={<DailyPanchang />} />
-          <Route path="/panchang-swiss" element={<SwissPanchang />} />
+          {/* <Route path="/panchang-swiss" element={<SwissPanchang />} /> */}
           <Route path="/good-timings" element={<GoodTimingsPage />} />
           <Route path="/planetary" element={<PlanetaryPage />} />
           <Route path="/charts" element={<ChartsPage />} />

@@ -139,7 +139,7 @@ const HoraPage = () => {
                 <div className="hero-content">
                     <h1 className="hero-title">Shubha Hora</h1>
                     <p className="hero-subtitle">
-                        Planetary hours & auspicious periods powered by Swiss Ephemeris
+                        Planetary hours & auspicious periods powered by high-precision astronomical engine
                     </p>
                 </div>
 

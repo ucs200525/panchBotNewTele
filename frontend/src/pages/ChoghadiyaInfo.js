@@ -4,19 +4,35 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import { CityAutocomplete } from '../components/forms';
 import styles from './ChoghadiyaInfo.module.css';
 
+import { useAuth } from '../context/AuthContext';
+// ...
+
 const ChoghadiyaPage = () => {
-    const [cityName, setCityName] = useState(localStorage.getItem('selectedCity') || '');
-    const [currentDate, setCurrentDate] = useState(new Date().toISOString().substring(0, 10));
+    const { localCity, localDate, setCityAndDate, selectedLat, selectedLng, setLocationDetails, timeZone } = useAuth();
+    const [cityName, setCityName] = useState(localCity || '');
+    const [currentDate, setCurrentDate] = useState(localDate || new Date().toISOString().substring(0, 10));
     const [choghadiyaData, setChoghadiyaData] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
+
+    // Sync from context
+    React.useEffect(() => {
+        if (localCity) setCityName(localCity);
+        if (localDate) setCurrentDate(localDate);
+    }, [localCity, localDate]);
 
     const fetchChoghadiya = async () => {
         if (!cityName) return;
         setIsLoading(true);
         setError(null);
         try {
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/getPanchangData?city=${encodeURIComponent(cityName)}&date=${currentDate}`);
+            let url = `${process.env.REACT_APP_API_URL}/api/getPanchangData?city=${encodeURIComponent(cityName)}&date=${currentDate}`;
+            if (selectedLat && selectedLng && cityName === localCity) {
+                url += `&lat=${selectedLat}&lng=${selectedLng}`;
+                if (timeZone) url += `&timeZone=${timeZone}`;
+            }
+
+            const response = await fetch(url);
             if (!response.ok) throw new Error('Failed to fetch Choghadiya data');
             const result = await response.json();
             console.log('Choghadiya Data:', result);
@@ -30,12 +46,17 @@ const ChoghadiyaPage = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        setCityAndDate(cityName, currentDate);
         fetchChoghadiya();
     };
 
     const handleCitySelect = (city) => {
         setCityName(city.name);
-        localStorage.setItem('selectedCity', city.name);
+        setLocationDetails({
+            name: city.name,
+            lat: city.lat,
+            lng: city.lng
+        });
     };
 
     return (
@@ -45,7 +66,7 @@ const ChoghadiyaPage = () => {
                 <div className="hero-content">
                     <h1 className="hero-title">Choghadiya Calculator</h1>
                     <p className="hero-subtitle">
-                        Daily Choghadiya timings with Swiss Ephemeris precision • Day & Night periods
+                        Daily Choghadiya timings with high-precision astronomical data • Day & Night periods
                     </p>
                 </div>
 

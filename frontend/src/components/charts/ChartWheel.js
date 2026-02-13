@@ -56,9 +56,13 @@ const ChartWheel = ({ houses, title, lagnaRashi }) => {
                             <div className="cell-rashi-name">{cell.rashi}</div>
                             {isLagna && <div className="cell-lagna-mark">ASC (As)</div>}
                             <div className="cell-planets">
-                                {houseData?.planets?.map((p, pi) => (
-                                    <span key={pi} className="planet-name">{p.substring(0, 2)}</span>
-                                ))}
+                                {houseData?.planets?.map((p, pi) => {
+                                    // Handle both string format (old) and object format (new)
+                                    const planetName = typeof p === 'string' ? p : p.name;
+                                    return (
+                                        <span key={pi} className="planet-name">{planetName.substring(0, 2)}</span>
+                                    );
+                                })}
                             </div>
                         </div>
                     );

@@ -5,11 +5,16 @@ import { CityAutocomplete } from '../components/forms';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { saveProfile, getProfile, getAllProfiles } from '../utils/profileStorage';
 
+import { useAuth } from '../context/AuthContext';
+
 const PlanetaryPage = () => {
+  const { localCity, localDate, setCityAndDate, setLocationDetails, selectedLat, selectedLng, timeZone } = useAuth();
+
   const [name, setName] = useState('');
-  const [selectedCity, setSelectedCity] = useState(null);
-  const [date, setDate] = useState(new Date().toISOString().substring(0, 10));
+  const [selectedCity, setSelectedCity] = useState(localCity ? { name: localCity, lat: selectedLat, lng: selectedLng } : null);
+  const [date, setDate] = useState(localDate || new Date().toISOString().substring(0, 10));
   const [time, setTime] = useState('12:00');
+
   const [planetaryData, setPlanetaryData] = useState(null);
   const [birthDetails, setBirthDetails] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -20,8 +25,21 @@ const PlanetaryPage = () => {
     setSavedProfiles(getAllProfiles());
   }, []);
 
+  // Sync when context updates (e.g. from another tab/page)
+  useEffect(() => {
+    if (localCity) {
+      setSelectedCity(prev => (prev?.name === localCity ? prev : { name: localCity, lat: selectedLat, lng: selectedLng }));
+    }
+    if (localDate) setDate(localDate);
+  }, [localCity, localDate, selectedLat, selectedLng]);
+
   const handleCitySelect = (city) => {
     setSelectedCity(city);
+    setLocationDetails({
+      name: city.name,
+      lat: city.lat,
+      lng: city.lng
+    });
   };
 
   const handleNameChange = (e) => {
@@ -57,9 +75,25 @@ const PlanetaryPage = () => {
       saveProfile(name, { cityName: selectedCity.name, birthDate: date, birthTime: time });
       setSavedProfiles(getAllProfiles());
 
-      const geoResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/fetchCoordinates/${selectedCity.name}`);
-      if (!geoResponse.ok) throw new Error('Could not find city details');
-      const coords = await geoResponse.json();
+      let coords = { ...selectedCity };
+
+      // If missing lat/lng or timezone, try to use from AuthContext if matches
+      if ((!coords.lat || !coords.lng || !coords.timeZone || !coords.tzone) && selectedCity.name === localCity && selectedLat && selectedLng) {
+        coords.lat = selectedLat;
+        coords.lng = selectedLng;
+        coords.timeZone = timeZone;
+      }
+
+      // If still missing crucial data, fetch from backend
+      if (!coords.lat || !coords.lng || (!coords.timeZone && !coords.tzone)) {
+        const geoResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/fetchCoordinates/${selectedCity.name}`);
+        if (!geoResponse.ok) throw new Error('Could not find city details');
+        const fetchedCoords = await geoResponse.json();
+        coords = { ...coords, ...fetchedCoords };
+      }
+
+      // Ensure tzone property exists (sometimes called timeZone)
+      coords.tzone = coords.tzone || coords.timeZone;
 
       const [planetsResponse, birthResponse] = await Promise.all([
         fetch(`${process.env.REACT_APP_API_URL}/api/planetary/positions`, {
@@ -250,19 +284,21 @@ const PlanetaryPage = () => {
                   { content: p.name, className: styles.planetNameCell },
                   { content: p.rashi, className: styles.rashiCell },
                   { content: p.formatted, className: styles.degreeCell },
-                  { content: (
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                      <span className={p.isRetrograde ? styles.statusVakri : styles.statusMarga}>
-                        {p.isRetrograde ? 'Vakri (R)' : 'Marga (F)'}
-                      </span>
-                      {p.dignity !== 'Neutral' && (
-                        <span className={styles.combustBadge} style={{ background: '#f5f3ff', color: '#7c3aed', border: '1px solid #ddd6fe' }}>
-                          {p.dignity}
+                  {
+                    content: (
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <span className={p.isRetrograde ? styles.statusVakri : styles.statusMarga}>
+                          {p.isRetrograde ? 'Vakri (R)' : 'Marga (F)'}
                         </span>
-                      )}
-                      {p.isCombust && <span className={styles.combustBadge}>Combust</span>}
-                    </div>
-                  )}
+                        {p.dignity !== 'Neutral' && (
+                          <span className={styles.combustBadge} style={{ background: '#f5f3ff', color: '#7c3aed', border: '1px solid #ddd6fe' }}>
+                            {p.dignity}
+                          </span>
+                        )}
+                        {p.isCombust && <span className={styles.combustBadge}>Combust</span>}
+                      </div>
+                    )
+                  }
                 ]
               })) || []
             )}
@@ -286,7 +322,7 @@ const PlanetaryPage = () => {
 
             <div className="info-note">
               <div>
-                <p>All positions are calculated using the <strong>Sidereal Zodiac</strong> with high-accuracy Swiss Ephemeris algorithms.</p>
+                <p>All positions are calculated using the <strong>Sidereal Zodiac</strong> with high-accuracy astronomical algorithms.</p>
                 {planetaryData.planets?.[0] && (
                   <p className="ayanamsa-meta" style={{ marginTop: '0.5rem', opacity: 0.8 }}>
                     Current Ayanamsa: <strong>{planetaryData.ayanamsa || '24° 0\' 0"'}</strong> (Lahiri)

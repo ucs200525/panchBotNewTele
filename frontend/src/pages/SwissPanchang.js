@@ -1,22 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../pages/hero-styles.css';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { CityAutocomplete } from '../components/forms';
 
+import { useAuth } from '../context/AuthContext';
 
 const SwissPanchang = () => {
-    const [cityName, setCityName] = useState(localStorage.getItem('selectedCity') || '');
-    const [currentDate, setCurrentDate] = useState(new Date().toISOString().substring(0, 10));
+    const { localCity, localDate, setCityAndDate, selectedLat, selectedLng, setLocationDetails, timeZone } = useAuth();
+    const [cityName, setCityName] = useState(localCity || '');
+    const [currentDate, setCurrentDate] = useState(localDate || new Date().toISOString().substring(0, 10));
     const [panchangData, setPanchangData] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
+
+    // Sync from context
+    useEffect(() => {
+        if (localCity) setCityName(localCity);
+        if (localDate) setCurrentDate(localDate);
+    }, [localCity, localDate]);
 
     const fetchPanchang = async () => {
         if (!cityName) return;
         setIsLoading(true);
         setError(null);
         try {
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/getPanchangData?city=${encodeURIComponent(cityName)}&date=${currentDate}`);
+            let url = `${process.env.REACT_APP_API_URL}/api/getPanchangData?city=${encodeURIComponent(cityName)}&date=${currentDate}`;
+            if (selectedLat && selectedLng && cityName === localCity) {
+                url += `&lat=${selectedLat}&lng=${selectedLng}`;
+                if (timeZone) url += `&timeZone=${timeZone}`;
+            }
+
+            const response = await fetch(url);
             if (!response.ok) throw new Error('Failed to fetch Panchang data');
             const result = await response.json();
             setPanchangData(result);
@@ -29,12 +43,17 @@ const SwissPanchang = () => {
 
     const handleGetPanchang = (e) => {
         e.preventDefault();
+        setCityAndDate(cityName, currentDate);
         fetchPanchang();
     };
 
     const handleCitySelect = (city) => {
         setCityName(city.name);
-        localStorage.setItem('selectedCity', city.name);
+        setLocationDetails({
+            name: city.name,
+            lat: city.lat,
+            lng: city.lng
+        });
     };
 
     return (
@@ -42,10 +61,10 @@ const SwissPanchang = () => {
             <div className="hero-section">
                 <div className="hero-content">
                     <h1 className="hero-title">
-                        Swiss Daily Panchang
+                        Daily Precision Panchang
                     </h1>
                     <p className="hero-subtitle">
-                        High-precision astronomical and Vedic report calculated using the Swiss Ephemeris engine
+                        High-precision astronomical and Vedic report calculated using a professional ephemeris engine
                     </p>
 
                     <form className="hero-form" onSubmit={handleGetPanchang}>

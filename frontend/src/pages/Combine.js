@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import styles from './Combine.module.css';
 
 const CombinePage = () => {
-  const { localCity, localDate, setCityAndDate } = useAuth();
+  const { localCity, localDate, setCityAndDate, selectedLat, selectedLng, setLocationDetails, timeZone } = useAuth();
   const [city, setCity] = useState(localCity || '');
   const [date, setDate] = useState(localDate || new Date().toISOString().substring(0, 10));
   const [combinedData, setCombinedData] = useState(() => {
@@ -23,13 +23,22 @@ const CombinePage = () => {
   const [is12HourFormat] = useState(true);
 
   useEffect(() => {
+    if (localCity) setCity(localCity);
+    if (localDate) setDate(localDate);
+  }, [localCity, localDate]);
+
+  useEffect(() => {
     sessionStorage.setItem('combinedData', JSON.stringify(combinedData));
     sessionStorage.setItem('weekday', weekday);
   }, [combinedData, weekday]);
 
   const handleCitySelect = (cityObj) => {
     setCity(cityObj.name);
-    localStorage.setItem('selectedCity', cityObj.name);
+    setLocationDetails({
+      name: cityObj.name,
+      lat: cityObj.lat,
+      lng: cityObj.lng
+    });
   };
 
   const convertToDDMMYYYY = (date) => {
@@ -45,13 +54,22 @@ const CombinePage = () => {
     setLoading(true);
     setError(null);
     try {
+      let drikUrl = `${process.env.REACT_APP_API_URL}/api/getDrikTable?city=${cityName}&date=${convertToDDMMYYYY(dateValue)}&goodTimingsOnly=${showNonBlue}`;
+      let bharagvUrl = `${process.env.REACT_APP_API_URL}/api/getBharagvTable?city=${cityName}&date=${dateValue}&showNonBlue=${showNonBlue}&is12HourFormat=${is12HourFormat}`;
+
+      if (selectedLat && selectedLng && cityName === localCity) {
+        const coordParams = `&lat=${selectedLat}&lng=${selectedLng}`;
+        drikUrl += coordParams;
+        bharagvUrl += coordParams;
+        if (timeZone) {
+          drikUrl += `&timeZone=${timeZone}`;
+          bharagvUrl += `&timeZone=${timeZone}`;
+        }
+      }
+
       const [muhurthaResponse, bharagvResponse] = await Promise.all([
-        fetch(
-          `${process.env.REACT_APP_API_URL}/api/getDrikTable?city=${cityName}&date=${convertToDDMMYYYY(dateValue)}&goodTimingsOnly=${showNonBlue}`
-        ),
-        fetch(
-          `${process.env.REACT_APP_API_URL}/api/getBharagvTable?city=${cityName}&date=${dateValue}&showNonBlue=${showNonBlue}&is12HourFormat=${is12HourFormat}`
-        ),
+        fetch(drikUrl),
+        fetch(bharagvUrl),
       ]);
 
       if (!muhurthaResponse.ok || !bharagvResponse.ok) {
@@ -211,7 +229,7 @@ const CombinePage = () => {
               </div>
 
               <p className={styles.info}>
-                This combined report fuses <strong>Swiss Ephemeris</strong> based Muhurat calculations with Bhargava Panchang timings for high-precision planning.
+                This combined report fuses <strong>professional astronomical</strong> based Muhurat calculations with Bhargava Panchang timings for high-precision planning.
               </p>
             </div>
           )}

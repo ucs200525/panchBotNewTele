@@ -4,7 +4,7 @@ import { Section } from '../components/layout';
 import { CityAutocomplete } from '../components/forms';
 import { useAuth } from '../context/AuthContext';
 import { saveProfile, getProfile, getAllProfiles } from '../utils/profileStorage';
-
+import './DashaPage.css';
 
 const DashaPage = () => {
     const { setCityAndDate } = useAuth();
@@ -68,7 +68,6 @@ const DashaPage = () => {
     const handleNameChange = (e) => {
         const value = e.target.value;
         setName(value);
-
         const profile = getProfile(value);
         if (profile) {
             setCityName(profile.cityName);
@@ -102,13 +101,12 @@ const DashaPage = () => {
             {/* Hero Section */}
             <div className="hero-section">
                 <div className="hero-content">
-                    <h1 className="hero-title">Vimshottari Dasha</h1>
+                    <h1 className="hero-title">Vimshottari Dasha Timeline</h1>
                     <p className="hero-subtitle">
-                        Explore your life's timeline through the 120-year planetary period system
+                        Advanced Vedic Time-Mapping • Planetary Influences through the 120-year cycle
                     </p>
                 </div>
 
-                {/* Hero Form */}
                 <div className="hero-form">
                     <form onSubmit={(e) => {
                         e.preventDefault();
@@ -171,84 +169,48 @@ const DashaPage = () => {
                             className="get-panchang-btn-hero"
                             disabled={isLoading}
                         >
-                            {isLoading ? (
-                                <>
-                                    <span className="spinner-small"></span>
-                                    Calculating...
-                                </>
-                            ) : (
-                                "View Timeline"
-                            )}
+                            {isLoading ? "Calculating..." : "Generate Timeline"}
                         </button>
                     </form>
                 </div>
             </div>
 
             <div className="results-section">
-                {error && (
-                    <div className="error-box-hero">
-                        {error}
-                    </div>
-                )}
-
-                {isLoading && (
-                    <div className="loading-spinner">
-                        <div className="spinner"></div>
-                    </div>
-                )}
-
-                {/* Saved Profiles Quick Select */}
-                {savedProfiles.length > 0 && !dashaData && !isLoading && (
-                    <div className="floating-section">
-                        <Section title="Quick Load Profile">
-                            <div className="profile-pills">
-                                {savedProfiles.slice(0, 5).map((p, i) => (
-                                    <button
-                                        key={i}
-                                        className="profile-pill"
-                                        onClick={() => loadProfile(p)}
-                                    >
-                                        <span className="pill-name">{p.name}</span>
-                                        <span className="pill-meta">{p.cityName}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        </Section>
-                    </div>
-                )}
+                {error && <div className="error-box-hero">{error}</div>}
 
                 {dashaData && dashaData.birthDetails && (
                     <div className="floating-section">
-                        <Section title="Birth Chart Details">
-                            <div className={styles.dataGrid} style={{gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1rem'}}>
-                                <div className={styles.dataCard}>
+                        <Section title="Birth Summary">
+                            <div className="data-card-wrapper">
+                                <div className="data-card">
                                     <div className="data-card-label">Birth Star (Nakshatra)</div>
-                                    <div className="data-card-value">
-                                        {dashaData.birthDetails.birthStar}
-                                        <span style={{fontSize: '0.85rem', color: '#888', marginLeft: '0.5rem'}}>
-                                            Pada {dashaData.birthDetails.pada}
-                                        </span>
-                                    </div>
+                                    <div className="data-card-value">{dashaData.birthDetails.birthStar}</div>
+                                    <div className="data-card-sub">Pada {dashaData.birthDetails.pada}</div>
                                 </div>
 
-                                <div className={styles.dataCard}>
-                                    <div className="data-card-label">Moon's Rashi</div>
+                                <div className="data-card">
+                                    <div className="data-card-label">Rashi (Moon Sign)</div>
                                     <div className="data-card-value">{dashaData.birthDetails.moonRashi}</div>
-                                    <div className="data-card-sub">
-                                        {dashaData.birthDetails.moonLongitude.toFixed(2)}° sidereal
+                                    <div className="data-card-sub">{dashaData.birthDetails.moonLongitude.toFixed(2)}° Sidereal</div>
+                                </div>
+
+                                <div className="data-card" style={{ border: '2px solid #667eea', background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05))' }}>
+                                    <div className="data-card-label" style={{ color: '#667eea' }}>✨ Current Mahadasha Lord</div>
+                                    <div className="data-card-value" style={{ color: '#667eea' }}>
+                                        {dashaData.mahadashas.find(d => {
+                                            const now = new Date();
+                                            return now >= new Date(d.start) && now <= new Date(d.end);
+                                        })?.lord || 'N/A'}
                                     </div>
+                                    <div className="data-card-sub" style={{ color: '#764ba2', fontWeight: 600 }}>Active Now</div>
                                 </div>
 
-                                <div className={styles.dataCard}>
-                                    <div className="data-card-label">Birth Dasha Lord</div>
-                                    <div className="data-card-value">{dashaData.birthDetails.dashaLord}</div>
-                                </div>
-
-                                <div className={styles.dataCard}>
+                                <div className="data-card">
                                     <div className="data-card-label">Dasha Balance at Birth</div>
                                     <div className="data-card-value">
-                                        {dashaData.birthDetails.balanceOfDasha.years}y {dashaData.birthDetails.balanceOfDasha.months}m {dashaData.birthDetails.balanceOfDasha.days}d
+                                        {dashaData.birthDetails.balanceOfDasha.years}y {dashaData.birthDetails.balanceOfDasha.months}m
                                     </div>
+                                    <div className="data-card-sub">Calculated from Moon deg</div>
                                 </div>
                             </div>
                         </Section>
@@ -257,69 +219,62 @@ const DashaPage = () => {
 
                 {dashaData && dashaData.mahadashas && (
                     <div className="floating-section">
-                        <Section title="Vimshottari Dasha Timeline">
-                            <div className={styles.tableWrapper}>
-                                <table className="dasha-table-modern">
-                                    <thead>
-                                        <tr>
-                                            <th>Planet Period</th>
-                                            <th>Starts On</th>
-                                            <th>Ends On</th>
-                                            <th>Duration</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {dashaData.mahadashas.map((dasha, idx) => {
-                                            const now = new Date();
-                                            const startDate = new Date(dasha.start);
-                                            const endDate = new Date(dasha.end);
-                                            const isCurrent = now >= startDate && now <= endDate;
-                                            const isExpanded = expandedDasha === idx;
+                        <Section title="Planetary Timeline (Vimshottari)">
+                            <table className="dasha-table-modern">
+                                <thead>
+                                    <tr>
+                                        <th>Planet Period</th>
+                                        <th>Start Date</th>
+                                        <th>End Date</th>
+                                        <th>Length</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {dashaData.mahadashas.map((dasha, idx) => {
+                                        const now = new Date();
+                                        const startDate = new Date(dasha.start);
+                                        const endDate = new Date(dasha.end);
+                                        const isCurrent = now >= startDate && now <= endDate;
+                                        const isExpanded = expandedDasha === idx;
 
-                                            return (
-                                                <React.Fragment key={idx}>
-                                                    <tr
-                                                        className={`mahadasha-row ${isCurrent ? 'current-period-row' : ''} ${isExpanded ? 'active-expansion' : ''}`}
-                                                        onClick={() => toggleDasha(idx)}
-                                                        style={{ cursor: 'pointer' }}
-                                                    >
-                                                        <td style={{ fontWeight: 700, color: 'var(--color-primary)' }}>
-                                                            <span className={`expand-icon ${isExpanded ? 'rotated' : ''}`}>▶</span>
-                                                            {dasha.lord}
-                                                            {isCurrent && <span className="current-badge">Current</span>}
-                                                        </td>
-                                                        <td>{formatDate(dasha.start)}</td>
-                                                        <td>{formatDate(dasha.end)}</td>
-                                                        <td>{dasha.years} years</td>
-                                                    </tr>
-                                                    {isExpanded && dasha.antardashas && dasha.antardashas.map((sub, sIdx) => {
-                                                        const subStart = new Date(sub.start);
-                                                        const subEnd = new Date(sub.end);
-                                                        const isSubCurrent = now >= subStart && now <= subEnd;
+                                        return (
+                                            <React.Fragment key={idx}>
+                                                <tr
+                                                    className={`mahadasha-row planet-${dasha.lord.toLowerCase()} ${isCurrent ? 'current-period-row' : ''}`}
+                                                    onClick={() => toggleDasha(idx)}
+                                                >
+                                                    <td>
+                                                        <span className={`expand-icon ${isExpanded ? 'rotated' : ''}`}>▶</span>
+                                                        <strong>{dasha.lord}</strong>
+                                                        {isCurrent && <span className="current-badge">Current</span>}
+                                                    </td>
+                                                    <td>{formatDate(dasha.start)}</td>
+                                                    <td>{formatDate(dasha.end)}</td>
+                                                    <td>{dasha.years} years</td>
+                                                </tr>
+                                                {isExpanded && dasha.antardashas && dasha.antardashas.map((sub, sIdx) => {
+                                                    const subStart = new Date(sub.start);
+                                                    const subEnd = new Date(sub.end);
+                                                    const isSubCurrent = now >= subStart && now <= subEnd;
 
-                                                        return (
-                                                            <tr key={`sub-${idx}-${sIdx}`} className={`antardasha-row ${isSubCurrent ? 'current-sub-period' : ''}`}>
-                                                                <td className="sub-lord-cell">
-                                                                    <span className="sub-dash-connector">└─</span>
-                                                                    {sub.lord}
-                                                                    {isSubCurrent && <span className="sub-current-badge">Current Sub</span>}
-                                                                </td>
-                                                                <td>{formatDate(sub.start)}</td>
-                                                                <td>{formatDate(sub.end)}</td>
-                                                                <td>{sub.years} y</td>
-                                                            </tr>
-                                                        );
-                                                    })}
-                                                </React.Fragment>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <div className="information">
-                                <p className="info">Vimshottari Dasha periods indicate the major planetary influences throughout your lifetime based on the Moon's position at birth. Click on any Mahadasha to see its sub-periods (Antardashas).</p>
-                            </div>
+                                                    return (
+                                                        <tr key={`sub-${idx}-${sIdx}`} className={`antardasha-row planet-${sub.lord.toLowerCase()} ${isSubCurrent ? 'current-sub-period' : ''}`}>
+                                                            <td className="sub-lord-cell">
+                                                                <span className="sub-dash-connector">└─</span>
+                                                                {sub.lord}
+                                                                {isSubCurrent && <span className="sub-current-badge">Active</span>}
+                                                            </td>
+                                                            <td>{formatDate(sub.start)}</td>
+                                                            <td>{formatDate(sub.end)}</td>
+                                                            <td>{sub.years} y</td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </React.Fragment>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
                         </Section>
                     </div>
                 )}

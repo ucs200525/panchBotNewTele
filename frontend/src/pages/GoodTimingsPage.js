@@ -54,7 +54,7 @@ const GoodTimingsPage = () => {
                 <div className="hero-content">
                     <h1 className="hero-title">Auspicious Periods</h1>
                     <p className="hero-subtitle">
-                        Pancha Rahita Muhurat & Good Timings • Swiss Ephemeris Precision
+                        Pancha Rahita Muhurat & Good Timings • High Precision Calculation
                     </p>
                 </div>
 

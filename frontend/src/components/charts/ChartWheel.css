@@ -46,12 +46,12 @@
 }
 
 .cell-lagna-mark {
-    position: absolute;
-    top: 2px;
-    right: 2px;
+    /* position: absolute; removed to prevent overlap */
     color: #ef4444;
     font-weight: 800;
     font-size: 0.75rem;
+    margin: 2px 0;
+    /* Add some spacing */
 }
 
 .cell-planets {

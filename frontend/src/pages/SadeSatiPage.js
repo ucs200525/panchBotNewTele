@@ -4,7 +4,7 @@ import { Section } from '../components/layout';
 import { CityAutocomplete } from '../components/forms';
 import { useAuth } from '../context/AuthContext';
 import { saveProfile, getProfile, getAllProfiles } from '../utils/profileStorage';
-
+import './SadeSatiPage.css';
 
 const SadeSatiPage = () => {
     const { setCityAndDate } = useAuth();
@@ -63,7 +63,6 @@ const SadeSatiPage = () => {
     const handleNameChange = (e) => {
         const value = e.target.value;
         setName(value);
-
         const profile = getProfile(value);
         if (profile) {
             setCityName(profile.cityName);
@@ -82,7 +81,7 @@ const SadeSatiPage = () => {
     const formatDate = (dateStr) => {
         return new Date(dateStr).toLocaleDateString('en-IN', {
             year: 'numeric',
-            month: 'long',
+            month: 'short',
             day: 'numeric'
         });
     };
@@ -92,13 +91,12 @@ const SadeSatiPage = () => {
             {/* Hero Section */}
             <div className="hero-section ss-hero">
                 <div className="hero-content">
-                    <h1 className="hero-title">Sade Sati Timeline</h1>
+                    <h1 className="hero-title">Saturn Transit Analysis</h1>
                     <p className="hero-subtitle">
-                        Analyze the 7.5-year transit periods of Saturn and their impact on your life
+                        Comprehensive mapping of Sade Sati & Dhaiya cycles across your lifetime
                     </p>
                 </div>
 
-                {/* Hero Form */}
                 <div className="hero-form">
                     <form onSubmit={(e) => {
                         e.preventDefault();
@@ -114,7 +112,7 @@ const SadeSatiPage = () => {
                                     list="profiles-list"
                                     value={name}
                                     onChange={handleNameChange}
-                                    placeholder="Enter name..."
+                                    placeholder="Name..."
                                     className="date-input-hero"
                                     required
                                 />
@@ -161,76 +159,60 @@ const SadeSatiPage = () => {
                             className="get-panchang-btn-hero"
                             disabled={isLoading}
                         >
-                            {isLoading ? (
-                                <>
-                                    <span className="spinner-small"></span>
-                                    Analyzing Transit...
-                                </>
-                            ) : (
-                                "Calculate Sade Sati"
-                            )}
+                            {isLoading ? "Running Analysis..." : "Calculate Cycles"}
                         </button>
                     </form>
                 </div>
             </div>
 
             <div className="results-section">
-                {error && (
-                    <div className="error-box-hero">
-                        {error}
-                    </div>
-                )}
-
-                {isLoading && (
-                    <div className="loading-spinner">
-                        <div className="spinner"></div>
-                    </div>
-                )}
-
-                {/* Saved Profiles Quick Select */}
-                {savedProfiles.length > 0 && !sadeSatiData && !isLoading && (
-                    <div className="floating-section">
-                        <Section title="Quick Load Profile">
-                            <div className="profile-pills">
-                                {savedProfiles.slice(0, 5).map((p, i) => (
-                                    <button
-                                        key={i}
-                                        className="profile-pill"
-                                        onClick={() => loadProfile(p)}
-                                    >
-                                        <span className="pill-name">{p.name}</span>
-                                        <span className="pill-meta">{p.cityName}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        </Section>
-                    </div>
-                )}
+                {error && <div className="error-box-hero">{error}</div>}
 
                 {sadeSatiData && (
                     <div className="sadesati-results">
                         <Section title="Natal Moon Details">
                             <div className="natal-moon-card">
                                 <div className="moon-sign">
-                                    <span className="rashi-label">Natal Moon Sign:</span>
+                                    <span className="rashi-label">Birth Moon Sign</span>
                                     <span className="rashi-value">{sadeSatiData.natalMoonSign}</span>
                                 </div>
-                                <p className="moon-info">Sade Sati is calculated based on Saturn's transit through the 12th, 1st, and 2nd houses from this sign.</p>
+                                <p className="moon-info">Sade Sati occurs when Saturn transits the 12th, 1st, and 2nd houses from your natal Moon position. Each phase lasts approximately 2.5 years.</p>
                             </div>
+
+                            {/* Current Transit Highlight Card */}
+                            {sadeSatiData.periods.find(p => {
+                                const now = new Date();
+                                return now >= new Date(p.start) && now <= new Date(p.end);
+                            }) && (
+                                    <div className="data-card" style={{ border: '2px solid #ef4444', background: 'rgba(239, 68, 68, 0.05)', marginBottom: '2rem', padding: '1.5rem', borderRadius: '16px' }}>
+                                        <div className="data-card-label" style={{ color: '#ef4444', fontWeight: 'bold' }}>⚠️ Active Transit Right Now</div>
+                                        <div className="data-card-value" style={{ fontSize: '1.5rem', marginTop: '10px' }}>
+                                            {sadeSatiData.periods.find(p => {
+                                                const now = new Date();
+                                                return now >= new Date(p.start) && now <= new Date(p.end);
+                                            }).phase}
+                                        </div>
+                                        <div className="data-card-sub" style={{ color: '#b91c1c' }}>
+                                            Impact: {sadeSatiData.periods.find(p => {
+                                                const now = new Date();
+                                                return now >= new Date(p.start) && now <= new Date(p.end);
+                                            }).impact}
+                                        </div>
+                                    </div>
+                                )}
                         </Section>
 
-                        <Section title="Lifetime Transit Table">
+                        <Section title="Lifetime Transit Timeline">
                             <div className={styles.tableWrapper}>
-                                <table className="panchang-table ss-table">
+                                <table className="ss-table">
                                     <thead>
                                         <tr>
                                             <th>#</th>
-                                            <th>Phase / Transit</th>
-                                            <th>Start Date</th>
-                                            <th>End Date</th>
-                                            <th>Saturn Rashi</th>
-                                            <th>Impact</th>
-                                            <th>Details</th>
+                                            <th>Cycle Phase</th>
+                                            <th>Timing</th>
+                                            <th>Saturn Details</th>
+                                            <th>Intensity</th>
+                                            <th>Predictions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -252,8 +234,10 @@ const SadeSatiPage = () => {
                                                             {isActive && <div className="now-badge">ACTUAL</div>}
                                                         </div>
                                                     </td>
-                                                    <td>{formatDate(period.start)}</td>
-                                                    <td>{formatDate(period.end)}</td>
+                                                    <td style={{ whiteSpace: 'nowrap' }}>
+                                                        <div className="sub-detail">Start: {formatDate(period.start)}</div>
+                                                        <div className="sub-detail">End: {formatDate(period.end)}</div>
+                                                    </td>
                                                     <td>
                                                         <div className="transit-details">
                                                             <strong>{period.rashi}</strong>
@@ -276,9 +260,10 @@ const SadeSatiPage = () => {
                         </Section>
 
                         <div className="information">
-                            <div className="info-text">
-                                <p><strong>Sade Sati:</strong> A 7.5-year period when Saturn transits the 12th, 1st, and 2nd houses from your natal Moon.</p>
-                                <p><strong>Dhaiya:</strong> A 2.5-year period when Saturn transits the 4th or 8th house from your natal Moon.</p>
+                            <div className="info-text" style={{ padding: '2rem', background: '#f8fafc', borderRadius: '16px', marginTop: '2rem' }}>
+                                <p style={{ marginBottom: '1rem' }}><strong>💡 Understanding Transits:</strong></p>
+                                <p><strong>Sade Sati:</strong> A 7.5-year cycle occurring when Saturn transits the 12th, 1st, and 2nd houses from your Moon sign. It is a period of significant growth, discipline, and karmic rebalancing.</p>
+                                <p style={{ marginTop: '0.5rem' }}><strong>Dhaiya:</strong> A 2.5-year cycle when Saturn transits the 4th or 8th house from your Moon sign. Often associated with career shifts or internal transformations.</p>
                             </div>
                         </div>
                     </div>

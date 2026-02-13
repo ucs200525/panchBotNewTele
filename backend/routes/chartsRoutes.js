@@ -4,103 +4,122 @@ const { planetary, lagna, charts } = require('../swisseph');
 const logger = require('../utils/logger');
 const { getUTCFromLocal } = require('../utils/dateUtils');
 const config = require('../swisseph/core/config');
+const { analyzeVargaChart, getPlanetaryDignity } = require('../utils/vargaAnalyzer');
+const { VARGA_HOUSE_SIGNIFICANCE } = require('../utils/vargaHouseData');
 
-/**
- * Helper to calculate Navamsa Rashi Index
- */
-function getNavamsaRashi(siderealLong) {
-    const rashiIdx = Math.floor(siderealLong / 30);
-    const degInRashi = siderealLong % 30;
-    const navPoint = Math.floor(degInRashi / (30 / 9));
+// List of all 16 Shodashvarga divisions
+const VARGAS = [1, 2, 3, 4, 7, 9, 10, 12, 16, 20, 24, 27, 30, 40, 45, 60];
 
-    let navRashiIdx;
-    if ([0, 4, 8].includes(rashiIdx)) navRashiIdx = (0 + navPoint) % 12; // Fire: Mesha
-    else if ([1, 5, 9].includes(rashiIdx)) navRashiIdx = (9 + navPoint) % 12; // Earth: Makara
-    else if ([2, 6, 10].includes(rashiIdx)) navRashiIdx = (6 + navPoint) % 12; // Air: Tula
-    else navRashiIdx = (3 + navPoint) % 12; // Water: Karka
+const VARGA_NAMES = {
+    1: 'Rasi (D1)',
+    2: 'Hora (D2)',
+    3: 'Drekkana (D3)',
+    4: 'Chaturthamsa (D4)',
+    7: 'Saptamsa (D7)',
+    9: 'Navamsa (D9)',
+    10: 'Dasamsa (D10)',
+    12: 'Dwadasamsa (D12)',
+    16: 'Shodasamsa (D16)',
+    20: 'Vimsamsa (D20)',
+    24: 'Chaturvimsamsa (D24)',
+    27: 'Saptavimsamsa (D27)',
+    30: 'Trimsamsa (D30)',
+    40: 'Khavedamsa (D40)',
+    45: 'Akshavedamsa (D45)',
+    60: 'Shashtiamsa (D60)'
+};
 
-    return navRashiIdx;
-}
-
-/**
- * Helper to calculate Dasamsa Rashi Index
- */
-function getDasamsaRashi(siderealLong) {
-    const rashiIdx = Math.floor(siderealLong / 30);
-    const degInRashi = siderealLong % 30;
-    const dasaPoint = Math.floor(degInRashi / 3); // 30/10 = 3 deg each
-
-    let dasaRashiIdx;
-    if (rashiIdx % 2 === 0) { // Odd Sign (1, 3, 5...) - indexed 0, 2, 4...
-        dasaRashiIdx = (rashiIdx + dasaPoint) % 12;
-    } else { // Even Sign (2, 4, 6...) - indexed 1, 3, 5...
-        dasaRashiIdx = (rashiIdx + 8 + dasaPoint) % 12; // Start from 9th from it
-    }
-    return dasaRashiIdx;
-}
+const VARGA_DESC = {
+    1: 'Physical body, existence, and overall destiny.',
+    2: 'Wealth, prosperity, and family resources.',
+    3: 'Siblings, courage, prowess, and energy.',
+    4: 'Fixed assets, property, home, and happiness.',
+    7: 'Progeny (children), grandchildren, and legacy.',
+    9: 'Spouse, partnerships, and inner strength/fruit of life.',
+    10: 'Profession, career, fame, and public status.',
+    12: 'Parents, ancestors, and lineage.',
+    16: 'Vehicles, secondary comforts, and luxuries.',
+    20: 'Spirituality, religious path, and meditation.',
+    24: 'Education, knowledge, learning, and wisdom.',
+    27: 'General strengths and weaknesses (Nakshatramsa).',
+    30: 'Misfortunes, obstacles, and nature of character.',
+    40: 'Auspicious and inauspicious events.',
+    45: 'All general attributes and subtle qualities.',
+    60: 'Past life karma and detailed destiny (Most important).'
+};
 
 /**
  * POST /api/charts/details
- * Calculate D1, D9, and D10 charts
+ * Calculate all 16 Divisional Charts + Analysis
  */
 router.post('/details', async (req, res) => {
     try {
         let { date, time = '12:00', lat, lng, tzone = 'Asia/Kolkata' } = req.body;
-        logger.info({ message: 'Charts requested', date, time, lat, lng });
+        logger.info({ message: 'Full Shodashvarga requested', date, time, lat, lng });
 
         if (!date || lat === undefined || lng === undefined) {
-            return res.status(400).json({ error: 'Date, latitude, and longitude are required' });
+            return res.status(400).json({ error: 'Missing parameters' });
         }
 
         const utcDate = getUTCFromLocal(date, time, tzone);
-
-        // 1. Get all planets positions
         const planets = planetary.getAllPlanetDetails(utcDate);
-
-        // 2. Get Lagna at birth time
         const lagnaInfo = lagna.getLagnaAtTime(utcDate, lat, lng);
-        const lagnaIdx = lagnaInfo.index;
 
-        // 3. Calculate D1, D9, and D10
-        const d1Planets = charts.calculateD1(planets);
-        const d9Planets = charts.calculateD9(planets);
-        const d10Planets = charts.calculateD10(planets);
+        const vargaCharts = {};
+        const planetStrengthReport = planets.map(p => ({
+            name: p.name,
+            vargottamaCount: 0,
+            digBala: 0,
+            vargas: []
+        }));
 
-        // 4. Get House layout for charts
-        const d1Houses = charts.getHouses(lagnaIdx, d1Planets);
+        // Calculate all 16 charts
+        VARGAS.forEach(v => {
+            const vPlanets = charts.calculateVarga(planets, v);
+            const vLagnaIdx = charts.getVargaRashi(lagnaInfo.longitude, v);
+            const vHouses = charts.getHouses(vLagnaIdx, vPlanets);
 
-        // For D9, calculate navamsa lagna correctly
-        const d9LagnaIdx = getNavamsaRashi(lagnaInfo.longitude);
-        const d9Houses = charts.getHouses(d9LagnaIdx, d9Planets);
+            vPlanets.forEach(vp => {
+                const report = planetStrengthReport.find(r => r.name === vp.name);
+                if (report) {
+                    report.vargas.push({ v, rashi: vp.rashi, rashiIdx: vp.rashiIndex });
+                    // Check Vargottama (same rashi in D1 and this varga)
+                    const d1Rashi = report.vargas[0]?.rashiIdx;
+                    if (v > 1 && d1Rashi !== undefined && vp.rashiIndex === d1Rashi) {
+                        report.vargottamaCount++;
+                    }
+                }
+            });
 
-        // For D10, calculate dasamsa lagna correctly
-        const d10LagnaIdx = getDasamsaRashi(lagnaInfo.longitude);
-        const d10Houses = charts.getHouses(d10LagnaIdx, d10Planets);
+            // Generate comprehensive house-by-house analysis
+            const detailedAnalysis = analyzeVargaChart(v, vHouses);
+
+            vargaCharts[`D${v}`] = {
+                v,
+                name: VARGA_NAMES[v],
+                description: VARGA_DESC[v],
+                lagnaRashi: config.RASHIS[vLagnaIdx],
+                houses: vHouses,
+                planets: vPlanets,
+                // Add comprehensive analysis
+                detailedAnalysis: detailedAnalysis,
+                houseSignificance: VARGA_HOUSE_SIGNIFICANCE[v]?.houses || {}
+            };
+        });
 
         res.json({
             success: true,
             date,
             time,
             lagna: lagnaInfo,
-            rasiChart: {
-                houses: d1Houses,
-                planets: d1Planets,
-                lagnaRashi: lagnaInfo.name
-            },
-            navamsaChart: {
-                houses: d9Houses,
-                planets: d9Planets,
-                lagnaRashi: config.RASHIS[d9LagnaIdx]
-            },
-            dasamsa: { // Matching frontend expects 'dasamsa' key usually
-                houses: d10Houses,
-                planets: d10Planets,
-                lagnaRashi: config.RASHIS[d10LagnaIdx]
-            },
-            planetDetails: planets // Extra feature: provide detailed positions for tables
+            charts: vargaCharts,
+            strengthReport: planetStrengthReport,
+            vargaNames: VARGA_NAMES,
+            vargaDescriptions: VARGA_DESC,
+            planetDetails: planets
         });
     } catch (error) {
-        logger.error({ message: 'Charts API Error', error: error.message, stack: error.stack });
+        logger.error({ message: 'Shodashvarga API Error', error: error.message });
         res.status(500).json({ error: error.message });
     }
 });

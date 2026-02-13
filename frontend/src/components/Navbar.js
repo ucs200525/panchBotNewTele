@@ -94,7 +94,7 @@ const Navbar = () => {
               </div>
               <div className="submenu-content">
                 <Link to="/panchang" className="submenu-link">Daily Panchang</Link>
-                <Link to="/panchang-swiss" className="submenu-link">Swiss Precision</Link>
+                {/* <Link to="/panchang-swiss" className="submenu-link">High Precision</Link> */}
                 <Link to="/lagna" className="submenu-link">Lagna Times</Link>
                 <Link to="/hora" className="submenu-link">Hora Calculator</Link>
               </div>

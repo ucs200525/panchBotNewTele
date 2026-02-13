@@ -1,221 +1,300 @@
-.dasha-form-container {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
-  margin-bottom: var(--space-xl);
+/* Main Dasha Page Container */
+.content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
 }
 
-.time-input-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
-  padding: var(--space-md);
-  background: var(--color-bg-secondary);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border);
-}
-
-.time-label {
-  font-weight: var(--font-weight-semibold);
-  font-size: var(--font-size-sm);
-  color: var(--color-text-primary);
-}
-
-.time-input {
-  padding: var(--space-sm) var(--space-md);
-  border: 2px solid var(--color-border);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-base);
-  font-family: var(--font-family);
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-  background: var(--color-bg-primary);
-  min-height: 44px;
-}
-
-.time-input:focus {
-  outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
-}
-
-.dasha-table {
-  background: var(--color-bg-primary);
-  border: 2px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  box-shadow: var(--shadow-md);
-}
-
-.dasha-row {
-  display: grid;
-  grid-template-columns: 120px 1fr 100px;
-  align-items: center;
-  padding: var(--space-md) var(--space-lg);
-  border-bottom: 1px solid var(--color-border-light);
-  transition: background var(--transition-fast);
-}
-
-.dasha-row:last-child {
-  border-bottom: none;
-}
-
-.dasha-row:hover {
-  background: var(--color-bg-secondary);
-}
-
-.dasha-planet {
-  font-weight: var(--font-weight-bold);
-  color: var(--color-primary);
-  font-size: var(--font-size-lg);
-}
-
-.dasha-period {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-}
-
-.dasha-duration {
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-primary);
-  text-align: right;
-  font-size: var(--font-size-sm);
-}
-
-@media (max-width: 768px) {
-  .dasha-row {
-    grid-template-columns: 1fr;
-    gap: var(--space-xs);
-    padding: var(--space-md);
-  }
-
-  .dasha-duration {
-    text-align: left;
-  }
-
-  .time-input {
-    font-size: var(--font-size-sm);
-  }
-}
-
-/* Current Period Highlighting */
-.current-period-row {
-  background-color: rgba(255, 153, 51, 0.08) !important;
-  border-left: 4px solid var(--saffron-gold, #ff9933);
-}
-
-.current-badge {
-  display: inline-block;
-  background: var(--saffron-gold, #ff9933);
-  color: white;
-  font-size: 0.7rem;
-  padding: 2px 8px;
-  border-radius: 12px;
-  margin-left: 8px;
-  vertical-align: middle;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-weight: 800;
-}
-
-/* Expandable Rows */
-.mahadasha-row {
-  transition: background-color 0.2s;
-}
-
-.mahadasha-row:hover {
-  background-color: rgba(0, 0, 0, 0.02);
-}
-
-.expand-icon {
-  display: inline-block;
-  font-size: 0.6rem;
-  margin-right: 12px;
-  transition: transform 0.3s ease;
-  color: #ccc;
-}
-
-.expand-icon.rotated {
-  transform: rotate(90deg);
-  color: var(--saffron-gold, #ff9933);
-}
-
-.active-expansion {
-  background-color: rgba(255, 153, 51, 0.03) !important;
-}
-
-/* Antardasha (Sub-period) Styling */
-.antardasha-row {
-  background-color: #fcfcfc;
-  font-size: 0.95rem;
-}
-
-.sub-lord-cell {
-  padding-left: 2rem !important;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.sub-dash-connector {
-  color: #ddd;
-  font-family: monospace;
-}
-
-.current-sub-period {
-  background-color: rgba(255, 153, 51, 0.05) !important;
-}
-
-.sub-current-badge {
-  display: inline-block;
-  background: #fff;
-  color: var(--saffron-gold, #ff9933);
-  border: 1px solid var(--saffron-gold, #ff9933);
-  font-size: 0.65rem;
-  padding: 1px 6px;
-  border-radius: 10px;
-  margin-left: 8px;
-  text-transform: uppercase;
-  font-weight: 700;
-}
-
+/* Timeline Components */
 .dasha-table-modern {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+  /* Added spacing between rows */
+  background: transparent;
 }
 
 .dasha-table-modern th {
   text-align: left;
-  padding: 1rem;
-  background: #f8f9fa;
-  border-bottom: 2px solid #eee;
-  color: #495057;
+  padding: 1.5rem 1rem;
+  color: #64748b;
   font-weight: 700;
   text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 1.5px;
+  background: white;
+  border-bottom: 2px solid #f1f5f9;
+}
+
+.mahadasha-row {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.mahadasha-row:hover {
+  transform: translateY(-2px) scale(1.005);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+  z-index: 10;
+}
+
+.mahadasha-row td {
+  padding: 1.25rem 1rem;
+  border: none;
+}
+
+.mahadasha-row td:first-child {
+  border-top-left-radius: 12px;
+  border-bottom-left-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mahadasha-row td:last-child {
+  border-top-right-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
+/* Planet Specific Styling */
+:root {
+  --sun-main: #ff8c00;
+  --moon-main: #4b5563;
+  --mars-main: #e11d48;
+  --mercury-main: #059669;
+  --jupiter-main: #7c3aed;
+  --venus-main: #db2777;
+  --saturn-main: #1f2937;
+  --rahu-main: #4f46e5;
+  --ketu-main: #d97706;
+}
+
+/* Row Indicators */
+.planet-sun {
+  border-left: 5px solid var(--sun-main) !important;
+}
+
+.planet-moon {
+  border-left: 5px solid var(--moon-main) !important;
+}
+
+.planet-mars {
+  border-left: 5px solid var(--mars-main) !important;
+}
+
+.planet-mercury {
+  border-left: 5px solid var(--mercury-main) !important;
+}
+
+.planet-jupiter {
+  border-left: 5px solid var(--jupiter-main) !important;
+}
+
+.planet-venus {
+  border-left: 5px solid var(--venus-main) !important;
+}
+
+.planet-saturn {
+  border-left: 5px solid var(--saturn-main) !important;
+}
+
+.planet-rahu {
+  border-left: 5px solid var(--rahu-main) !important;
+}
+
+.planet-ketu {
+  border-left: 5px solid var(--ketu-main) !important;
+}
+
+/* Text Color by Planet */
+.planet-sun td:first-child {
+  color: var(--sun-main) !important;
+}
+
+.planet-moon td:first-child {
+  color: var(--moon-main) !important;
+}
+
+.planet-mars td:first-child {
+  color: var(--mars-main) !important;
+}
+
+.planet-mercury td:first-child {
+  color: var(--mercury-main) !important;
+}
+
+.planet-jupiter td:first-child {
+  color: var(--jupiter-main) !important;
+}
+
+.planet-venus td:first-child {
+  color: var(--venus-main) !important;
+}
+
+.planet-saturn td:first-child {
+  color: var(--saturn-main) !important;
+}
+
+.planet-rahu td:first-child {
+  color: var(--rahu-main) !important;
+}
+
+.planet-ketu td:first-child {
+  color: var(--ketu-main) !important;
+}
+
+/* Current Period - Premium Glow */
+.current-period-row {
+  background: linear-gradient(to right, #ffffff, #f5f7ff) !important;
+  border-left-width: 8px !important;
+  position: relative;
+  z-index: 5;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2), 0 10px 25px rgba(0, 0, 0, 0.05) !important;
+}
+
+.current-badge {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 99px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5);
+  animation: pulse-ring 2s infinite;
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
+  }
+
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 10px rgba(102, 126, 234, 0);
+  }
+
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
+  }
+}
+
+/* Antardasha (Sub-periods) */
+.antardasha-row {
+  background: #f8fafc;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.antardasha-row td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.sub-lord-cell {
+  padding-left: 3rem !important;
+  font-weight: 600;
+  color: #475569;
+}
+
+.sub-dash-connector {
+  color: #cbd5e0;
+  font-weight: bold;
+  margin-right: 12px;
+}
+
+.current-sub-period {
+  background: white !important;
+  border-left: 4px solid #667eea !important;
+}
+
+.sub-current-badge {
+  color: #667eea;
+  background: #f0f7ff;
+  border: 1px solid #667eea;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* Expandability Styling */
+.expand-icon {
   font-size: 0.8rem;
+  transition: transform 0.3s;
+  color: #94a3b8;
+}
+
+.rotated {
+  transform: rotate(90deg);
+  color: inherit;
+}
+
+/* Card Styling for Birth Details */
+.data-card-wrapper {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.data-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s;
+}
+
+.data-card:hover {
+  border-color: #cbd5e0;
+  transform: translateY(-2px);
+}
+
+.data-card-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
   letter-spacing: 0.5px;
+  margin-bottom: 8px;
 }
 
-.dasha-table-modern td {
-  padding: 1rem;
-  border-bottom: 1px solid #f0f0f0;
+.data-card-value {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #1e293b;
 }
 
+.data-card-sub {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+/* Responsive Adjustments */
 @media (max-width: 768px) {
+  .mahadasha-row td {
+    font-size: 0.8rem;
+    padding: 1rem 0.5rem;
+  }
 
-  .dasha-table-modern th,
-  .dasha-table-modern td {
-    padding: 0.5rem 0.25rem;
-    font-size: 0.75rem;
+  .mahadasha-row td:first-child {
+    gap: 6px;
+  }
+
+  .expand-icon {
+    margin-right: 4px;
   }
 
   .sub-lord-cell {
-    padding-left: 0.75rem !important;
-  }
-
-  .current-badge,
-  .sub-current-badge {
-    font-size: 0.6rem;
-    padding: 1px 4px;
-    margin-left: 4px;
+    padding-left: 1.5rem !important;
   }
 }
