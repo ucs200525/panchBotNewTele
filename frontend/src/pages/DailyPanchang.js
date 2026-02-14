@@ -26,7 +26,8 @@ const DailyPanchang = () => {
         setError(null);
 
         try {
-            let url = `http://localhost:4000/api/getPanchangData?city=${encodeURIComponent(cityName)}&date=${currentDate}`;
+            const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+            let url = `${API_URL}/api/getPanchangData?city=${encodeURIComponent(cityName)}&date=${currentDate}`;
 
             // Use coordinates and timezone from context if available and matching current city
             if (selectedLat && selectedLng && selectedLat !== 'undefined' && selectedLng !== 'undefined') {
