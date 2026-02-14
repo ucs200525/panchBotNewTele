@@ -242,16 +242,25 @@ const DailyPanchang = () => {
                     {panchangData.panchaRahitaMuhurat && (
                         renderTableSection(
                             "Pancha Rahita Muhurat",
-                            "Periods completely free from all inauspicious elements",
-                            ["#", "Start Time", "End Time", "Duration"],
-                            panchangData.panchaRahitaMuhurat.map((p, idx) => ({
-                                cells: [
-                                    { content: idx + 1, className: styles.detailCell },
-                                    { content: p.start, className: styles.valueCell },
-                                    { content: p.end, className: styles.valueCell },
-                                    { content: <span className={styles.durationBadge}>{p.duration}</span> }
-                                ]
-                            }))
+                            "Detailed breakdown of periods based on Panchaka Rahitam calculation",
+                            ["#", "Muhurat", "Category", "Start Time", "End Time", "Duration"],
+                            panchangData.panchaRahitaMuhurat.map((p, idx) => {
+                                const isGood = p.category.toLowerCase().includes('good');
+                                return {
+                                    className: isGood ? styles.shubhRow : styles.ashubhRow,
+                                    cells: [
+                                        { content: idx + 1, className: styles.detailCell },
+                                        { content: p.muhurat, className: styles.nameCell },
+                                        { 
+                                            content: <span className={isGood ? styles.bageShubh : styles.bageAshubh}>{p.category}</span>,
+                                            className: styles.valueCell
+                                        },
+                                        { content: p.start, className: styles.valueCell },
+                                        { content: p.end, className: styles.valueCell },
+                                        { content: <span className={styles.durationBadge}>{p.duration}</span> }
+                                    ]
+                                };
+                            })
                         )
                     )}
 
