@@ -2,19 +2,9 @@ const express = require('express');
 const router = express.Router();
 const { ApiAnalytics, DailySummary } = require('../models/Analytics');
 const Log = require('../models/Log');
-const { getOpenCageStats, getOpenCageHistory } = require('../utils/thirdPartyTracker');
 const mongoose = require('mongoose');
 
-// Helper to check DB connection and fail fast if not connected
-const checkDBConn = (req, res, next) => {
-    if (mongoose.connection.readyState !== 1) {
-        return res.status(503).json({ 
-            error: 'Service Unavailable', 
-            details: 'Database connection is still initializing or unavailable. Please try again in a few seconds.' 
-        });
-    }
-    next();
-};
+
 
 // Admin Authentication Middleware (same as adminRoutes.js)
 const authenticateAdmin = (req, res, next) => {
@@ -29,9 +19,8 @@ const authenticateAdmin = (req, res, next) => {
     }
 };
 
-// Protect ALL analytics routes with admin auth and DB check
+// Protect ALL analytics routes with admin auth
 router.use(authenticateAdmin);
-router.use(checkDBConn);
 
 // DELETE: Clear old analytics data (space management)
 router.delete('/cleanup/analytics', async (req, res) => {
@@ -770,46 +759,6 @@ router.get('/stats/performance', async (req, res) => {
         ]);
 
         res.json(performanceByEndpoint);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// GET: Third-Party Services Usage
-router.get('/stats/third-party', async (req, res) => {
-    try {
-        const openCageStats = await getOpenCageStats();
-
-        res.json({
-            openCage: {
-                service: 'OpenCage Geocoding API',
-                dailyLimit: openCageStats.dailyLimit,
-                used: openCageStats.used,
-                remaining: openCageStats.remaining,
-                percentage: openCageStats.percentage,
-                breakdown: {
-                    geocode: openCageStats.geocodeRequests,
-                    reverseGeocode: openCageStats.reverseGeocodeRequests
-                },
-                resetTime: openCageStats.resetTime,
-                status: openCageStats.remaining > 500 ? 'healthy' : openCageStats.remaining > 100 ? 'warning' : 'critical'
-            }
-        });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// GET: OpenCage Usage History
-router.get('/stats/third-party/opencage/history', async (req, res) => {
-    try {
-        const days = parseInt(req.query.days) || 7;
-        const history = await getOpenCageHistory(days);
-
-        res.json({
-            days,
-            history
-        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

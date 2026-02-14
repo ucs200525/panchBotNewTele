@@ -47,35 +47,8 @@ const authenticateAdmin = (req, res, next) => {
     }
 };
 
-// Middleware to check DB connection status
-const checkDbConnection = async (req, res, next) => {
-    try {
-        // Re-use our robust connectDB function which handles caching
-        const connectDB = require('../utils/db');
-        await connectDB();
-        
-        const state = mongoose.connection.readyState;
-        if (state !== 1) {
-            return res.status(503).json({ 
-                error: 'Service Unavailable', 
-                details: 'Database connection is still initializing or unavailable. Please try again in a few seconds.',
-                connectionStatus: state === 2 ? 'connecting' : 'disconnected'
-            });
-        }
-        next();
-    } catch (error) {
-        logger.error('DB Check Middleware Error: ' + error.message);
-        return res.status(500).json({ 
-            error: 'Internal Server Error', 
-            details: 'Failed to establish database connection.',
-            message: error.message
-        });
-    }
-};
-
 // Protect all routes
 router.use(authenticateAdmin);
-router.use(checkDbConnection);
 
 // GET /admin/logs
 router.get('/logs', async (req, res) => {

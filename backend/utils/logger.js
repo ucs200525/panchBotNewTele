@@ -1,58 +1,10 @@
 // utils/logger.js
 const winston = require('winston');
-
-// Load winston-mongodb with proper error handling
-let MongoDB;
-try {
-  MongoDB = require('winston-mongodb').MongoDB;
-  console.log('✓ winston-mongodb loaded successfully');
-} catch (e) {
-  console.warn('✗ winston-mongodb not available:', e.message);
-}
+const Log = require('../models/Log');
 
 const transports = [
   new winston.transports.Console()
 ];
-
-// Add MongoDB transport if URI is available and MongoDB transport is loaded
-// MongoDB transport disabled as requested to avoid connection issues
-if (process.env.MONGO_URI && MongoDB) {
-  try {
-    const mongoTransport = new MongoDB({
-      level: 'info',
-      db: process.env.MONGO_URI,
-      options: {
-        // useUnifiedTopology: true,
-        // useNewUrlParser: true,
-        serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
-      },
-      collection: 'logs',
-      storeHost: true,
-      capped: false,
-      tryReconnect: true,
-      decolorize: true,
-      leaveConnectionOpen: true,
-      metaKey: 'meta'
-    });
-
-    // Listen for errors from MongoDB transport
-    mongoTransport.on('error', (error) => {
-      console.error('MongoDB Transport Error:', error);
-    });
-
-    transports.push(mongoTransport);
-    console.log('✓ MongoDB transport added to Winston');
-  } catch (error) {
-    console.error('✗ Failed to create MongoDB transport:', error.message);
-  }
-} else {
-  if (!process.env.MONGO_URI) {
-    console.warn('⚠ MONGO_URI not set - logs will only appear in console');
-  }
-  if (!MongoDB) {
-    console.warn('⚠ MongoDB transport not available');
-  }
-}
 
 const logger = winston.createLogger({
   level: 'info',
@@ -63,7 +15,39 @@ const logger = winston.createLogger({
   transports: transports
 });
 
-// Log a test message on startup
-logger.info({ message: 'Logger initialized', mongoEnabled: !!MongoDB && !!process.env.MONGO_URI });
+// Monkey-patch logger to also save to MongoDB for the Admin Dashboard
+// This is "direct and fast" without the overhead of winston-mongodb connection management
+const originalInfo = logger.info.bind(logger);
+const originalError = logger.error.bind(logger);
+const originalWarn = logger.warn.bind(logger);
+
+logger.info = (msg, meta) => {
+  saveToDb('info', msg, meta);
+  return originalInfo(msg, meta);
+};
+
+logger.error = (msg, meta) => {
+  saveToDb('error', msg, meta);
+  return originalError(msg, meta);
+};
+
+logger.warn = (msg, meta) => {
+  saveToDb('warn', msg, meta);
+  return originalWarn(msg, meta);
+};
+
+function saveToDb(level, message, meta) {
+  // Only save if it's not a heartbeat/debug message to keep DB clean
+  if (typeof message === 'string' && (message.includes('Logger initialized') || message.includes('Server is running'))) return;
+
+  Log.create({
+    level,
+    message: typeof message === 'object' ? JSON.stringify(message) : message,
+    meta,
+    timestamp: new Date()
+  }).catch(err => {
+    // Fail silently in DB to avoid infinite loops if it logs to itself
+  });
+}
 
 module.exports = logger;
