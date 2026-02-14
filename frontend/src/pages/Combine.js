@@ -192,8 +192,8 @@ const CombinePage = () => {
                   <thead>
                     <tr>
                       <th className={styles.sno}>#</th>
-                      <th className={styles.typeCell}>Type</th>
-                      <th>Description</th>
+                    
+                      <th>Muhurta Description</th>
                       <th>Interval</th>
                       <th>Availability</th>
                     </tr>
@@ -202,7 +202,7 @@ const CombinePage = () => {
                     {combinedData.map((row, index) => (
                       <tr key={index}>
                         <td className={styles.sno}>{row.sno}</td>
-                        <td className={styles.typeCell}>{row.type}</td>
+                    
                         <td className={styles.descCell}>{row.description}</td>
                         <td className={styles.timeCell}>{row.timeInterval}</td>
                         <td>

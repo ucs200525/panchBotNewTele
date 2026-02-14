@@ -7,7 +7,28 @@ const fetch = require('node-fetch'); // Make sure to install node-fetch if you h
 const axios = require('axios');
 const cheerio = require('cheerio');
 const path = require('path');
-const puppeteer = require('puppeteer');
+const chromium = require('@sparticuz/chromium');
+const puppeteerCore = require('puppeteer-core');
+
+const getBrowser = async () => {
+    let browser;
+    if (process.env.AWS_LAMBDA_FUNCTION_VERSION || process.env.VERCEL || process.env.NODE_ENV === 'production') {
+        browser = await puppeteerCore.launch({
+            args: chromium.args,
+            defaultViewport: chromium.defaultViewport,
+            executablePath: await chromium.executablePath(),
+            headless: chromium.headless,
+            ignoreHTTPSErrors: true,
+        });
+    } else {
+        const puppeteer = require('puppeteer');
+        browser = await puppeteer.launch({
+            headless: 'new',
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+        });
+    }
+    return browser;
+};
 
 // In-memory cache for coordinates to avoid redundant OpenCage calls
 const coordCache = new Map();
@@ -1081,10 +1102,7 @@ router.post("/combine-image", async (req, res) => {
         `;
 
         // Launch puppeteer
-        const browser = await puppeteer.launch({
-            headless: 'new',
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
-        });
+        const browser = await getBrowser();
         const page = await browser.newPage();
 
         // Set content and wait for it to load
@@ -1239,10 +1257,7 @@ router.post("/getDrikTable-image", async (req, res) => {
         `;
 
         // Launch puppeteer and generate image
-        const browser = await puppeteer.launch({
-            headless: 'new',
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
-        });
+        const browser = await getBrowser();
         const page = await browser.newPage();
         await page.setContent(htmlContent);
         await page.setViewport({ width: 1200, height: 800 });
@@ -1426,10 +1441,7 @@ router.post("/getBharagvTable-image", async (req, res) => {
             </html>
         `;
 
-        const browser = await puppeteer.launch({
-            headless: 'new',
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
-        });
+        const browser = await getBrowser();
 
         const page = await browser.newPage();
         await page.setContent(htmlContent);
@@ -2300,10 +2312,7 @@ router.post("/getOldSwissTable-image", async (req, res) => {
             </html>
         `;
 
-        const browser = await puppeteer.launch({
-            headless: 'new',
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
-        });
+        const browser = await getBrowser();
 
         const page = await browser.newPage();
         await page.setContent(htmlContent);
