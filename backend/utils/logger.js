@@ -16,33 +16,28 @@ const transports = [
 
 // Add MongoDB transport if URI is available and MongoDB transport is loaded
 // MongoDB transport disabled as requested to avoid connection issues
-/*
 if (process.env.MONGO_URI && MongoDB) {
   try {
     const mongoTransport = new MongoDB({
       level: 'info',
       db: process.env.MONGO_URI,
       options: {
-        useUnifiedTopology: true,
-        useNewUrlParser: true
+        // useUnifiedTopology: true,
+        // useNewUrlParser: true,
+        serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
       },
       collection: 'logs',
       storeHost: true,
       capped: false,
-      cappedSize: 10000000, // 10MB
       tryReconnect: true,
       decolorize: true,
-      leaveConnectionOpen: false,
+      leaveConnectionOpen: true,
       metaKey: 'meta'
     });
 
     // Listen for errors from MongoDB transport
     mongoTransport.on('error', (error) => {
       console.error('MongoDB Transport Error:', error);
-    });
-
-    mongoTransport.on('logged', (info) => {
-      console.log('✓ Log written to MongoDB');
     });
 
     transports.push(mongoTransport);
@@ -58,7 +53,6 @@ if (process.env.MONGO_URI && MongoDB) {
     console.warn('⚠ MongoDB transport not available');
   }
 }
-*/
 
 const logger = winston.createLogger({
   level: 'info',
