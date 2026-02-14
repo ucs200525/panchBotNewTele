@@ -53,6 +53,7 @@
     padding: 1.5rem;
     border-bottom: 1px solid #f8fafc;
     vertical-align: middle;
+    white-space: nowrap;
 }
 
 .muhuratCell {
@@ -80,6 +81,7 @@
 .timeCell {
     font-size: 1.05rem;
     color: #2d3748;
+    white-space: nowrap;
 }
 
 .timeRange {

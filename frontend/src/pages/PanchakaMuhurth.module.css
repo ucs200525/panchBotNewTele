@@ -69,5 +69,6 @@
     .timeCell {
         font-size: 1.05rem !important;
         font-weight: 600 !important;
+        white-space: nowrap !important;
     }
 }

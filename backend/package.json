@@ -27,7 +27,7 @@
     "winston-mongodb": "^7.0.1"
   },
   "engines": {
-    "node": "24.x"
+    "node": "22.x"
   },
   "devDependencies": {
     "nodemon": "^3.1.7",

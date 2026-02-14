@@ -70,6 +70,7 @@
     border-bottom: 1px solid #f1f5f9;
     color: #1e293b;
     vertical-align: middle;
+    white-space: nowrap;
 }
 
 .panchangTable tr:last-child td {
@@ -88,6 +89,7 @@
 
 .valueCell {
     font-weight: 700;
+    white-space: nowrap;
 }
 
 .detailCell {
@@ -168,6 +170,13 @@
 }
 
 /* Transitions Table Specifics */
+.transTimes {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    gap: 0.5rem;
+}
+
 .transArrow {
     padding: 0 0.5rem;
     color: #3b82f6;
