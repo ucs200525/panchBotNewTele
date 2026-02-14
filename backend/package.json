@@ -10,6 +10,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@sparticuz/chromium": "^129.0.0",
     "axios": "^1.7.8",
     "canvas": "^3.1.0",
     "cheerio": "^1.0.0",
@@ -19,8 +20,7 @@
     "mongoose": "^9.1.1",
     "morgan": "^1.10.0",
     "node-fetch": "^2.7.0",
-    "puppeteer-core": "^23.4.1",
-    "@sparticuz/chromium": "^129.0.0",
+    "puppeteer-core": "^23.11.1",
     "swisseph": "npm:sweph@^2.10.3-4",
     "winston": "^3.15.0",
     "winston-daily-rotate-file": "^5.0.0",
