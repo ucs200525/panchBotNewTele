@@ -4,7 +4,7 @@ import { Section } from '../components/layout';
 import { CityAutocomplete } from '../components/forms';
 import { useAuth } from '../context/AuthContext';
 import { saveProfile, getProfile, getAllProfiles } from '../utils/profileStorage';
-import './SadeSatiPage.css';
+
 
 const SadeSatiPage = () => {
     const { setCityAndDate } = useAuth();
@@ -87,7 +87,7 @@ const SadeSatiPage = () => {
     };
 
     return (
-        <div className="content">
+        <div className={styles.content}>
             {/* Hero Section */}
             <div className="hero-section ss-hero">
                 <div className="hero-content">
@@ -165,18 +165,18 @@ const SadeSatiPage = () => {
                 </div>
             </div>
 
-            <div className="results-section">
+            <div className={`results-section ${styles.resultsSection}`}>
                 {error && <div className="error-box-hero">{error}</div>}
 
                 {sadeSatiData && (
                     <div className="sadesati-results">
                         <Section title="Natal Moon Details">
-                            <div className="natal-moon-card">
-                                <div className="moon-sign">
-                                    <span className="rashi-label">Birth Moon Sign</span>
-                                    <span className="rashi-value">{sadeSatiData.natalMoonSign}</span>
+                            <div className={styles.natalMoonCard}>
+                                <div className={styles.moonSign}>
+                                    <span className={styles.rashiLabel}>Birth Moon Sign</span>
+                                    <span className={styles.rashiValue}>{sadeSatiData.natalMoonSign}</span>
                                 </div>
-                                <p className="moon-info">Sade Sati occurs when Saturn transits the 12th, 1st, and 2nd houses from your natal Moon position. Each phase lasts approximately 2.5 years.</p>
+                                <p className={styles.moonInfo}>Sade Sati occurs when Saturn transits the 12th, 1st, and 2nd houses from your natal Moon position. Each phase lasts approximately 2.5 years.</p>
                             </div>
 
                             {/* Current Transit Highlight Card */}
@@ -204,7 +204,7 @@ const SadeSatiPage = () => {
 
                         <Section title="Lifetime Transit Timeline">
                             <div className={styles.tableWrapper}>
-                                <table className="ss-table">
+                                <table className={styles.ssTable}>
                                     <thead>
                                         <tr>
                                             <th>#</th>
@@ -223,34 +223,34 @@ const SadeSatiPage = () => {
                                             const isActive = now >= start && now <= end;
 
                                             return (
-                                                <tr key={idx} className={`${isActive ? 'row-active' : ''} ${period.type}`}>
+                                                <tr key={idx} className={`${isActive ? styles.rowActive : ''} ${styles[period.type] || ''}`}>
                                                     <td>{idx + 1}</td>
                                                     <td>
-                                                        <div className="phase-cell">
-                                                            <span className={`type-tag ${period.type}`}>
+                                                        <div className={styles.phaseCell}>
+                                                            <span className={`${styles.typeTag} ${styles[period.type] || ''}`}>
                                                                 {period.type === 'sadeSati' ? 'Sade Sati' : 'Dhaiya'}
                                                             </span>
-                                                            <div className="phase-name">{period.phase}</div>
-                                                            {isActive && <div className="now-badge">ACTUAL</div>}
+                                                            <div className={styles.phaseName}>{period.phase}</div>
+                                                            {isActive && <div className={styles.nowBadge}>ACTUAL</div>}
                                                         </div>
                                                     </td>
                                                     <td style={{ whiteSpace: 'nowrap' }}>
-                                                        <div className="sub-detail">Start: {formatDate(period.start)}</div>
-                                                        <div className="sub-detail">End: {formatDate(period.end)}</div>
+                                                        <div className={styles.subDetail}>Start: {formatDate(period.start)}</div>
+                                                        <div className={styles.subDetail}>End: {formatDate(period.end)}</div>
                                                     </td>
                                                     <td>
-                                                        <div className="transit-details">
+                                                        <div className={styles.transitDetails}>
                                                             <strong>{period.rashi}</strong>
-                                                            <div className="sub-detail">Nak: {period.nakshatra}</div>
-                                                            {period.isRetrograde && <span className="retro-tag">Retrograde</span>}
+                                                            <div className={styles.subDetail}>Nak: {period.nakshatra}</div>
+                                                            {period.isRetrograde && <span className={styles.retroTag}>Retrograde</span>}
                                                         </div>
                                                     </td>
                                                     <td>
-                                                        <span className={`impact-tag ${period.impact?.toLowerCase()}`}>
+                                                        <span className={`${styles.impactTag} ${styles[period.impact?.toLowerCase()] || ''}`}>
                                                             {period.impact}
                                                         </span>
                                                     </td>
-                                                    <td className="desc-cell">{period.description}</td>
+                                                    <td className={styles.descCell}>{period.description}</td>
                                                 </tr>
                                             );
                                         })}

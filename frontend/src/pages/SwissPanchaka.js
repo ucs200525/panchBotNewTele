@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { CityAutocomplete } from '../components/forms';
 import LivePeriodTracker from '../components/LivePeriodTracker';
 import TableScreenshot from '../components/TableScreenshot';
+import styles from './SwissPanchaka.module.css';
 
 const SwissPanchaka = () => {
   const { localCity, localDate, setCityAndDate } = useAuth();
@@ -67,16 +68,16 @@ const SwissPanchaka = () => {
   // Get category color class
   const getCategoryClass = (category) => {
     const cat = category.toLowerCase();
-    if (cat.includes('good')) return 'cat-good';
-    if (cat.includes('danger')) return 'cat-danger';
-    if (cat.includes('risk')) return 'cat-risk';
-    if (cat.includes('bad') || cat.includes('disease')) return 'cat-bad';
-    if (cat.includes('evil')) return 'cat-evil';
+    if (cat.includes('good')) return styles.catGood;
+    if (cat.includes('danger')) return styles.catDanger;
+    if (cat.includes('risk')) return styles.catRisk;
+    if (cat.includes('bad') || cat.includes('disease')) return styles.catBad;
+    if (cat.includes('evil')) return styles.catEvil;
     return '';
   };
 
   return (
-    <div className="content">
+    <div className={styles.content}>
       {/* Hero Section */}
       <div className="hero-section">
         <div className="hero-content">
@@ -143,7 +144,7 @@ const SwissPanchaka = () => {
         </div>
       </div>
 
-      <div className="results-section">
+      <div className={`${styles.resultsSection}`}>
         {error && (
           <div className="error-box-hero">
             {error}
@@ -152,8 +153,8 @@ const SwissPanchaka = () => {
 
         {
           loading && (
-            <div className="loading-spinner">
-              <div className="spinner"></div>
+            <div className={styles.loadingSpinner}>
+              <div className={styles.spinner}></div>
             </div>
           )
         }
@@ -161,14 +162,14 @@ const SwissPanchaka = () => {
         {/* Live Period Tracker */}
         {
           filteredData && filteredData.length > 0 && (
-            <div className="results-section">
+            <div className={`${styles.resultsSection}`}>
               <div className="floating-section">
                 <LivePeriodTracker data={filteredData} selectedDate={date} />
               </div>
 
-              <div id="muhurats-table" className="table-section">
-                <div className="floating-section">
-                  <div className="table-wrapper">
+              <div id="muhurats-table" className={`table-section ${styles.tableSection}`}>
+                <div className={`floating-section ${styles.floatingSection}`}>
+                  <div className={`table-wrapper ${styles.tableWrapper}`}>
                     <table>
                       <thead>
                         <tr>
@@ -179,17 +180,17 @@ const SwissPanchaka = () => {
                       <tbody>
                         {filteredData.map((item, index) => (
                           <tr key={index} className={getCategoryClass(item.category)}>
-                            <td className="muhurat-cell">
-                              <div className="muhurat-name">{item.muhurat}</div>
-                              <span className={`category-badge badge-${item.category.toLowerCase().replace(' ', '-')}`}>
+                            <td className={styles.muhuratCell}>
+                              <div className={`muhurat-name ${styles.muhuratName}`}>{item.muhurat}</div>
+                              <span className={`category-badge badge-${item.category.toLowerCase().replace(' ', '-')} ${styles.categoryBadge}`}>
                                 {item.category}
                               </span>
                             </td>
-                            <td className="time-cell">
+                            <td className={styles.timeCell}>
                               {item.time || (
                                 <>
-                                  <div className="time-range">{item.start} - {item.end}</div>
-                                  <div className="duration-small">{item.duration}</div>
+                                  <div className={`time-range ${styles.timeRange}`}>{item.start} - {item.end}</div>
+                                  <div className={`duration-small ${styles.durationSmall}`}>{item.duration}</div>
                                 </>
                               )}
                             </td>
@@ -200,7 +201,12 @@ const SwissPanchaka = () => {
                   </div>
 
                   <div className="table-footer-actions">
-                    <TableScreenshot tableId="muhurats-table" city={city} />
+                    <TableScreenshot
+                      tableId="muhurats-table"
+                      city={city}
+                      date={date}
+                      backendEndpoint="/api/getSwissTable-image"
+                    />
                   </div>
 
                   <div className="information">
@@ -208,43 +214,43 @@ const SwissPanchaka = () => {
                   </div>
 
                   {/* Comprehensive Technical Documentation */}
-                  <div className="swiss-doc">
-                    <div className="doc-section">
+                  <div className={styles.swissDoc}>
+                    <div className={styles.docSection}>
                       <h3>Transition Engine</h3>
                       <p>The logic now scans the entire <strong>Vedic Day</strong> (from today's Sunrise to tomorrow's Sunrise) and identifies every single second where a Tithi, Nakshatra, or Lagna changes.</p>
                     </div>
 
-                    <div className="doc-section">
+                    <div className={styles.docSection}>
                       <h3>Mathematical Accuracy</h3>
                       <p>For every time segment created by these transitions, it applies the traditional Vedic formula:</p>
-                      <div className="formula-box">
+                      <div className={styles.formulaBox}>
                         (Tithi index + Vara index + Nakshatra index + Lagna index) % 9
                       </div>
                     </div>
 
-                    <div className="doc-section">
+                    <div className={styles.docSection}>
                       <h3>Indices Used</h3>
-                      <div className="doc-grid">
-                        <div className="doc-item">
-                          <span className="doc-label">Tithi</span>
-                          <span className="doc-value">1–15 (Cycles for both Shukla & Krishna)</span>
+                      <div className={styles.docGrid}>
+                        <div className={styles.docItem}>
+                          <span className={styles.docLabel}>Tithi</span>
+                          <span className={styles.docValue}>1–15 (Cycles for both Shukla & Krishna)</span>
                         </div>
-                        <div className="doc-item">
-                          <span className="doc-label">Vara</span>
-                          <span className="doc-value">1 (Sun) to 7 (Sat) from Sunrise</span>
+                        <div className={styles.docItem}>
+                          <span className={styles.docLabel}>Vara</span>
+                          <span className={styles.docValue}>1 (Sun) to 7 (Sat) from Sunrise</span>
                         </div>
-                        <div className="doc-item">
-                          <span className="doc-label">Nakshatra</span>
-                          <span className="doc-value">1 (Ashwini) to 27 (Revati)</span>
+                        <div className={styles.docItem}>
+                          <span className={styles.docLabel}>Nakshatra</span>
+                          <span className={styles.docValue}>1 (Ashwini) to 27 (Revati)</span>
                         </div>
-                        <div className="doc-item">
-                          <span className="doc-label">Lagna</span>
-                          <span className="doc-value">1 (Aries) to 12 (Pisces)</span>
+                        <div className={styles.docItem}>
+                          <span className={styles.docLabel}>Lagna</span>
+                          <span className={styles.docValue}>1 (Aries) to 12 (Pisces)</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="doc-section">
+                    <div className={styles.docSection}>
                       <h3>Dosha Mapping</h3>
                       <div className="dosha-list">
                         <div className="dosha-mapping-item">

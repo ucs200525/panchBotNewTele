@@ -4,7 +4,7 @@ import { Section } from '../components/layout';
 import { CityAutocomplete } from '../components/forms';
 import { useAuth } from '../context/AuthContext';
 import { saveProfile, getProfile, getAllProfiles } from '../utils/profileStorage';
-import './DashaPage.css';
+
 
 const DashaPage = () => {
     const { setCityAndDate } = useAuth();
@@ -97,7 +97,7 @@ const DashaPage = () => {
     };
 
     return (
-        <div className="content">
+        <div className={styles.content}>
             {/* Hero Section */}
             <div className="hero-section">
                 <div className="hero-content">
@@ -175,42 +175,42 @@ const DashaPage = () => {
                 </div>
             </div>
 
-            <div className="results-section">
+            <div className={`results-section ${styles.resultsSection}`}>
                 {error && <div className="error-box-hero">{error}</div>}
 
                 {dashaData && dashaData.birthDetails && (
-                    <div className="floating-section">
+                    <div className={`floating-section ${styles.floatingSection}`}>
                         <Section title="Birth Summary">
-                            <div className="data-card-wrapper">
-                                <div className="data-card">
-                                    <div className="data-card-label">Birth Star (Nakshatra)</div>
-                                    <div className="data-card-value">{dashaData.birthDetails.birthStar}</div>
-                                    <div className="data-card-sub">Pada {dashaData.birthDetails.pada}</div>
+                            <div className={styles.dataCardWrapper}>
+                                <div className={styles.dataCard}>
+                                    <div className={styles.dataCardLabel}>Birth Star (Nakshatra)</div>
+                                    <div className={styles.dataCardValue}>{dashaData.birthDetails.birthStar}</div>
+                                    <div className={styles.dataCardSub}>Pada {dashaData.birthDetails.pada}</div>
                                 </div>
 
-                                <div className="data-card">
-                                    <div className="data-card-label">Rashi (Moon Sign)</div>
-                                    <div className="data-card-value">{dashaData.birthDetails.moonRashi}</div>
-                                    <div className="data-card-sub">{dashaData.birthDetails.moonLongitude.toFixed(2)}° Sidereal</div>
+                                <div className={styles.dataCard}>
+                                    <div className={styles.dataCardLabel}>Rashi (Moon Sign)</div>
+                                    <div className={styles.dataCardValue}>{dashaData.birthDetails.moonRashi}</div>
+                                    <div className={styles.dataCardSub}>{dashaData.birthDetails.moonLongitude.toFixed(2)}° Sidereal</div>
                                 </div>
 
-                                <div className="data-card" style={{ border: '2px solid #667eea', background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05))' }}>
-                                    <div className="data-card-label" style={{ color: '#667eea' }}>✨ Current Mahadasha Lord</div>
-                                    <div className="data-card-value" style={{ color: '#667eea' }}>
+                                <div className={styles.dataCard} style={{ border: '2px solid #667eea', background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05))' }}>
+                                    <div className={styles.dataCardLabel} style={{ color: '#667eea' }}>✨ Current Mahadasha Lord</div>
+                                    <div className={styles.dataCardValue} style={{ color: '#667eea' }}>
                                         {dashaData.mahadashas.find(d => {
                                             const now = new Date();
                                             return now >= new Date(d.start) && now <= new Date(d.end);
                                         })?.lord || 'N/A'}
                                     </div>
-                                    <div className="data-card-sub" style={{ color: '#764ba2', fontWeight: 600 }}>Active Now</div>
+                                    <div className={styles.dataCardSub} style={{ color: '#764ba2', fontWeight: 600 }}>Active Now</div>
                                 </div>
 
-                                <div className="data-card">
-                                    <div className="data-card-label">Dasha Balance at Birth</div>
-                                    <div className="data-card-value">
+                                <div className={styles.dataCard}>
+                                    <div className={styles.dataCardLabel}>Dasha Balance at Birth</div>
+                                    <div className={styles.dataCardValue}>
                                         {dashaData.birthDetails.balanceOfDasha.years}y {dashaData.birthDetails.balanceOfDasha.months}m
                                     </div>
-                                    <div className="data-card-sub">Calculated from Moon deg</div>
+                                    <div className={styles.dataCardSub}>Calculated from Moon deg</div>
                                 </div>
                             </div>
                         </Section>
@@ -218,9 +218,9 @@ const DashaPage = () => {
                 )}
 
                 {dashaData && dashaData.mahadashas && (
-                    <div className="floating-section">
+                    <div className={`floating-section ${styles.floatingSection}`}>
                         <Section title="Planetary Timeline (Vimshottari)">
-                            <table className="dasha-table-modern">
+                            <table className={styles.dashaTableModern}>
                                 <thead>
                                     <tr>
                                         <th>Planet Period</th>
@@ -240,13 +240,13 @@ const DashaPage = () => {
                                         return (
                                             <React.Fragment key={idx}>
                                                 <tr
-                                                    className={`mahadasha-row planet-${dasha.lord.toLowerCase()} ${isCurrent ? 'current-period-row' : ''}`}
+                                                    className={`${styles.mahadashaRow} ${styles[`planet${dasha.lord}`] || ''} ${isCurrent ? styles.currentPeriodRow : ''}`}
                                                     onClick={() => toggleDasha(idx)}
                                                 >
                                                     <td>
-                                                        <span className={`expand-icon ${isExpanded ? 'rotated' : ''}`}>▶</span>
+                                                        <span className={`${styles.expandIcon} ${isExpanded ? styles.rotated : ''}`}>▶</span>
                                                         <strong>{dasha.lord}</strong>
-                                                        {isCurrent && <span className="current-badge">Current</span>}
+                                                        {isCurrent && <span className={styles.currentBadge}>Current</span>}
                                                     </td>
                                                     <td>{formatDate(dasha.start)}</td>
                                                     <td>{formatDate(dasha.end)}</td>
@@ -258,11 +258,11 @@ const DashaPage = () => {
                                                     const isSubCurrent = now >= subStart && now <= subEnd;
 
                                                     return (
-                                                        <tr key={`sub-${idx}-${sIdx}`} className={`antardasha-row planet-${sub.lord.toLowerCase()} ${isSubCurrent ? 'current-sub-period' : ''}`}>
-                                                            <td className="sub-lord-cell">
-                                                                <span className="sub-dash-connector">└─</span>
+                                                        <tr key={`sub-${idx}-${sIdx}`} className={`${styles.antardashaRow} ${styles[`planet${sub.lord}`] || ''} ${isSubCurrent ? styles.currentSubPeriod : ''}`}>
+                                                            <td className={styles.subLordCell}>
+                                                                <span className={styles.subDashConnector}>└─</span>
                                                                 {sub.lord}
-                                                                {isSubCurrent && <span className="sub-current-badge">Active</span>}
+                                                                {isSubCurrent && <span className={styles.subCurrentBadge}>Active</span>}
                                                             </td>
                                                             <td>{formatDate(sub.start)}</td>
                                                             <td>{formatDate(sub.end)}</td>

@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { CityAutocomplete } from '../components/forms';
 import LivePeriodTracker from '../components/LivePeriodTracker';
 import TableScreenshot from '../components/TableScreenshot';
+import styles from './PanchakaMuhurth.module.css';
 
 const PanchakaMuhurth = () => {
   const { localCity, localDate, setCityAndDate } = useAuth();
@@ -166,9 +167,9 @@ const PanchakaMuhurth = () => {
                 <LivePeriodTracker data={filteredData} selectedDate={date} />
               </div>
 
-              <div id="muhurats-table" className="table-section">
-                <div className="floating-section">
-                  <div className="table-wrapper">
+              <div id="muhurats-table" className={`table-section ${styles.tableSection}`}>
+                <div className={`floating-section ${styles.floatingSection}`}>
+                  <div className={`table-wrapper ${styles.tableWrapper}`}>
                     <table>
                       <thead>
                         <tr>
@@ -180,12 +181,12 @@ const PanchakaMuhurth = () => {
                         {filteredData.map((item, index) => (
                           <tr key={index} className={getCategoryClass(item.category)}>
                             <td className="muhurat-cell">
-                              <div className="muhurat-name">{item.muhurat}</div>
-                              <span className={`category-badge badge-${item.category.toLowerCase().replace(' ', '-')}`}>
+                              <div className={`muhurat-name ${styles.muhuratName}`}>{item.muhurat}</div>
+                              <span className={`category-badge badge-${item.category.toLowerCase().replace(' ', '-')} ${styles.categoryBadge}`}>
                                 {item.category}
                               </span>
                             </td>
-                            <td className="time-cell">{item.time}</td>
+                            <td className={`time-cell ${styles.timeCell}`}>{item.time}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -193,7 +194,12 @@ const PanchakaMuhurth = () => {
                   </div>
 
                   <div className="table-footer-actions">
-                    <TableScreenshot tableId="muhurats-table" city={city} />
+                    <TableScreenshot
+                      tableId="muhurats-table"
+                      city={city}
+                      date={date}
+                      backendEndpoint="/api/getOldSwissTable-image"
+                    />
                   </div>
 
                   <div className="information">

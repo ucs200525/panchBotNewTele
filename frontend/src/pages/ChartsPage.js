@@ -4,7 +4,6 @@ import { CityAutocomplete } from '../components/forms';
 import ChartWheel from '../components/charts/ChartWheel';
 import { useAuth } from '../context/AuthContext';
 import { saveProfile, getProfile, getAllProfiles } from '../utils/profileStorage';
-import './ChartsPage.css';
 
 const VARGA_GROUPS = {
     'Basic': ['D1', 'D9', 'D10'],

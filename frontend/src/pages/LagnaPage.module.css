@@ -1,39 +1,161 @@
-/* Generic minimal module for simple pages with hero section */
+/* ========================================
+   LagnaPage - CSS Module
+   Premium Table Design & Responsiveness
+   ======================================== */
 
-.pageContainer {
-    padding: 2rem 0;
+.content {
+    min-height: 100vh;
+    padding-bottom: 4rem;
+    font-family: 'Inter', system-ui, sans-serif;
 }
 
-.pageContent {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 1rem;
+.resultsSection {
+    padding: 0 1.5rem;
+    animation: slideUpFade 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.dataGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-    margin: 2rem 0;
+.floatingSection {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 2.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    margin-bottom: 2.5rem;
+    border: 1px solid #f1f5f9;
 }
 
-.dataCard {
-    padding: 1.5rem;
-    text-align: center;
-}
-
+/* Table Design */
 .tableWrapper {
-    overflow-x: auto;
-    margin: 2rem 0;
+    background: #ffffff;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    margin-top: 1.5rem;
 }
 
-@media (max-width: 768px) {
-    .pageContent {
-        padding: 0 0.5rem;
+.tableWrapper table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tableWrapper th {
+    background: #f8fafc;
+    padding: 1.25rem 1.5rem;
+    text-align: left;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.tableWrapper td {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #f1f5f9;
+    color: #1e293b;
+    font-size: 0.95rem;
+}
+
+.tableWrapper tr:last-child td {
+    border-bottom: none;
+}
+
+.tableWrapper tr:hover {
+    background-color: #fcfdfe;
+}
+
+/* Sign Column */
+.signName {
+    font-weight: 700;
+    color: #334155;
+    display: flex;
+    align-items: center;
+}
+
+.signSymbol {
+    margin-right: 12px;
+    font-size: 1.25rem;
+    opacity: 0.8;
+}
+
+/* Info Box */
+.information {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #f1f5f9;
+}
+
+.info {
+    font-size: 0.9rem;
+    color: #64748b;
+    line-height: 1.6;
+    background: #f8fafc;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    border-left: 3px solid #667eea;
+}
+
+/* Loading */
+.loadingSpinner {
+    display: flex;
+    justify-content: center;
+    padding: 4rem;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(102, 126, 234, 0.1);
+    border-top-color: #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes slideUpFade {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
     }
 
-    .dataGrid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Mobile */
+@media screen and (max-width: 640px) {
+    .resultsSection {
+        padding: 0 0.75rem;
+    }
+
+    .floatingSection {
+        padding: 1.5rem 1rem;
+        border-radius: 16px;
+        border: none;
+        box-shadow: none;
+        background: transparent;
+    }
+
+    .tableWrapper {
+        border-radius: 12px;
+        margin-left: -0.5rem;
+        margin-right: -0.5rem;
+    }
+
+    .tableWrapper th,
+    .tableWrapper td {
+        padding: 1rem 0.75rem;
+    }
+
+    .signSymbol {
+        margin-right: 8px;
+        font-size: 1.1rem;
     }
 }

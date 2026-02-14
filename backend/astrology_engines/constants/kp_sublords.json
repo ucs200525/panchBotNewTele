@@ -1,0 +1,29 @@
+[
+    {
+        "id": 1,
+        "sign": "Aries",
+        "planet": "Mars",
+        "star": "Ketu",
+        "sub": "Ketu",
+        "start_deg": 0.0,
+        "end_deg": 0.777
+    },
+    {
+        "id": 2,
+        "sign": "Aries",
+        "planet": "Mars",
+        "star": "Ketu",
+        "sub": "Venus",
+        "start_deg": 0.777,
+        "end_deg": 3.0
+    },
+    {
+        "id": 3,
+        "sign": "Aries",
+        "planet": "Mars",
+        "star": "Ketu",
+        "sub": "Sun",
+        "start_deg": 3.0,
+        "end_deg": 3.666
+    }
+]

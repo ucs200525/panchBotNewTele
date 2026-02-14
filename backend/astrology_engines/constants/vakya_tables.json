@@ -1,0 +1,26 @@
+{
+    "moon_vakyas": [
+        {
+            "day": 0,
+            "long_deg": 0.0,
+            "sentence": "Start"
+        },
+        {
+            "day": 10,
+            "long_deg": 133.3,
+            "sentence": "Girnah"
+        },
+        {
+            "day": 20,
+            "long_deg": 266.6,
+            "sentence": "Sreyah"
+        },
+        {
+            "day": 31,
+            "long_deg": 360.0,
+            "sentence": "Cycle1"
+        }
+    ],
+    "lunar_cycle_days": 248,
+    "dhruva_per_cycle": 11.23
+}

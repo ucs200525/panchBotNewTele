@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import TableScreenshot from '../components/TableScreenshot';
 import LivePeriodTracker from '../components/LivePeriodTracker';
 import { findCurrentPeriod } from '../utils/periodHelpers';
+import styles from './BharagavaPanchagam.module.css';
 import './hero-styles.css';
 
 // Helper function to format time range (time to time, date)
@@ -63,11 +64,11 @@ const formatTimeRange = (start, end) => {
 };
 
 const TimeConverterApp = () => {
-  const { 
-    localCity, 
-    localDate, 
-    selectedLat: globalLat, 
-    selectedLng: globalLng, 
+  const {
+    localCity,
+    localDate,
+    selectedLat: globalLat,
+    selectedLng: globalLng,
     is12HourFormat,
     setIs12HourFormat,
     setLocationDetails,
@@ -193,7 +194,7 @@ const TimeConverterApp = () => {
     setCityName(city.name);
     setSelectedLat(city.lat);
     setSelectedLng(city.lng);
-    
+
     // Update global context
     setLocationDetails({
       name: city.name,
@@ -222,14 +223,14 @@ const TimeConverterApp = () => {
   }, [showNonBlue, is12HourFormat, hasData, sunriseToday, sunsetToday, sunriseTmrw, weekday, fetchTableData]);
 
   return (
-    <div className="content">
+    <div className={styles.content}>
       {/* Hero Section */}
       {/* Hero Section */}
       <div className="hero-section">
         <div className="hero-content">
           <h1 className="hero-title">Bhargava Panchangam</h1>
           <p className="hero-subtitle">
-            "Bhargava Panchangam – Your daily guide to auspicious timings based on authentic Vedic astrology."         
+            "Bhargava Panchangam – Your daily guide to auspicious timings based on authentic Vedic astrology."
           </p>
 
           <div className="hero-form-wrapper">
@@ -276,7 +277,7 @@ const TimeConverterApp = () => {
 
       {/* Results Section */}
       {hasData && data.length > 0 && (
-        <div className="results-section">
+        <div className={`results-section ${styles.resultsSection}`}>
           <div className="floating-section">
             <div className="summary-bar">
               <div className="summary-item">
@@ -310,13 +311,13 @@ const TimeConverterApp = () => {
           <LivePeriodTracker data={data} selectedDate={currentDate} />
 
           {/* Table Section */}
-          <div id="tableToCapture">
-            <div className="table-wrapper">
-              <table className="panchang-table">
+          <div id="tableToCapture" className={styles.tableCapture}>
+            <div className={`table-wrapper ${styles.tableWrapper}`}>
+              <table className={styles.panchangTable}>
                 <thead>
                   <tr>
                     <th>Start-End 1</th>
-                    <th className="weekday-th">{weekday}</th>
+                    <th className={`weekday-th ${styles.weekdayTh}`}>{weekday}</th>
                     <th>Start-End 2</th>
                     <th>S.No</th>
                   </tr>
@@ -329,21 +330,21 @@ const TimeConverterApp = () => {
                       const isCurrentPeriod = currentPeriod?.index === index;
 
                       return (
-                        <tr key={index} className={isCurrentPeriod ? 'current-period-row' : ''}>
-                          <td className="time-range-cell">{formatTimeRange(item.start1, item.end1)}</td>
+                        <tr key={index} className={isCurrentPeriod ? styles.currentPeriodRow : ''}>
+                          <td className={`time-range-cell ${styles.timeRangeCell}`}>{formatTimeRange(item.start1, item.end1)}</td>
 
                           <td
                             className={
                               item.isWednesdayColored
-                                ? "period-special"
+                                ? styles.periodSpecial
                                 : item.isColored
-                                  ? "period-ashubh"
-                                  : "period-normal"
+                                  ? styles.periodAshubh
+                                  : styles.periodNormal
                             }
                           >
                             {item.weekday}
                           </td>
-                          <td className="time-range-cell">{formatTimeRange(item.start2, item.end2)}</td>
+                          <td className={`time-range-cell ${styles.timeRangeCell}`}>{formatTimeRange(item.start2, item.end2)}</td>
                           <td>{item.sNo}</td>
                         </tr>
                       );
@@ -352,7 +353,13 @@ const TimeConverterApp = () => {
               </table>
             </div>
             <div className="table-footer-actions">
-              <TableScreenshot tableId="tableToCapture" city={cityName} />
+              <TableScreenshot
+                tableId="tableToCapture"
+                city={cityName}
+                date={currentDate}
+                backendEndpoint="/api/getBharagvTable-image"
+                backendData={{ showNonBlue, is12HourFormat }}
+              />
             </div>
           </div>
         </div>

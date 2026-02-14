@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Section } from '../components/layout';
 import { CityAutocomplete } from '../components/forms';
 import { useAuth } from '../context/AuthContext';
+import styles from './LagnaPage.module.css';
 
 const LagnaPage = () => {
     const { setCityAndDate } = useAuth();
@@ -65,7 +66,7 @@ const LagnaPage = () => {
     };
 
     return (
-        <div className="content">
+        <div className={styles.content}>
             {/* Hero Section */}
             <div className="hero-section">
                 <div className="hero-content">
@@ -123,7 +124,7 @@ const LagnaPage = () => {
                 </div>
             </div>
 
-            <div className="results-section">
+            <div className={`results-section ${styles.resultsSection}`}>
                 {error && (
                     <div className="error-box-hero">
                         {error}
@@ -131,15 +132,15 @@ const LagnaPage = () => {
                 )}
 
                 {isLoading && (
-                    <div className="loading-spinner">
-                        <div className="spinner"></div>
+                    <div className={styles.loadingSpinner}>
+                        <div className={styles.spinner}></div>
                     </div>
                 )}
 
                 {lagnaData && lagnaData.length > 0 && (
-                    <div className="floating-section">
+                    <div className={`floating-section ${styles.floatingSection}`}>
                         <Section title="Daily Lagna Periods">
-                            <div className="table-wrapper">
+                            <div className={styles.tableWrapper}>
                                 <table>
                                     <thead>
                                         <tr>
@@ -151,8 +152,8 @@ const LagnaPage = () => {
                                     <tbody>
                                         {lagnaData.map((lagna, idx) => (
                                             <tr key={idx}>
-                                                <td style={{ fontWeight: 700 }}>
-                                                    <span style={{ marginRight: '8px', opacity: 0.7 }}>{lagna.symbol}</span>
+                                                <td className={styles.signName}>
+                                                    <span className={styles.signSymbol}>{lagna.symbol}</span>
                                                     {lagna.name}
                                                 </td>
                                                 <td>{formatTime(lagna.startTime)}</td>
@@ -163,8 +164,8 @@ const LagnaPage = () => {
                                 </table>
                             </div>
 
-                            <div className="information">
-                                <p className="info">Lagna (Ascendant) duration varies based on geographical latitude and the day of the year. Each sign typically rises for about 2 hours, but this is an approximation.</p>
+                            <div className={styles.information}>
+                                <p className={styles.info}>Lagna (Ascendant) duration varies based on geographical latitude and the day of the year. Each sign typically rises for about 2 hours, but this is an approximation.</p>
                             </div>
                         </Section>
                     </div>

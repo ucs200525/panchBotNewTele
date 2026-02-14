@@ -1,6 +1,5 @@
 import React from 'react';
-import './pages/style.css';
-import './pages/PanchakaMuhurth.css';
+
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import BharagavaPanchagam from './pages/BharagavaPanchagam';
 import PanchakaMuhurth from './pages/PanchakaMuhurth';

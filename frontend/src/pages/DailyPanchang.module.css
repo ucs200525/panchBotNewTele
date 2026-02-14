@@ -147,8 +147,25 @@
 }
 
 /* Badge System */
-.bageShubh { background: #10b981; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; }
-.bageAshubh { background: #ef4444; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; }
+.bageShubh {
+    background: #10b981;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.bageAshubh {
+    background: #ef4444;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
 
 /* Transitions Table Specifics */
 .transArrow {
@@ -170,13 +187,35 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-    .panchangSection {
-        padding: 1.25rem;
+    .panchangResults {
+        padding: 0;
+        margin: 0;
+        width: 100%;
+        max-width: 100%;
     }
-    
-    .panchangTable th, 
+
+    .panchangSection {
+        padding: 1.25rem 0.5rem;
+        margin-left: 0;
+        margin-right: 0;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+    }
+
+    .tableWrapper {
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+    }
+
+    .panchangTable th,
     .panchangTable td {
-        padding: 0.75rem;
-        font-size: 0.9rem;
+        padding: 0.75rem 0.5rem;
+        font-size: 0.85rem;
+    }
+
+    .labelCell {
+        width: 100px;
     }
 }

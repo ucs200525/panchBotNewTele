@@ -1,39 +1,209 @@
-/* Generic minimal module for simple pages with hero section */
+/* ========================================
+   DashaPage - CSS Module
+   Premium Design for Vimshottari Dasha (Table-based)
+   ======================================== */
 
-.pageContainer {
-    padding: 2rem 0;
+.content {
+    min-height: 100vh;
+    padding-bottom: 4rem;
+    font-family: 'Inter', system-ui, sans-serif;
 }
 
-.pageContent {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 1rem;
+.resultsSection {
+    padding: 0 1.5rem;
+    animation: slideUpFade 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.dataGrid {
+.floatingSection {
+    background: #ffffff;
+    border-radius: 28px;
+    padding: 2.5rem;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.04);
+    margin-bottom: 2.5rem;
+    border: 1px solid #f1f5f9;
+}
+
+/* Data Cards (Birth Summary) */
+.dataCardWrapper {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-    margin: 2rem 0;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.25rem;
+    margin-top: 1.5rem;
 }
 
 .dataCard {
+    background: #f8fafc;
     padding: 1.5rem;
-    text-align: center;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+    transition: transform 0.2s ease;
 }
 
-.tableWrapper {
-    overflow-x: auto;
-    margin: 2rem 0;
+.dataCardLabel {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
 }
 
-@media (max-width: 768px) {
-    .pageContent {
+.dataCardValue {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #1e293b;
+}
+
+.dataCardSub {
+    font-size: 0.85rem;
+    color: #94a3b8;
+}
+
+/* Timeline Table */
+.dashaTableModern {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 1.5rem;
+}
+
+.dashaTableModern th {
+    background: #f1f5f9;
+    padding: 1rem 1.25rem;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.mahadashaRow td {
+    padding: 1.25rem;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.mahadashaRow:hover {
+    background-color: #f8fafc;
+    cursor: pointer;
+}
+
+.currentPeriodRow {
+    background: linear-gradient(90deg, #f0f4ff, transparent) !important;
+    border-left: 4px solid #667eea;
+}
+
+.expandIcon {
+    display: inline-block;
+    margin-right: 12px;
+    font-size: 0.7rem;
+    color: #94a3b8;
+    transition: transform 0.3s ease;
+}
+
+.rotated {
+    transform: rotate(90deg);
+    color: #667eea;
+}
+
+.currentBadge {
+    background: #667eea;
+    color: white;
+    font-size: 0.65rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 100px;
+    margin-left: 8px;
+    font-weight: 700;
+}
+
+/* Antardasha (Nested Rows) */
+.antardashaRow {
+    background-color: #fcfdfe;
+}
+
+.antardashaRow td {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.85rem;
+    color: #64748b;
+    border-bottom: 1px solid #f8fafc;
+}
+
+.subLordCell {
+    padding-left: 2.5rem !important;
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    color: #475569;
+}
+
+.subDashConnector {
+    color: #cbd5e1;
+    margin-right: 8px;
+    font-family: monospace;
+}
+
+.subCurrentBadge {
+    background: #e0e7ff;
+    color: #4338ca;
+    font-size: 0.6rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 100px;
+    margin-left: 6px;
+    font-weight: 700;
+}
+
+.currentSubPeriod {
+    background-color: #f5f8ff !important;
+}
+
+.currentSubPeriod .subLordCell {
+    color: #6366f1;
+}
+
+@keyframes slideUpFade {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Mobile */
+@media screen and (max-width: 640px) {
+    .resultsSection {
         padding: 0 0.5rem;
     }
 
-    .dataGrid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
+    .floatingSection {
+        padding: 1.5rem 1rem;
+        border-radius: 16px;
+        border: none;
+        box-shadow: none;
+        background: transparent;
+    }
+
+    .dataCardWrapper {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+    }
+
+    .dataCardValue {
+        font-size: 1.1rem;
+    }
+
+    .dashaTableModern th,
+    .dashaTableModern td {
+        padding: 0.85rem 0.5rem;
+        font-size: 0.85rem;
+    }
+
+    .subLordCell {
+        padding-left: 1.25rem !important;
     }
 }

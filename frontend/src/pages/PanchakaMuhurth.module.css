@@ -1,39 +1,73 @@
-/* Generic minimal module for simple pages with hero section */
+/* ========================================
+   PanchakaMuhurth Mobile Styles - CSS Module
+   Scoped styles for full-width table layout
+   ======================================== */
 
-.pageContainer {
-    padding: 2rem 0;
-}
+@media screen and (max-width: 640px) {
 
-.pageContent {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 1rem;
-}
-
-.dataGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-    margin: 2rem 0;
-}
-
-.dataCard {
-    padding: 1.5rem;
-    text-align: center;
-}
-
-.tableWrapper {
-    overflow-x: auto;
-    margin: 2rem 0;
-}
-
-@media (max-width: 768px) {
-    .pageContent {
-        padding: 0 0.5rem;
+    /* Full-width table container */
+    .tableSection {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        margin-left: calc(-50vw + 50%) !important;
+        margin-right: calc(-50vw + 50%) !important;
+        padding: 0 !important;
     }
 
-    .dataGrid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
+    /* Floating section wrapper */
+    .floatingSection {
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        background: transparent !important;
+    }
+
+    /* Table wrapper */
+    .tableWrapper {
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        border-left: none !important;
+        border-right: none !important;
+        overflow-x: auto !important;
+    }
+
+    /* Table itself */
+    .tableWrapper table {
+        width: 100% !important;
+        border-left: none !important;
+        border-right: none !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+    }
+
+    /* Increase font sizes for better readability */
+    .tableWrapper th,
+    .tableWrapper td {
+        padding: 1rem 0.75rem !important;
+        font-size: 1rem !important;
+    }
+
+    /* Muhurat name - larger and bolder */
+    .muhuratName {
+        font-size: 1.15rem !important;
+        font-weight: 700 !important;
+        margin-bottom: 8px !important;
+    }
+
+    /* Category badge - larger */
+    .categoryBadge {
+        font-size: 0.9rem !important;
+        padding: 0.4rem 1rem !important;
+        font-weight: 700 !important;
+    }
+
+    /* Time text - larger */
+    .timeCell {
+        font-size: 1.05rem !important;
+        font-weight: 600 !important;
     }
 }

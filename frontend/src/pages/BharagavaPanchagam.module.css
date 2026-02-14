@@ -1,0 +1,177 @@
+/* ========================================
+   BharagavaPanchagam - CSS Module
+   Complete independent styles with Premium Table Design
+   ======================================== */
+
+.content {
+    min-height: 100vh;
+    padding-bottom: 3rem;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.resultsSection {
+    padding: 0 1.5rem;
+    animation: slideUpFade 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.floatingSection {
+    background: var(--glass-bg, rgba(255, 255, 255, 0.8));
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.3));
+    border-radius: 24px;
+    padding: 2rem;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.07);
+    margin-bottom: 2rem;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Table Styles */
+.tableCapture {
+    margin-top: 2rem;
+}
+
+.tableWrapper {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    border: 1px solid #f0f0f0;
+}
+
+.panchangTable {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.panchangTable th {
+    background: #f8fafc;
+    color: #475569;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.panchangTable td {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #f1f5f9;
+    color: #1e293b;
+    font-size: 0.95rem;
+    vertical-align: middle;
+}
+
+.panchangTable tr:last-child td {
+    border-bottom: none;
+}
+
+.currentPeriodRow {
+    background: linear-gradient(90deg, rgba(102, 126, 234, 0.05), transparent);
+    border-left: 4px solid #667eea;
+}
+
+.timeRangeCell {
+    font-weight: 600;
+    color: #4c51bf;
+    white-space: nowrap;
+}
+
+/* Period Specific Status Styles */
+.periodSpecial {
+    background-color: #f0fdf4 !important;
+    color: #166534 !important;
+    font-weight: 700;
+}
+
+.periodAshubh {
+    background-color: #fef2f2 !important;
+    color: #991b1b !important;
+    font-weight: 700;
+}
+
+.periodNormal {
+    color: #64748b;
+}
+
+/* Weekday header */
+.weekdayTh {
+    color: #667eea !important;
+}
+
+/* Loading & Error */
+.loadingSpinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(102, 126, 234, 0.1);
+    border-top-color: #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes slideUpFade {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Mobile Responsive */
+@media screen and (max-width: 640px) {
+    .content {
+        padding-bottom: 2rem;
+    }
+
+    .resultsSection {
+        padding: 0 0.75rem;
+    }
+
+    .tableCapture {
+        width: 100vw !important;
+        margin-left: calc(-50vw + 50%) !important;
+        margin-right: calc(-50vw + 50%) !important;
+        margin-top: 1rem;
+    }
+
+    .tableWrapper {
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+    }
+
+    .panchangTable th,
+    .panchangTable td {
+        padding: 1rem 0.75rem;
+    }
+
+    .panchangTable th {
+        font-size: 0.75rem;
+    }
+
+    .timeRangeCell {
+        font-size: 0.9rem;
+    }
+
+    .weekdayTh {
+        font-size: 0.9rem !important;
+    }
+}

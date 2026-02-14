@@ -36,17 +36,17 @@ async function fetchCoordinates(city) {
             const tzResponse = await axios.get(tzUrl);
 
             const timeZone = tzResponse.data.timezoneId;
-            
+
             if (!timeZone) {
-                 logger.warn({ message: 'Timezone not found via GeoNames', city });
-                 throw new Error('Timezone not found');
+                logger.warn({ message: 'Timezone not found via GeoNames', city });
+                throw new Error('Timezone not found');
             }
 
-            const result = { 
-                lat: parseFloat(lat), 
-                lng: parseFloat(lng), 
+            const result = {
+                lat: parseFloat(lat),
+                lng: parseFloat(lng),
                 timeZone,
-                source: 'geonames' 
+                source: 'geonames'
             };
 
             // Save to cache
@@ -659,7 +659,7 @@ const createBharagvTable = async (city, date, showNonBlue, is12HourFormat, lat, 
     // Inside it (line 184): timeZone: getTimezoneFromCoordinates(parseFloat(lat), parseFloat(lng))
     // It ignores passed timeZone. But that's okay for now as getTimezoneFromCoordinates is local/fast?
     // Wait, getTimezoneFromCoordinates uses geo-tz (local library). So it is fast.
-    
+
     if (!sun) {
         logger.warn({ message: 'Sun times not available', city, date });
         return [];
@@ -705,27 +705,7 @@ const createBharagvTable = async (city, date, showNonBlue, is12HourFormat, lat, 
         }
     }
 
-    // Process the next 30 rows for timeInterval2
-    for (let i = 0; i < 30; i++) {
-        const row = tableData[i];
-        if (row) {
-            const start2 = row.start2 ? row.start2.split(",")[0].trim() : "";
-            dummyData.push({
-                sNo: i + 1,
-                start1: "",
-                end1: "",
-                start2: row.start2 || "",
-                end2: row.end2 || "",
-                timeInterval1: start2 && row.end2 ? `${row.start2} to ${row.end2}` : "",
-                timeInterval2: "",
-                weekday: row.weekday || "-",
-                value1: row.value1 || "",
-                value2: row.value2 || "",
-                isColored: row.isColored || false,
-                isWednesdayColored: row.isWednesdayColored || false,
-            });
-        }
-    }
+
 
     // Set the formatted data to BharagavaPanchagamData
     const BharagavaPanchagamData = dummyData;
@@ -1299,11 +1279,7 @@ router.post("/getBharagvTable-image", async (req, res) => {
     if (!city || !date) {
         return res.status(400).send('City and date are required');
     }
-    if (showNonBlue === undefined || is12HourFormat === undefined) {
-        return res.status(400).send('showNonBlue and is12HourFormat are required');
-    }
     try {
-
         const table = await createBharagvTable(city, date, showNonBlue === 'true', is12HourFormat);
 
         // Generate HTML content
@@ -1313,109 +1289,138 @@ router.post("/getBharagvTable-image", async (req, res) => {
             <head>
                 <meta charset="UTF-8">
                 <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Outfit:wght@400;600;700;800&display=swap');
                     body {
-                        font-family: 'Segoe UI', Arial, sans-serif;
+                        font-family: 'Inter', system-ui, -apple-system, sans-serif;
                         padding: 40px;
-                        background: #f8f9fa;
+                        background: #f1f5f9;
+                        margin: 0;
+                    }
+                    .container {
+                        max-width: 1000px;
+                        margin: 0 auto;
+                        background: #ffffff;
+                        border-radius: 24px;
+                        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+                        overflow: hidden;
+                    }
+                    .branding {
+                        background: #1e293b;
+                        color: white;
+                        padding: 24px 32px;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                    }
+                    .branding-title {
+                        font-family: 'Outfit', sans-serif;
                         font-size: 22px;
-                        color: #222;
+                        font-weight: 800;
+                        letter-spacing: 1px;
+                        text-transform: uppercase;
                     }
-                // In your style section, update these values:
-                .container {
-                    max-width: 1400px;
-                    margin: 0 auto;
-                    background: #fff;
-                    border-radius: 12px;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.13);
-                    padding: 20px 30px;  // Reduced from 40px
-                }
-
-
-                .header {
-                        text-align: center;
-                        margin-bottom: 36px;
+                    .branding-info {
+                        display: flex;
+                        align-items: center;
+                        gap: 16px;
                     }
-                    .header h2 {
-                        font-size: 2.2em;
-                        margin-bottom: 0.2em;
-                        color: #2c3e50;
+                    .location-badge {
+                        background: rgba(255,255,255,0.15);
+                        padding: 6px 14px;
+                        border-radius: 100px;
+                        font-size: 14px;
+                        font-weight: 700;
                     }
-                    .header h3 {
-                        font-size: 1.3em;
-                        color: #4a90e2;
-                        font-weight: 400;
+                    .date-text {
+                        font-size: 14px;
+                        opacity: 0.8;
+                    }
+                    .table-content {
+                        padding: 32px;
                     }
                     table {
                         width: 100%;
                         border-collapse: collapse;
-                        margin-bottom: 30px;
-                        font-size: 1.15em;
-                        background: #fdfdfd;
-                    }
-
-                    th, td {
-                        border: 2px solid #4a90e2;
-                        padding: 12px 8px;   // Reduced from 18px
-                        text-align: left;
-                        vertical-align: middle;
+                        font-size: 15px;
                     }
                     th {
-                        background-color: #4a90e2;
-                        color: #fff;
-                        font-size: 1.1em;
-                        letter-spacing: 0.5px;
-                        border-bottom: 4px solid #357abd;
+                        background: #f8fafc;
+                        color: #64748b;
+                        font-weight: 700;
+                        font-size: 12px;
+                        text-transform: uppercase;
+                        letter-spacing: 0.05em;
+                        padding: 16px 20px;
+                        text-align: left;
+                        border-bottom: 2px solid #e2e8f0;
                     }
-                    tr {
-                        transition: background 0.2s;
+                    td {
+                        padding: 16px 20px;
+                        border-bottom: 1px solid #f1f5f9;
+                        color: #1e293b;
+                        vertical-align: middle;
                     }
-                    tr:nth-child(even) {
-                        background-color: #f0f7ff;
+                    .time-cell {
+                        font-weight: 700;
+                        color: #4f46e5;
+                        font-family: 'Inter', sans-serif;
                     }
-                    tr:hover {
-                        background-color: #e3f2fd;
+                    .status-cell {
+                        font-weight: 700;
+                        font-size: 13px;
+                        border-radius: 8px;
                     }
-                    .colored-row {
-                        background-color: #d0eaff !important;
-                    }
-                    .time-interval {
-                        font-family: 'Fira Mono', 'Consolas', monospace;
-                        font-size: 1.08em;
-                        color: #0056b3;
+                    .period-special { background: #f0fdf4; color: #166534; padding: 6px 12px; border-radius: 6px; }
+                    .period-ashubh { background: #fef2f2; color: #991b1b; padding: 6px 12px; border-radius: 6px; }
+                    .period-normal { color: #64748b; padding: 6px 12px; }
+                    
+                    .watermark {
+                        text-align: center;
+                        padding: 16px;
+                        color: #94a3b8;
+                        font-size: 12px;
+                        font-weight: 600;
+                        background: #f8fafc;
+                        letter-spacing: 1px;
                     }
                 </style>
             </head>
             <body>
                 <div class="container">
-                    <div class="header">
-                        <h2>Bhargava Panchangam Table</h2>
-                        <h3>${city} - ${date}</h3>
+                    <div class="branding">
+                        <div class="branding-title">Bhargava Panchangam</div>
+                        <div class="branding-info">
+                            <span class="location-badge">${city}</span>
+                            <span class="date-text">${date}</span>
+                        </div>
                     </div>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>No.</th>
-                                <th>Time Interval</th>
-                                <th>Weekday</th>
-                                <th>Time Interval</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            ${table.slice(0, 30).map(item => `
-                                <tr class="${item.isColored || item.isWednesdayColored ? 'colored-row' : ''}">
-                                    <td>${item.sNo || ''}</td>
-                                    <td class="time-interval">
-                                        ${item.start1 || ''} to ${item.end1 || ''}
-                                    </td>
-                                    <td>${item.weekday || '-'}</td>
-                                    <td class="time-interval">
-                                        ${item.start2 || ''} to ${item.end2 || ''}
-                                    </td>
+                    <div class="table-content">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Start-End 1</th>
+                                    <th>Weekday</th>
+                                    <th>Start-End 2</th>
+                                    <th>S.No</th>
                                 </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                ${table.map(item => `
+                                    <tr>
+                                        <td class="time-cell">${item.start1} - ${item.end1}</td>
+                                        <td>
+                                            <span class="${item.isWednesdayColored ? 'period-special' : item.isColored ? 'period-ashubh' : 'period-normal'}">
+                                                ${item.weekday}
+                                            </span>
+                                        </td>
+                                        <td class="time-cell">${item.start2} - ${item.end2}</td>
+                                        <td style="font-weight: 600; color: #94a3b8;">${item.sNo}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="watermark">GENERATED BY PANCHANGAM.AI</div>
                 </div>
             </body>
             </html>
@@ -1429,44 +1434,249 @@ router.post("/getBharagvTable-image", async (req, res) => {
         const page = await browser.newPage();
         await page.setContent(htmlContent);
 
-        // Calculate optimal viewport height for 30 rows
-        const rowCount = Math.min(table.length, 38); // Limit to max 30 rows
-        await page.setViewport({
-            width: 1400,
-            height: 50 * rowCount + 250, // 50px per row + extra space for header/margins
-            deviceScaleFactor: 2 // Increase resolution for sharper image
+        await page.evaluateHandle('document.fonts.ready');
+        await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 500)));
+
+        // Precise height calculation: container height + vertical padding (40px * 2)
+        const contentHeight = await page.evaluate(() => {
+            const container = document.querySelector('.container');
+            return container ? container.offsetHeight + 80 : document.body.scrollHeight;
         });
 
-        // Ensure fonts and content are fully loaded
-        await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 1000)));
-        await page.evaluateHandle('document.fonts.ready');
+        await page.setViewport({
+            width: 1080,
+            height: contentHeight,
+            deviceScaleFactor: 2
+        });
 
-        // Take screenshot with optimized settings
         const screenshot = await page.screenshot({
-            fullPage: false, // Changed to false to use viewport dimensions
+            fullPage: false,
             type: 'png',
-            encoding: 'binary',
-            clip: {
-                x: 0,
-                y: 0,
-                width: 1400,
-                height: 50 * rowCount + 250
-            }
+            encoding: 'binary'
         });
 
         await browser.close();
 
-        // Send response
         res.setHeader('Content-Type', 'image/png');
-        res.setHeader('Content-Disposition', `attachment; filename=bhargav-table-${city}-${date}.png`);
+        res.setHeader('Content-Disposition', `attachment; filename=bhargava-${city}-${date}.png`);
         res.send(screenshot);
 
     } catch (error) {
         console.error("Error generating image:", error);
-        res.status(500).json({
-            error: "Failed to generate image",
-            details: error.message
+        res.status(500).json({ error: "Failed to generate image" });
+    }
+});
+
+router.post("/getSwissTable-image", async (req, res) => {
+    logger.info({ message: 'Route /getSwissTable-image called', body: req.body });
+    const { city, date } = req.body;
+
+    if (!city || !date) return res.status(400).send('City and date are required');
+
+    try {
+        const table = await fetchmuhurat(city, date);
+
+        const htmlContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Outfit:wght@400;600;700;800&display=swap');
+                    body {
+                        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+                        padding: 40px;
+                        background: #f1f5f9;
+                        margin: 0;
+                    }
+                    .container {
+                        max-width: 1000px;
+                        margin: 0 auto;
+                        background: #ffffff;
+                        border-radius: 24px;
+                        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+                        overflow: hidden;
+                    }
+                    .branding {
+                        background: #1e293b;
+                        color: white;
+                        padding: 24px 32px;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                    }
+                    .branding-title {
+                        font-family: 'Outfit', sans-serif;
+                        font-size: 22px;
+                        font-weight: 800;
+                        letter-spacing: 1px;
+                        text-transform: uppercase;
+                    }
+                    .branding-info {
+                        display: flex;
+                        align-items: center;
+                        gap: 16px;
+                    }
+                    .location-badge {
+                        background: rgba(255,255,255,0.15);
+                        padding: 6px 14px;
+                        border-radius: 100px;
+                        font-size: 14px;
+                        font-weight: 700;
+                    }
+                    .date-text {
+                        font-size: 14px;
+                        opacity: 0.8;
+                    }
+                    .table-content {
+                        padding: 32px;
+                    }
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        font-size: 15px;
+                    }
+                    th {
+                        background: #f8fafc;
+                        color: #64748b;
+                        font-weight: 700;
+                        font-size: 12px;
+                        text-transform: uppercase;
+                        letter-spacing: 0.05em;
+                        padding: 16px 20px;
+                        text-align: left;
+                        border-bottom: 2px solid #e2e8f0;
+                    }
+                    td {
+                        padding: 18px 20px;
+                        border-bottom: 1px solid #f1f5f9;
+                        color: #1e293b;
+                        vertical-align: middle;
+                    }
+                    .muhurat-name {
+                        font-weight: 800;
+                        font-size: 16px;
+                        color: #1e293b;
+                        margin-bottom: 4px;
+                    }
+                    .time-text {
+                        font-weight: 600;
+                        color: #6366f1;
+                        font-family: 'Inter', sans-serif;
+                    }
+                    .badge {
+                        display: inline-block;
+                        padding: 4px 12px;
+                        border-radius: 100px;
+                        font-size: 11px;
+                        font-weight: 800;
+                        text-transform: uppercase;
+                    }
+                    .cat-good { background: #dcfce7; color: #166534; }
+                    .cat-danger { background: #fee2e2; color: #991b1b; }
+                    .cat-risk { background: #fff7ed; color: #9a3412; }
+                    .cat-bad { background: #fef2f2; color: #991b1b; }
+                    
+                    .watermark {
+                        text-align: center;
+                        padding: 16px;
+                        color: #94a3b8;
+                        font-size: 12px;
+                        font-weight: 600;
+                        background: #f8fafc;
+                        letter-spacing: 1px;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="branding">
+                        <div class="branding-title">Swiss Panchaka</div>
+                        <div class="branding-info">
+                            <span class="location-badge">${city}</span>
+                            <span class="date-text">${date}</span>
+                        </div>
+                    </div>
+                    <div class="table-content">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Muhurat & Category</th>
+                                    <th>Timing</th>
+                                    <th>Duration</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${table.map(item => {
+            const cat = item.category.toLowerCase();
+            const catClass = cat.includes('good') ? 'cat-good' :
+                cat.includes('danger') || cat.includes('bad') || cat.includes('disease') ? 'cat-danger' :
+                    cat.includes('risk') ? 'cat-risk' : '';
+
+            return `
+                                        <tr>
+                                            <td>
+                                                <div class="muhurat-name">${item.muhurat}</div>
+                                                <span class="badge ${catClass}">${item.category}</span>
+                                            </td>
+                                            <td class="time-text">${item.start} - ${item.end}</td>
+                                            <td style="color: #64748b; font-weight: 500;">${item.duration}</td>
+                                        </tr>
+                                    `;
+        }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="watermark">GENERATED BY PANCHANGAM.AI</div>
+                </div>
+            </body>
+            </html>
+        `;
+
+        const browser = await puppeteer.launch({
+            headless: 'new',
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
         });
+
+        const page = await browser.newPage();
+        await page.setContent(htmlContent);
+
+        const bodyHeight = await page.evaluate(() => document.body.scrollHeight);
+        await page.setViewport({
+            width: 1080,
+            height: bodyHeight,
+            deviceScaleFactor: 2
+        });
+
+        await page.evaluateHandle('document.fonts.ready');
+        await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 500)));
+
+        const contentHeight = await page.evaluate(() => {
+            const container = document.querySelector('.container');
+            return container ? container.offsetHeight + 80 : document.body.scrollHeight;
+        });
+
+        await page.setViewport({
+            width: 1080,
+            height: contentHeight,
+            deviceScaleFactor: 2
+        });
+
+        const screenshot = await page.screenshot({
+            fullPage: false,
+            type: 'png',
+            encoding: 'binary'
+        });
+
+        await browser.close();
+
+        res.setHeader('Content-Type', 'image/png');
+        res.setHeader('Content-Disposition', `attachment; filename=swiss-${city}-${date}.png`);
+        res.send(screenshot);
+
+    } catch (error) {
+        console.error("Error generating image:", error);
+        res.status(500).json({ error: "Failed to generate image" });
     }
 });
 
@@ -1494,8 +1704,13 @@ router.get('/', (req, res) => {
 const fetchmuhurat_old = async (city, date) => {
     logger.info({ message: 'fetchmuhurat_old (Scraper) called', city, date });
     try {
+        let formattedDate = date;
+        if (date.includes('-')) {
+            const [y, m, d] = date.split('-');
+            formattedDate = `${d}/${m}/${y}`;
+        }
         const geoNameId = await getGeoNameId(city);
-        const url = `https://www.drikpanchang.com/muhurat/panchaka-rahita-muhurat.html?geoname-id=${geoNameId}&date=${date}`;
+        const url = `https://www.drikpanchang.com/muhurat/panchaka-rahita-muhurat.html?geoname-id=${geoNameId}&date=${formattedDate}`;
         const response = await axios.get(url);
         const $ = cheerio.load(response.data);
         const muhuratData = [];
@@ -1520,18 +1735,25 @@ const fetchmuhurat_old = async (city, date) => {
 const fetchmuhurat = async (city, date, lat, lng, timeZone) => {
     logger.info({ message: 'fetchmuhurat (Swiss) called', city, date, lat, lng, timeZone });
     try {
-        // Convert DD/MM/YYYY to YYYY-MM-DD for consistency
-        const [day, month, year] = date.split('/');
-        const isoDate = `${year}-${month}-${day}`;
+        let year, month, day;
+        if (date.includes('/')) {
+            [day, month, year] = date.split('/');
+        } else if (date.includes('-')) {
+            [year, month, day] = date.split('-');
+        } else {
+            throw new Error('Invalid date format');
+        }
+
+        const isoDate = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
 
         let coords;
         if (lat && lng) {
-             const { getTimezoneFromCoordinates } = require('../utils/panchangHelper');
-             coords = {
-                 lat: parseFloat(lat),
-                 lng: parseFloat(lng),
-                 timeZone: timeZone || getTimezoneFromCoordinates(parseFloat(lat), parseFloat(lng))
-             };
+            const { getTimezoneFromCoordinates } = require('../utils/panchangHelper');
+            coords = {
+                lat: parseFloat(lat),
+                lng: parseFloat(lng),
+                timeZone: timeZone || getTimezoneFromCoordinates(parseFloat(lat), parseFloat(lng))
+            };
         } else {
             // 1. Get coordinates
             coords = await fetchCoordinates(city);
@@ -1729,7 +1951,7 @@ router.get('/getSunTimesForCity/:city/:date', async (req, res) => {
 // New endpoint for comprehensive Panchang data
 router.get('/getPanchangData', async (req, res) => {
     logger.info({ message: 'Route /getPanchangData called', query: req.query });
-    const { city, date, lat, lng } = req.query;
+    const { city, date, lat, lng, system } = req.query;
 
     if (!city || !date) {
         return res.status(400).json({ error: 'City and date are required' });
@@ -1758,6 +1980,45 @@ router.get('/getPanchangData', async (req, res) => {
         const sunTimesData = await fetchSunTimes(coords.lat, coords.lng, date, coords.timeZone);
         if (!sunTimesData) {
             return res.status(500).json({ error: 'Failed to fetch sun times' });
+        }
+
+        // Handle Ancient Astrology Systems if requested (skip if SWISS or empty)
+        if (system && system.toUpperCase() !== 'SWISS' && ['VAKYA', 'KP'].includes(system.toUpperCase())) {
+            const AstrologyAPI = require('../astrology_engines/astrology_api');
+            let ancientResults;
+
+            try {
+                const engine = AstrologyAPI.getEngine(system);
+
+                // Use comprehensive panchanga calculation if available
+                if (engine.calculateCompletePanchanga) {
+                    ancientResults = engine.calculateCompletePanchanga(new Date(date), coords.lat);
+                } else if (engine.calculatePositions) {
+                    ancientResults = engine.calculatePositions(new Date(date));
+                } else {
+                    ancientResults = AstrologyAPI.getFullReport(new Date(date), coords.lat, coords.lng);
+                }
+            } catch (error) {
+                logger.error({ message: `Error calculating ${system} data`, error: error.message, stack: error.stack });
+                ancientResults = null;
+            }
+
+            logger.info({ message: `Calculated ${system} data for /getPanchangData`, hasData: !!ancientResults });
+
+            // Get the standard panchang data
+            const { calculatePanchangData } = require('../utils/panchangHelper');
+            const standardPanchang = await calculatePanchangData(
+                city, date, coords.lat, coords.lng,
+                sunTimesData.sunriseToday, sunTimesData.sunsetToday,
+                sunTimesData.moonriseToday, sunTimesData.moonsetToday,
+                sunTimesData.sunriseTmrw, true
+            );
+
+            return res.json({
+                ...standardPanchang,
+                ancientSystem: system.toUpperCase(),
+                ancientData: ancientResults
+            });
         }
 
         // Calculate comprehensive Panchang data WITH SWISS EPHEMERIS
@@ -1868,6 +2129,214 @@ router.get('/getSunMoonTimesSwiss/:city/:date', async (req, res) => {
     } catch (error) {
         logger.error({ message: 'Route /getSunMoonTimesSwiss error', error: error.message });
         res.status(500).json({ error: 'Internal server error', details: error.message });
+    }
+});
+
+
+router.post("/getOldSwissTable-image", async (req, res) => {
+    logger.info({ message: 'Route /getOldSwissTable-image called', body: req.body });
+    const { city, date } = req.body;
+
+    if (!city || !date) return res.status(400).send('City and date are required');
+
+    try {
+        const table = await fetchmuhurat_old(city, date);
+
+        const htmlContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Outfit:wght@400;600;700;800&display=swap');
+                    body {
+                        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+                        padding: 40px;
+                        background: #f1f5f9;
+                        margin: 0;
+                    }
+                    .container {
+                        max-width: 1000px;
+                        margin: 0 auto;
+                        background: #ffffff;
+                        border-radius: 24px;
+                        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+                        overflow: hidden;
+                    }
+                    .branding {
+                        background: #1e293b;
+                        color: white;
+                        padding: 24px 32px;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                    }
+                    .branding-title {
+                        font-family: 'Outfit', sans-serif;
+                        font-size: 22px;
+                        font-weight: 800;
+                        letter-spacing: 1px;
+                        text-transform: uppercase;
+                    }
+                    .branding-info {
+                        display: flex;
+                        align-items: center;
+                        gap: 16px;
+                    }
+                    .location-badge {
+                        background: rgba(255,255,255,0.15);
+                        padding: 6px 14px;
+                        border-radius: 100px;
+                        font-size: 14px;
+                        font-weight: 700;
+                    }
+                    .date-text {
+                        font-size: 14px;
+                        opacity: 0.8;
+                    }
+                    .table-content {
+                        padding: 32px;
+                    }
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        font-size: 15px;
+                    }
+                    th {
+                        background: #f8fafc;
+                        color: #64748b;
+                        font-weight: 700;
+                        font-size: 12px;
+                        text-transform: uppercase;
+                        letter-spacing: 0.05em;
+                        padding: 16px 20px;
+                        text-align: left;
+                        border-bottom: 2px solid #e2e8f0;
+                    }
+                    td {
+                        padding: 18px 20px;
+                        border-bottom: 1px solid #f1f5f9;
+                        color: #1e293b;
+                        vertical-align: middle;
+                    }
+                    .muhurat-name {
+                        font-weight: 800;
+                        font-size: 16px;
+                        color: #1e293b;
+                        margin-bottom: 4px;
+                    }
+                    .time-text {
+                        font-weight: 600;
+                        color: #6366f1;
+                        font-family: 'Inter', sans-serif;
+                    }
+                    .badge {
+                        display: inline-block;
+                        padding: 4px 12px;
+                        border-radius: 100px;
+                        font-size: 11px;
+                        font-weight: 800;
+                        text-transform: uppercase;
+                    }
+                    .cat-good { background: #dcfce7; color: #166534; }
+                    .cat-danger { background: #fee2e2; color: #991b1b; }
+                    .cat-risk { background: #fff7ed; color: #9a3412; }
+                    .cat-bad { background: #fef2f2; color: #991b1b; }
+                    
+                    .watermark {
+                        text-align: center;
+                        padding: 16px;
+                        color: #94a3b8;
+                        font-size: 12px;
+                        font-weight: 600;
+                        background: #f8fafc;
+                        letter-spacing: 1px;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="branding">
+                        <div class="branding-title">Panchaka Muhurth</div>
+                        <div class="branding-info">
+                            <span class="location-badge">${city}</span>
+                            <span class="date-text">${date}</span>
+                        </div>
+                    </div>
+                    <div class="table-content">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Muhurat & Category</th>
+                                    <th>Timing</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${table.map(item => {
+            const cat = item.category.toLowerCase();
+            const catClass = cat.includes('good') ? 'cat-good' :
+                cat.includes('danger') || cat.includes('bad') || cat.includes('disease') ? 'cat-danger' :
+                    cat.includes('risk') ? 'cat-risk' : '';
+
+            return `
+                                        <tr>
+                                            <td>
+                                                <div class="muhurat-name">${item.muhurat}</div>
+                                            </td>
+                                            <td class="time-text">${item.time}</td>
+                                            <td>
+                                                <span class="badge ${catClass}">${item.category}</span>
+                                            </td>
+                                        </tr>
+                                    `;
+        }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="watermark">GENERATED BY PANCHANGAM.AI</div>
+                </div>
+            </body>
+            </html>
+        `;
+
+        const browser = await puppeteer.launch({
+            headless: 'new',
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+        });
+
+        const page = await browser.newPage();
+        await page.setContent(htmlContent);
+
+        await page.evaluateHandle('document.fonts.ready');
+        await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 500)));
+
+        const contentHeight = await page.evaluate(() => {
+            const container = document.querySelector('.container');
+            return container ? container.offsetHeight + 80 : document.body.scrollHeight;
+        });
+
+        await page.setViewport({
+            width: 1080,
+            height: contentHeight,
+            deviceScaleFactor: 2
+        });
+
+        const screenshot = await page.screenshot({
+            fullPage: false,
+            type: 'png',
+            encoding: 'binary'
+        });
+
+        await browser.close();
+
+        res.setHeader('Content-Type', 'image/png');
+        res.setHeader('Content-Disposition', `attachment; filename=panchaka-${city}-${date}.png`);
+        res.send(screenshot);
+
+    } catch (error) {
+        console.error("Error generating image:", error);
+        res.status(500).json({ error: "Failed to generate image" });
     }
 });
 

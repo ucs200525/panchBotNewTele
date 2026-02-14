@@ -10,6 +10,7 @@ const DailyPanchang = () => {
     const [cityName, setCityName] = useState(localCity || '');
     const [currentDate, setCurrentDate] = useState(new Date().toISOString().split('T')[0]);
     const [panchangData, setPanchangData] = useState(null);
+
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 
@@ -26,7 +27,7 @@ const DailyPanchang = () => {
 
         try {
             let url = `http://localhost:4000/api/getPanchangData?city=${encodeURIComponent(cityName)}&date=${currentDate}`;
-            
+
             // Use coordinates and timezone from context if available and matching current city
             if (selectedLat && selectedLng && selectedLat !== 'undefined' && selectedLng !== 'undefined') {
                 url += `&lat=${selectedLat}&lng=${selectedLng}`;
@@ -55,19 +56,38 @@ const DailyPanchang = () => {
     }, [fetchPanchang]);
     */
 
-    const formatDisplayTime = (timeStr, fallback = '') => {
+    const formatDisplayTime = (timeStr, fallback = '', showDate = false) => {
         if (!timeStr || timeStr === 'N/A') return fallback;
-        if (timeStr === 'Previous day') return '12:00 AM (Sunrise)';
-        if (timeStr === 'Next day') return 'Sunrise (Next Day)';
-        
+
+        const getFormattedDate = (dateObj) => {
+            return dateObj.toLocaleDateString('en-IN', {
+                day: 'numeric',
+                month: 'short'
+            });
+        };
+
+        if (timeStr === 'Previous day') {
+            const dateObj = new Date(currentDate);
+            return showDate ? `12:00 AM, ${getFormattedDate(dateObj)}` : '12:00 AM';
+        }
+
+        if (timeStr === 'Next day') return 'Next Day Time & Date';
+
         try {
             const date = new Date(timeStr);
             if (isNaN(date.getTime())) return timeStr;
-            return date.toLocaleTimeString('en-IN', {
+
+            const timeFormatted = date.toLocaleTimeString('en-IN', {
                 hour: '2-digit',
                 minute: '2-digit',
                 hour12: true
             });
+
+            if (showDate) {
+                return `${timeFormatted}, ${getFormattedDate(date)}`;
+            }
+
+            return timeFormatted;
         } catch (e) {
             return timeStr;
         }
@@ -142,6 +162,8 @@ const DailyPanchang = () => {
                                 />
                             </div>
                         </div>
+
+
                         <button type="submit" className="get-panchang-btn-hero" disabled={!cityName}>
                             Calculate Panchang
                         </button>
@@ -154,7 +176,7 @@ const DailyPanchang = () => {
 
             {panchangData && (
                 <div className={`results-section ${styles.panchangResults}`}>
-                    
+
                     {/* Sun & Moon Timings Table */}
                     {renderTableSection(
                         "Sun & Moon Timings",
@@ -299,7 +321,7 @@ const DailyPanchang = () => {
                             panchangData.tithis.map(t => ({
                                 cells: [
                                     { content: `${t.name} (#${t.number})`, className: styles.nameCell },
-                                    { content: <div className={styles.transTimes}><span>{formatDisplayTime(t.startTime, 'Continues...')}</span><span className={styles.transArrow}>→</span><span>{formatDisplayTime(t.endTime, 'Sunrise')}</span></div> },
+                                    { content: <div className={styles.transTimes}><span>{formatDisplayTime(t.startTime, 'Before Day Time', true)}</span><span className={styles.transArrow}>→</span><span>{formatDisplayTime(t.endTime, 'Next Day Time & Date', true)}</span></div> },
                                     { content: t.paksha, className: styles.pakshaCell }
                                 ]
                             }))
@@ -315,12 +337,13 @@ const DailyPanchang = () => {
                             panchangData.nakshatras.map(n => ({
                                 cells: [
                                     { content: `${n.name} (#${n.number})`, className: styles.nameCell },
-                                    { content: <div className={styles.transTimes}><span>{formatDisplayTime(n.startTime, 'Continues...')}</span><span className={styles.transArrow}>→</span><span>{formatDisplayTime(n.endTime, 'Sunrise')}</span></div> },
+                                    { content: <div className={styles.transTimes}><span>{formatDisplayTime(n.startTime, 'Before Day Time', true)}</span><span className={styles.transArrow}>→</span><span>{formatDisplayTime(n.endTime, 'Next Day Time & Date', true)}</span></div> },
                                     { content: n.lord || "N/A", className: styles.pakshaCell }
                                 ]
                             }))
                         )
                     )}
+
 
                 </div>
             )}
