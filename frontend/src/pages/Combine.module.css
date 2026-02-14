@@ -58,8 +58,7 @@
     padding: 1rem;
     border-bottom: 1px solid #f1f5f9;
     color: #1e293b;
-    vertical-align: middle;
-    white-space: nowrap;
+    vertical-align: top;
 }
 
 .panchangTable tr:hover {
@@ -91,10 +90,8 @@
 
 .weekdaysContainer {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     gap: 0.5rem;
-    overflow-x: auto;
-    max-width: 100%;
 }
 
 .miniWeekdayItem {
