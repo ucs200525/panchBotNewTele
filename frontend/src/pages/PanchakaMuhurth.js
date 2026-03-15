@@ -8,24 +8,33 @@ import LivePeriodTracker from '../components/LivePeriodTracker';
 
 const PanchakaMuhurth = () => {
     
-    const [city, setCity] = useState('');
-    const [date, setDate] = useState(new Date().toISOString().substring(0, 10));
+    const [city, setCity] = useState(() => sessionStorage.getItem('panchaka_city') || '');
+    const [date, setDate] = useState(() => sessionStorage.getItem('panchaka_date') || new Date().toISOString().substring(0, 10));
     const { localCity, localDate, setCityAndDate  } = useAuth();
-    const [allMuhuratData, setAllMuhuratData] = useState([]);
+    const [allMuhuratData, setAllMuhuratData] = useState(() => {
+      const storedData = sessionStorage.getItem('panchaka_allMuhuratData');
+      return storedData ? JSON.parse(storedData) : [];
+    });
    const [filteredData, setFilteredData] = useState(() => {
-  const storedData = sessionStorage.getItem('filteredData');
+  const storedData = sessionStorage.getItem('panchaka_filteredData');
   return storedData ? JSON.parse(storedData) : [];
 });
 
-    const [showAll, setShowAll] = useState(true); // State to toggle between all rows and filtered rows
+    const [showAll, setShowAll] = useState(() => {
+      const stored = sessionStorage.getItem('panchaka_showAll');
+      return stored !== null ? JSON.parse(stored) : true;
+    }); // State to toggle between all rows and filtered rows
     const [loading, setLoading] = useState(false); // Add loading state
     const [error, setError] = useState(null);
     const [fetchCity, setfetchCity] = useState(false);
 
     useEffect(() => {
-        sessionStorage.setItem('filteredData', JSON.stringify(filteredData));
-        
-      }, [filteredData]);
+        sessionStorage.setItem('panchaka_filteredData', JSON.stringify(filteredData));
+        sessionStorage.setItem('panchaka_allMuhuratData', JSON.stringify(allMuhuratData));
+        sessionStorage.setItem('panchaka_city', city);
+        sessionStorage.setItem('panchaka_date', date);
+        sessionStorage.setItem('panchaka_showAll', JSON.stringify(showAll));
+      }, [filteredData, allMuhuratData, city, date, showAll]);
 
     const createDummyTable = useCallback(() => {
         const dummyTable = filteredData.map((row) => {

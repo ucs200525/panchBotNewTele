@@ -32,8 +32,13 @@ const CombinePage = () => {
 
   const autoGeolocation = async () => {
     if (navigator.geolocation) {
+      // Track if success callback already fired (handles browser extension race condition)
+      let geoSucceeded = false;
+      
       navigator.geolocation.getCurrentPosition(
         async (position) => {
+          geoSucceeded = true;
+          setError(null); // Clear any false error from extension interference
           const lat = position.coords.latitude;
           const lng = position.coords.longitude;
           try {
@@ -52,7 +57,27 @@ const CombinePage = () => {
           }
         },
         (error) => {
-          setError('Geolocation error: ' + error.message);
+          console.warn('Geolocation error code:', error.code, '- may be caused by a browser extension');
+          // Delay showing the error to allow the real geolocation success callback to fire first
+          setTimeout(() => {
+            if (!geoSucceeded) {
+              let errorMsg = 'Geolocation error: ';
+              switch (error.code) {
+                case error.PERMISSION_DENIED:
+                  errorMsg += 'Permission denied. Please allow location access in browser settings.';
+                  break;
+                case error.POSITION_UNAVAILABLE:
+                  errorMsg += 'Location information unavailable. Check if Location is enabled in Windows Settings > Privacy > Location.';
+                  break;
+                case error.TIMEOUT:
+                  errorMsg += 'Location request timed out. Please try again.';
+                  break;
+                default:
+                  errorMsg += error.message;
+              }
+              setError(errorMsg);
+            }
+          }, 2000);
         }
       );
     } else {
