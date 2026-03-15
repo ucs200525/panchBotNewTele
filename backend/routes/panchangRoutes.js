@@ -1,12 +1,22 @@
 const express = require('express');
-const router = express.Router(); // Use express.Router() instead of express()
+const router = express.Router();
 const logger = require('../utils/logger.js');
-
-const fetch = require('node-fetch'); // Make sure to install node-fetch if you haven't already
 const axios = require('axios');
 const cheerio = require('cheerio');
 const path = require('path');
-const puppeteer = require('puppeteer');
+let puppeteer;
+let chromium;
+
+if (process.env.VERCEL) {
+    puppeteer = require('puppeteer-core');
+    chromium = require('@sparticuz/chromium');
+} else {
+    try {
+        puppeteer = require('puppeteer');
+    } catch (e) {
+        puppeteer = require('puppeteer-core');
+    }
+}
 
 // Function to fetch coordinates and time zone based on the city name
 // Function to fetch coordinates and time zone based on the city name
@@ -1021,9 +1031,12 @@ router.post("/combine-image", async (req, res) => {
         `;
 
         // Launch puppeteer
+        // Launch puppeteer with Vercel compatibility
         const browser = await puppeteer.launch({
-            headless: 'new',
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
+            args: chromium ? chromium.args : ['--no-sandbox', '--disable-setuid-sandbox'],
+            defaultViewport: chromium ? chromium.defaultViewport : null,
+            executablePath: chromium ? await chromium.executablePath() : null,
+            headless: chromium ? chromium.headless : 'new',
         });
         const page = await browser.newPage();
 
@@ -1179,9 +1192,12 @@ router.post("/getDrikTable-image", async (req, res) => {
         `;
 
         // Launch puppeteer and generate image
+        // Launch puppeteer and generate image with Vercel compatibility
         const browser = await puppeteer.launch({
-            headless: 'new',
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
+            args: chromium ? chromium.args : ['--no-sandbox', '--disable-setuid-sandbox'],
+            defaultViewport: chromium ? chromium.defaultViewport : null,
+            executablePath: chromium ? await chromium.executablePath() : null,
+            headless: chromium ? chromium.headless : 'new',
         });
         const page = await browser.newPage();
         await page.setContent(htmlContent);
@@ -1342,8 +1358,10 @@ router.post("/getBharagvTable-image", async (req, res) => {
         `;
 
         const browser = await puppeteer.launch({
-            headless: 'new',
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
+            args: chromium ? chromium.args : ['--no-sandbox', '--disable-setuid-sandbox'],
+            defaultViewport: chromium ? chromium.defaultViewport : null,
+            executablePath: chromium ? await chromium.executablePath() : null,
+            headless: chromium ? chromium.headless : 'new',
         });
 
         const page = await browser.newPage();
