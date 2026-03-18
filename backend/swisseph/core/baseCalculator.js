@@ -8,7 +8,15 @@ const { dateToJulianDay } = require('./julianDay');
 
 class BaseCalculator {
     constructor() {
-        this.swisseph = swisseph;
+        this.swisseph = new Proxy(require('sweph'), {
+            get(target, prop) {
+                if (typeof prop === 'string' && prop.startsWith('swe_')) {
+                    const newProp = prop.replace('swe_', '');
+                    return target[newProp] || target[prop];
+                }
+                return target[prop];
+            }
+        });
     }
 
     /**

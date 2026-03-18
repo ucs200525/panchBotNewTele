@@ -3,17 +3,17 @@ require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
-const logger = require('./utils/logger');
-const requestLogger = require('./utils/requestLogger');
-const panchangRoutes = require('./routes/panchangRoutes');
-const planetaryRoutes = require('./routes/planetaryRoutes');
-const chartsRoutes = require('./routes/chartsRoutes');
-const dashaRoutes = require('./routes/dashaRoutes');
-const astronomicalRoutes = require('./routes/astronomicalRoutes');
-const lagnaRoutes = require('./routes/lagnaRoutes');
-const newRoutes = require('./routes/newRoutes');
-const adminRoutes = require('./routes/adminRoutes'); // Import Admin Routes
-const connectDB = require('./utils/db'); // Import DB Connection Helper
+const logger = require('../utils/logger');
+const requestLogger = require('../utils/requestLogger');
+const panchangRoutes = require('../routes/panchangRoutes');
+const planetaryRoutes = require('../routes/planetaryRoutes');
+const chartsRoutes = require('../routes/chartsRoutes');
+const dashaRoutes = require('../routes/dashaRoutes');
+const astronomicalRoutes = require('../routes/astronomicalRoutes');
+const lagnaRoutes = require('../routes/lagnaRoutes');
+const newRoutes = require('../routes/newRoutes');
+const adminRoutes = require('../routes/adminRoutes'); // Import Admin Routes
+const connectDB = require('../utils/db'); // Import DB Connection Helper
 
 // Connect to Database
 connectDB();
@@ -39,7 +39,6 @@ app.use(cors(corsOption)); // apply CORS middleware
 app.use(requestLogger);
 
 // Routes
-// Routes
 app.use('/api', panchangRoutes);
 // app.use('/api/planetary', planetaryRoutes);
 // app.use('/api/charts', chartsRoutes);
@@ -60,10 +59,12 @@ app.use((err, req, res, next) => {
 // Port Configuration
 const port = process.env.PORT || 4000;
 
-// Start the server
-app.listen(port, () => {
-  logger.info(`Server is running on port ${port}`);
-});
+// Start the server ONLY in local development
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+  app.listen(port, () => {
+    logger.info(`Server is running on port ${port}`);
+  });
+}
 
-// Export app for serverless environment (if needed)
+// Export app for serverless environment
 module.exports = app;

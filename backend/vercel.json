@@ -1,16 +1,10 @@
 {
   "version": 2,
-  "buildCommand": "python3 -m pip install --upgrade pip setuptools && npm install",
-  "builds": [
-    {
-      "src": "server.js",
-      "use": "@vercel/node"
+  "installCommand": "python3 -m pip install --upgrade pip setuptools && npm install",
+  "functions": {
+    "api/*.js": {
+      "memory": 1024,
+      "maxDuration": 60
     }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/server.js"
-    }
-  ]
+  }
 }

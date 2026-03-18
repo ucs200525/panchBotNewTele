@@ -3,15 +3,11 @@
  * Global settings for all calculations
  */
 
-const swisseph = require('swisseph');
-
-// Set ephemeris path
-const EPHE_PATH = '/usr/share/libswe/ephe';
-swisseph.swe_set_ephe_path(EPHE_PATH);
+const swisseph = require('sweph');
 
 // Set default ayanamsa (Lahiri)
 const AYANAMSA_LAHIRI = swisseph.SE_SIDM_LAHIRI;
-swisseph.swe_set_sid_mode(AYANAMSA_LAHIRI, 0, 0);
+swisseph.set_sid_mode(AYANAMSA_LAHIRI, 0, 0);
 
 // Available ayanamsa systems
 const AYANAMSA_SYSTEMS = {

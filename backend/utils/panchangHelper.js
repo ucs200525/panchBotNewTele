@@ -20,64 +20,24 @@
  */
 async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr, includeTransitions = true) {
     try {
-        // Try to require the @bidyashish/panchang library
-        let getPanchanga, getPanchangaReport;
-        
-        try {
-            const panchangLib = require('@bidyashish/panchang');
-            getPanchanga = panchangLib.getPanchanga;
-            getPanchangaReport = panchangLib.getPanchangaReport;
-        } catch (requireError) {
-            console.error('⚠️  @bidyashish/panchang is not installed or failed to load.');
-            console.error('Error:', requireError.message);
-            console.error('\nTo install, run:');
-            console.error('  npm install @bidyashish/panchang');
-            console.error('\nOn Windows, you may need build tools:');
-            console.error('  npm install --global windows-build-tools');
-            throw new Error('Panchang library not available. Please install @bidyashish/panchang');
-        }
-        
         // Parse date string as local date (not UTC) to avoid timezone issues
-        // "2026-01-05" parsed as UTC becomes Jan 4 in IST timezone
         const [year, month, day] = date.split('-').map(Number);
         const dateObj = new Date(year, month - 1, day, 12, 0, 0); // Noon local time
         
         // Determine timezone - default to Asia/Kolkata (IST) if not specified
-        // You can make this configurable based on latitude/longitude
         const timezone = getTimezoneFromCoordinates(lat, lng);
         
         console.log(`Calculating Panchanga for: ${city} on ${date}`);
-        console.log(`Coordinates: ${lat}, ${lng}`);
-        console.log(`Timezone: ${timezone}`);
         
-        // Get Panchanga data using the library
-        const panchanga = getPanchanga(dateObj, lat, lng, timezone);
-        
-        // Panchanga calculated successfully
-        
-        
-        // Format time helper - based on official library examples
-        // Converts Date objects (from library) to properly formatted time strings
+        // Format time helper
         const formatTime = (dateInput) => {
             if (!dateInput) return 'N/A';
-            
-            // If it's already a formatted string, return it
-            if (typeof dateInput === 'string') {
-                return dateInput;
-            }
-            
-            // Convert Date object to locale time string with user's timezone
-            // This is the pattern used in official library examples
+            if (typeof dateInput === 'string') return dateInput;
             const d = new Date(dateInput);
-            
-            // Extract just the time part from the full locale string
             const fullString = d.toLocaleString('en-US', { timeZone: timezone });
-            const timePart = fullString.split(', ')[1]; // Gets "HH:MM:SS AM/PM" part
-            
-            // Remove seconds for cleaner display
+            const timePart = fullString.split(', ')[1]; 
             const [time, period] = timePart.split(' ');
             const [hours, minutes] = time.split(':');
-            
             return `${hours}:${minutes} ${period}`;
         };
         
@@ -137,57 +97,23 @@ async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr
             sunset: formattedSunset,
             
             // Core Panchanga elements
-            tithis: dayElements?.tithis || [{
-                name: panchanga.tithi.name,
-                number: panchanga.tithi.number,
-                paksha: panchanga.tithi.paksha,
-                percentage: panchanga.tithi.percentage,
-                startTime: null,
-                endTime: null
-            }],
-            
-            nakshatras: dayElements?.nakshatras || [{
-                name: panchanga.nakshatra.name,
-                number: panchanga.nakshatra.number,
-                pada: panchanga.nakshatra.pada,
-                lord: panchanga.nakshatra.lord || 'N/A',
-                startTime: null,
-                endTime: null
-            }],
-            
-            yogas: dayElements?.yogas || [{
-                name: panchanga.yoga.name,
-                number: panchanga.yoga.number,
-                startTime: null,
-                endTime: null
-            }],
-            
-            karanas: dayElements?.karanas || [{
-                name: panchanga.karana.name,
-                number: panchanga.karana.number,
-                startTime: null,
-                endTime: null
-            }],
+            tithis: dayElements?.tithis || [],
+            nakshatras: dayElements?.nakshatras || [],
+            yogas: dayElements?.yogas || [],
+            karanas: dayElements?.karanas || [],
             
             // Backward compatibility fields
-            yoga: {
-                name: panchanga.yoga.name,
-                number: panchanga.yoga.number,
-            },
+            yoga: dayElements?.yogas?.[0] || { name: 'N/A', number: 0 },
+            karana: dayElements?.karanas?.[0] || { name: 'N/A', number: 0 },
             
-            karana: {
-                name: panchanga.karana.name,
-                number: panchanga.karana.number,
-            },
-            
-            vara: panchanga.vara.name || panchanga.vara, 
-            weekday: panchanga.vara.name || panchanga.vara,
+            vara: dayElements?.vara?.name || 'N/A', 
+            weekday: dayElements?.vara?.name || 'N/A',
             
             // Moon phase
-            moonPhase: panchanga.moonPhase || 'N/A',
+            moonPhase: dayElements?.moonPhase || 'N/A',
             
             // Paksha
-            paksha: dayElements?.paksha?.name || panchanga.tithi.paksha,
+            paksha: dayElements?.paksha?.name || 'N/A',
             
             // Ayanamsa
             ayanamsa: (() => {
@@ -290,26 +216,14 @@ async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr
                 }
             })(),
             
-            // Rahu Kaal (inauspicious time) - check if valid
-            rahuKaal: (() => {
-                if (panchanga.rahuKaal && panchanga.rahuKaal.start && panchanga.rahuKaal.end) {
-                    const start = formatTime(panchanga.rahuKaal.start);
-                    const end = formatTime(panchanga.rahuKaal.end);
-                    const duration = calculateDuration(panchanga.rahuKaal.start, panchanga.rahuKaal.end);
-                    
-                    // If duration is negative, library calculation is wrong - return null
-                    const durationNum = parseInt(duration);
-                    if (durationNum < 0) {
-                        console.warn('⚠️  Rahu Kaal has invalid times (end before start), skipping display');
-                        return null;
-                    }
-                    
-                    return { start, end, duration };
-                }
-                return null;
-            })(),
+            // Rahu Kaal (inauspicious time)
+            rahuKaal: dayElements?.rahuKaal ? {
+                start: formatTime(dayElements.rahuKaal.start),
+                end: formatTime(dayElements.rahuKaal.end),
+                duration: calculateDuration(dayElements.rahuKaal.start, dayElements.rahuKaal.end)
+            } : null,
             
-            // NEW: Calculate Gulika Kalam using Swiss Ephemeris muhurta module
+            // NEW: Calculate Gulika Kalam 
             gulika: (() => {
                 try {
                     const { muhurta } = require('../swisseph');
@@ -330,12 +244,11 @@ async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr
                         duration: calculateDuration(gulikaData.start, gulikaData.end)
                     };
                 } catch (error) {
-                    console.warn('Could not calculate Gulika:', error.message);
                     return null;
                 }
             })(),
             
-            // NEW: Calculate Yamaganda using Swiss Ephemeris muhurta module  
+            // NEW: Calculate Yamaganda
             yamaganda: (() => {
                 try {
                     const { muhurta } = require('../swisseph');
@@ -356,7 +269,6 @@ async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr
                         duration: calculateDuration(yamagandaData.start, yamagandaData.end)
                     };
                 } catch (error) {
-                    console.warn('Could not calculate Yamaganda:', error.message);
                     return null;
                 }
             })(),
@@ -380,18 +292,8 @@ async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr
                 }) : null
             })),
             
-            // Abhijit Muhurat - calculate from correct sunrise/sunset times
-            abhijitMuhurat: (() => {
-                if (panchanga.abhijitMuhurat && panchanga.abhijitMuhurat.start) {
-                    return {
-                        start: formatTime(panchanga.abhijitMuhurat.start),
-                        end: formatTime(panchanga.abhijitMuhurat.end),
-                        duration: '24 minutes'
-                    };
-                }
-                // Calculate it ourselves from provided times
-                return calculateAbhijitMuhurat(sunriseStr, sunsetStr);
-            })(),
+            // Abhijit Muhurat
+            abhijitMuhurat: calculateAbhijitMuhurat(sunriseStr, sunsetStr),
             
             // Hindu calendar years and cycles
             shakaYear: dayElements?.samvatsara?.shakaYear || 'N/A',
@@ -399,7 +301,7 @@ async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr
             kaliYear: dayElements?.samvatsara?.kaliYear || 'N/A',
             samvatsara: dayElements?.samvatsara?.name || 'N/A',
             
-            // NEW: Moonrise/Moonset - calculate using Swiss Ephemeris
+            // NEW: Moonrise/Moonset
             moonrise: (() => {
                 try {
                     const { planetary } = require('../swisseph');
@@ -407,7 +309,6 @@ async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr
                     const moonriseTime = planner.getMoonrise(dateObj, lat, lng);
                     return moonriseTime ? formatTime(moonriseTime) : 'N/A';
                 } catch (error) {
-                    console.warn('Could not calculate moonrise:', error.message);
                     return 'N/A';
                 }
             })(),
@@ -419,7 +320,6 @@ async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr
                     const moonsetTime = planner.getMoonset(dateObj, lat, lng);
                     return moonsetTime ? formatTime(moonsetTime) : 'N/A';
                 } catch (error) {
-                    console.warn('Could not calculate moonset:', error.message);
                     return 'N/A';
                 }
             })(),
@@ -476,8 +376,6 @@ async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr
                 }
             })(),
             
-            // Store raw data for debugging
-            _rawPanchangData: panchanga,
             _timezone: timezone
         };
 

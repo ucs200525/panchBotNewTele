@@ -82,20 +82,32 @@ const convertToLocalTime = (utcDate, timeZone) => {
     return date.toLocaleString('en-US', { timeZone, hour12: false }).split(' ')[1];
 };
 
-// Function to fetch sunrise and sunset times for a given date
+// Helper to convert 12-hour time (like "6:14:53 AM") to 24-hour time ("06:14:53")
+const convert12to24 = (timeStr) => {
+    if (!timeStr) return null;
+    const [time, period] = timeStr.split(' ');
+    let [hours, minutes, seconds] = time.split(':');
+    hours = parseInt(hours, 10);
+    if (period === 'PM' && hours < 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+    return `${hours.toString().padStart(2, '0')}:${minutes.padStart(2, '0')}:${seconds.padStart(2, '0')}`;
+};
+
 // Function to fetch sunrise and sunset times for a given date
 async function fetchSunTimes(lat, lng, date, timeZone) {
     logger.info({ message: 'fetchSunTimes called', lat, lng, date, timeZone });
     try {
-        const response = await fetch(`https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lng}&formatted=0&date=${date}`);
+        // We use api.sunrisesunset.io as fallback because sunrise-sunset.org was returning 521.
+        const response = await fetch(`https://api.sunrisesunset.io/json?lat=${lat}&lng=${lng}&date=${date}`);
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const data = await response.json();
         const results = data.results;
 
-        const sunriseToday = convertToLocalTime(results.sunrise, timeZone);
-        const sunsetToday = convertToLocalTime(results.sunset, timeZone);
+        // The API returns times in local timezone as AM/PM strings like "6:14:53 AM"
+        const sunriseToday = convert12to24(results.sunrise);
+        const sunsetToday = convert12to24(results.sunset);
 
         // Log the sunrise and sunset for today
         logger.info({ message: 'Sunrise and Sunset for today', sunriseToday, sunsetToday });
@@ -106,13 +118,13 @@ async function fetchSunTimes(lat, lng, date, timeZone) {
         const tomorrowDate = tomorrow.toISOString().split('T')[0]; // Format date as YYYY-MM-DD
 
         // Fetch sunrise and sunset for tomorrow
-        const responseTomorrow = await fetch(`https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lng}&formatted=0&date=${tomorrowDate}`);
+        const responseTomorrow = await fetch(`https://api.sunrisesunset.io/json?lat=${lat}&lng=${lng}&date=${tomorrowDate}`);
         if (!responseTomorrow.ok) {
             throw new Error(`HTTP error! Status: ${responseTomorrow.status}`);
         }
         const dataTomorrow = await responseTomorrow.json();
         const resultsTomorrow = dataTomorrow.results;
-        const sunriseTmrw = convertToLocalTime(resultsTomorrow.sunrise, timeZone);
+        const sunriseTmrw = convert12to24(resultsTomorrow.sunrise);
 
         // Log the sunrise for tomorrow
         logger.info({ message: 'Sunrise for tomorrow', sunriseTmrw });
