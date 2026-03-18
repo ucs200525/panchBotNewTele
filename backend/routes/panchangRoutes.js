@@ -763,25 +763,6 @@ router.get('/getBharagvTable', async (req, res) => {
 // Function to create the dummy table with formatted time intervals
 // Function to create the dummy table with formatted time intervals
 const createDrikTable = async (city, date, lat, lng, timeZone) => {
-<<<<<<< Updated upstream
-    logger.info({ message: 'createDrikTable called', city, date, lat, lng });
-    // Fetch the muhurat data using the city and date
-    const filteredData = await fetchmuhurat(city, date, lat, lng, timeZone); // Assuming fetchmuhurat is an async function
-
-    // Create the drikTable by mapping over filteredData
-    const drikTable = filteredData.map((row) => {
-        // Handle both formats: New Swiss API (start, end) and legacy scraper (time: "start to end")
-        let startTime = row.start;
-        let endTime = row.end;
-
-        if (row.time && !startTime && !endTime) {
-            const parts = row.time.split(" to ");
-            startTime = parts[0];
-            endTime = parts[1] || "";
-        }
-
-        const timeIntervalFormatted = `${startTime} to ${endTime}`;
-=======
     logger.info({ message: 'createDrikTable called (sync with main)', city, date, lat, lng });
     // Fetch the muhurat data using the scraper (fetchmuhurat_old) as per user request
     const filteredData = await fetchmuhurat_old(city, date); 
@@ -827,7 +808,6 @@ const createDrikTable = async (city, date, lat, lng, timeZone) => {
         const timeIntervalFormatted = endDatePart 
             ? `${formatWithDate(start, endDatePart)} to ${formatWithDate(end, endDatePart)}`
             : `${start} to ${end}`;
->>>>>>> Stashed changes
 
         return {
             category: row.category,
@@ -1914,9 +1894,6 @@ router.post('/fetch_muhurat_old', async (req, res) => {
     const { city, date } = req.body;
     logger.info({ message: 'Route /fetch_muhurat_old called', city, date });
     try {
-<<<<<<< Updated upstream
-        const muhuratData = await fetchmuhurat_old(city, date);
-=======
         // Handle date formats (DD/MM/YYYY or YYYY-MM-DD)
         let normalizedDate = date;
         if (date.includes('/')) {
@@ -1926,7 +1903,6 @@ router.post('/fetch_muhurat_old', async (req, res) => {
         
         // Use the improved createDrikTable with duration logic
         const muhuratData = await createDrikTable(city, normalizedDate);
->>>>>>> Stashed changes
         res.json(muhuratData);
     } catch (error) {
         logger.error({ message: "Error in /fetch_muhurat_old route", error: error.message });

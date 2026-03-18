@@ -25,21 +25,10 @@ const LivePeriodTracker = ({ data, selectedDate }) => {
 
   // Check if selected date is today
   const isToday = () => {
-<<<<<<< Updated upstream
-    if (!selectedDate) return true; // If no date provided, assume it's today
-
-    const today = new Date();
-    const selected = new Date(selectedDate);
-
-    return today.getFullYear() === selected.getFullYear() &&
-      today.getMonth() === selected.getMonth() &&
-      today.getDate() === selected.getDate();
-=======
     if (!selectedDate) return true;
     const todayStr = new Date().toLocaleDateString('en-CA'); 
     const selectedStr = new Date(selectedDate).toLocaleDateString('en-CA');
     return todayStr === selectedStr;
->>>>>>> Stashed changes
   };
 
   // Don't render if not viewing today's data
@@ -183,12 +172,6 @@ const LivePeriodTracker = ({ data, selectedDate }) => {
     
     // If we found an upcoming one, customize the view
     return (
-<<<<<<< Updated upstream
-      <div className="live-tracker-compact">
-        <div className="tracker-minimal">
-          {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-          <span className="no-period">• No active period</span>
-=======
       <div className="live-tracker-premium status-normal">
         <div className="tracker-main-row">
           <div className="tracker-left">
@@ -198,10 +181,9 @@ const LivePeriodTracker = ({ data, selectedDate }) => {
             </span>
           </div>
           <div className="tracker-center">
-            <span className="period-title">Next: {nextUp.muhurat || nextUp.weekday || 'Auspicious Period'}</span>
-            <span className="time-remaining">Starts at {nextUp.time ? nextUp.time.split(' to ')[0] : nextUp.start1}</span>
+            <span className="period-title">Next: {nextUp.muhurat || nextUp.weekday || nextUp.description || 'Auspicious Period'}</span>
+            <span className="time-remaining">Starts at {nextUp.timeInterval ? nextUp.timeInterval.split(' to ')[0] : (nextUp.time ? nextUp.time.split(' to ')[0] : nextUp.start1)}</span>
           </div>
->>>>>>> Stashed changes
         </div>
       </div>
     );

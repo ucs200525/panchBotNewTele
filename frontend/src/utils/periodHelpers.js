@@ -28,20 +28,11 @@ export const parseTimeToMinutes = (timeStr) => {
   const minutes = parseInt(minutesStr, 10);
 
   if (isNaN(hours) || isNaN(minutes)) return null;
-<<<<<<< Updated upstream
-  
-  // Convert to 24-hour format
-  const normalizedPeriod = period.toUpperCase();
-  if (normalizedPeriod === 'PM' && hours !== 12) hours += 12;
-  if (normalizedPeriod === 'AM' && hours === 12) hours = 0;
-  
-=======
 
   const normalizedPeriod = period.toUpperCase().replace(',', '');
   if (normalizedPeriod === 'PM' && hours !== 12) hours += 12;
   if (normalizedPeriod === 'AM' && hours === 12) hours = 0;
 
->>>>>>> Stashed changes
   let totalMinutes = hours * 60 + minutes;
   if (nextDay) totalMinutes += 24 * 60;
 

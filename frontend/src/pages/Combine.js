@@ -5,11 +5,7 @@ import LivePeriodTracker from '../components/LivePeriodTracker';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useAuth } from '../context/AuthContext';
 import styles from './Combine.module.css';
-<<<<<<< Updated upstream
-=======
-import './style.css';
 import './hero-styles.css';
->>>>>>> Stashed changes
 
 const CombinePage = () => {
   const { localCity, localDate, setCityAndDate, selectedLat, selectedLng, setLocationDetails, timeZone } = useAuth();
@@ -182,16 +178,8 @@ const CombinePage = () => {
 
         <div id="tableToCapture">
           {/* Live Period Tracker */}
-<<<<<<< Updated upstream
-          {bharagvData && Array.isArray(bharagvData) && bharagvData.length > 0 && (
-            <div className={styles.panchangSection}>
-              <h2 className={styles.sectionHeader}>Live Progress Tracker</h2>
-              <LivePeriodTracker data={bharagvData} selectedDate={date} />
-            </div>
-=======
           {combinedData && Array.isArray(combinedData) && combinedData.length > 0 && (
               <LivePeriodTracker data={combinedData} selectedDate={null} />
->>>>>>> Stashed changes
           )}
 
           {combinedData && !loading && (
@@ -201,44 +189,15 @@ const CombinePage = () => {
                 <table className={styles.panchangTable}>
                   <thead>
                     <tr>
-<<<<<<< Updated upstream
-                      <th className={styles.sno}>#</th>
-                    
-                      <th>Muhurta Description</th>
-                      <th>Interval</th>
-                      <th>Availability</th>
-=======
                       <th>SNO</th>
                       {/* <th>TYPE</th> */}
                       <th>DESCRIPTION</th>
-                      <th>TIME & INTERVAL</th>
+                      <th>TIME &amp; INTERVAL</th>
                       <th>WEEKDAY</th>
->>>>>>> Stashed changes
                     </tr>
                   </thead>
                   <tbody>
                     {combinedData.map((row, index) => (
-<<<<<<< Updated upstream
-                      <tr key={index}>
-                        <td className={styles.sno}>{row.sno}</td>
-                    
-                        <td className={styles.descCell}>{row.description}</td>
-                        <td className={styles.timeCell}>{row.timeInterval}</td>
-                        <td>
-                          {row.weekdays && row.weekdays.length > 0 ? (
-                            <div className={styles.weekdaysContainer}>
-                              {row.weekdays.map((wd, subIndex) => (
-                                <div key={subIndex} className={styles.miniWeekdayItem}>
-                                  <strong>{wd.weekday}</strong>: {wd.time}
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <span className="dim-text">-</span>
-                          )}
-                        </td>
-                      </tr>
-=======
                       <React.Fragment key={index}>
                         <tr>
                           <td>{row.sno}</td>
@@ -270,7 +229,6 @@ const CombinePage = () => {
                           </td>
                         </tr>
                       </React.Fragment>
->>>>>>> Stashed changes
                     ))}
                   </tbody>
                 </table>
