@@ -75,6 +75,19 @@ async function fetchCityName(lat, lng) {
     }
 }
 
+router.get('/fetchCityName/:lat/:lng', async (req, res) => {
+    try {
+        const { lat, lng } = req.params;
+        const result = await fetchCityName(lat, lng);
+        if (result) {
+            res.json(result);
+        } else {
+            res.status(404).json({ error: 'Location not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: 'Server error' });
+    }
+});
 
 // Function to convert UTC time to local time based on time zone
 const convertToLocalTime = (utcDate, timeZone) => {

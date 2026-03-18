@@ -48,7 +48,7 @@ const TimeConverterApp = () => {
   }, [data, sunriseToday, sunsetToday, sunriseTmrw, weekday]);
 
   const autoGeolocation = async () => {
-    // setIsLoading(true);
+    setIsLoading(true);
     if (navigator.geolocation) {
       // Track if success callback already fired (handles browser extension race condition)
       let geoSucceeded = false;
@@ -73,6 +73,7 @@ const TimeConverterApp = () => {
 
           } catch (error) {
             setError(error.message || 'Error fetching city name');
+            setIsLoading(false);
           }
         },
         (error) => {
