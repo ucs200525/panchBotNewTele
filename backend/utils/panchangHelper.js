@@ -471,4 +471,4 @@ function calculateAbhijitMuhurat(sunriseStr, sunsetStr) {
     }
 }
 
-module.exports = { calculatePanchangData };
+module.exports = { calculatePanchangData, getTimezoneFromCoordinates };

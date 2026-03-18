@@ -11,6 +11,8 @@ const TimeConverterApp = () => {
   const [tableHtml, setTableHtml] = useState('');
   const [cityName, setCityName] = useState('');
   const [currentDate, setCurrentDate] = useState(new Date().toISOString().substring(0, 10));
+  const [lat, setLat] = useState(null);
+  const [lng, setLng] = useState(null);
 
   const [data, setData] = useState(() => {
     const storedData = sessionStorage.getItem('data');
@@ -57,10 +59,12 @@ const TimeConverterApp = () => {
         async (position) => {
           geoSucceeded = true;
           setError(null); // Clear any false error from extension interference
-          const lat = position.coords.latitude;
-          const lng = position.coords.longitude;
+          const latitude = position.coords.latitude;
+          const longitude = position.coords.longitude;
+          setLat(latitude);
+          setLng(longitude);
           try {
-            const cityResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/fetchCityName/${lat}/${lng}`);
+            const cityResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/fetchCityName/${latitude}/${longitude}`);
             if (!cityResponse.ok) {
               throw new Error('Failed to fetch city name');
             }
@@ -115,10 +119,12 @@ const TimeConverterApp = () => {
       console.log("API URL:", process.env.REACT_APP_API_URL);
       console.log("City:", cityName);
       console.log(" Date:", currentDate);
-      const apiUrl = `${process.env.REACT_APP_API_URL}/api/getSunTimesForCity/${cityName}/${currentDate}`;
+      
+      const queryParams = lat && lng ? `?lat=${lat}&lng=${lng}` : '';
+      const apiUrl = `${process.env.REACT_APP_API_URL}/api/getSunTimesForCity/${cityName}/${currentDate}${queryParams}`;
       console.log("Constructed API URL:", apiUrl);
 
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/getSunTimesForCity/${cityName}/${currentDate}`);
+      const response = await fetch(apiUrl);
       const response1 = await fetch(`${process.env.REACT_APP_API_URL}/api/getWeekday/${currentDate}`);
 
       if (!response.ok || !response1.ok) {
@@ -166,8 +172,9 @@ const TimeConverterApp = () => {
         if (!cityName || !currentDate) return;
         
         try {
+          const queryParams = lat && lng ? `&lat=${lat}&lng=${lng}` : '';
           const response = await fetch(
-            `${process.env.REACT_APP_API_URL}/api/getPanchangData?city=${encodeURIComponent(cityName)}&date=${currentDate}`
+            `${process.env.REACT_APP_API_URL}/api/getPanchangData?city=${encodeURIComponent(cityName)}&date=${currentDate}${queryParams}`
           );
           const panchangResult = await response.json();
           setPanchangData(panchangResult);
@@ -238,7 +245,11 @@ const TimeConverterApp = () => {
             className="city"
             type="text"
             value={cityName}
-            onChange={(e) => setCityName(e.target.value)}
+            onChange={(e) => {
+              setCityName(e.target.value);
+              setLat(null);
+              setLng(null);
+            }}
           />
           <label className="date">Enter Date:</label>
           <input
