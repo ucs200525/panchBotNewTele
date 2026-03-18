@@ -1,32 +1,50 @@
 // Live period tracker utility functions
 export const parseTimeToMinutes = (timeStr) => {
   if (!timeStr || timeStr.trim() === '') return null;
-  
-  // Remove date suffix if present (e.g., ", Jan 04")
-  let cleanTime = timeStr.split(',')[0].trim();
-  
+
+  let cleanTime = timeStr.trim();
+  let nextDay = false;
+
+  // Handle "Mar 19 , 12:04 AM" format
+  const dateMonthMatch = cleanTime.match(/^[A-Za-z]+ \d+\s*,\s*(.+)$/);
+  if (dateMonthMatch) {
+    cleanTime = dateMonthMatch[1].trim();
+    nextDay = true;
+  }
+
+  // Handle "12:04 AM (Mar 19)" format
+  const parenMatch = cleanTime.match(/^(.+?)\s*\(.*\)$/);
+  if (parenMatch) {
+    cleanTime = parenMatch[1].trim();
+    nextDay = true;
+  }
+
   const parts = cleanTime.trim().split(' ');
   if (parts.length !== 2) return null;
-  
+
   const [time, period] = parts;
   const [hoursStr, minutesStr] = time.split(':');
   let hours = parseInt(hoursStr, 10);
   const minutes = parseInt(minutesStr, 10);
-  
+
   if (isNaN(hours) || isNaN(minutes)) return null;
+<<<<<<< Updated upstream
   
   // Convert to 24-hour format
   const normalizedPeriod = period.toUpperCase();
   if (normalizedPeriod === 'PM' && hours !== 12) hours += 12;
   if (normalizedPeriod === 'AM' && hours === 12) hours = 0;
   
+=======
+
+  const normalizedPeriod = period.toUpperCase().replace(',', '');
+  if (normalizedPeriod === 'PM' && hours !== 12) hours += 12;
+  if (normalizedPeriod === 'AM' && hours === 12) hours = 0;
+
+>>>>>>> Stashed changes
   let totalMinutes = hours * 60 + minutes;
-  
-  // If the original string had a date (next day), add 24 hours
-  if (timeStr.includes(',')) {
-    totalMinutes += 24 * 60;
-  }
-  
+  if (nextDay) totalMinutes += 24 * 60;
+
   return totalMinutes;
 };
 
@@ -38,7 +56,31 @@ export const findCurrentPeriod = (data, currentTime) => {
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     
-    // For Panchaka Muhurth format: "06:34 AM to 07:24 AM" or "10:46 PM to 12:50 AM, Jan 04"
+    // For Combined page format: timeInterval like "06:09 AM to 07:38 AM" or "Mar 19 , 12:22 AM to Mar 19 , 02:28 AM"
+    if (row.timeInterval) {
+      const timeParts = row.timeInterval.split(' to ');
+      if (timeParts.length === 2) {
+        const start = parseTimeToMinutes(timeParts[0].trim());
+        const end = parseTimeToMinutes(timeParts[1].trim());
+        if (start !== null && end !== null) {
+          if (end > 24 * 60) {
+            if (now >= start || now < (end - 24 * 60)) {
+              return { index: i, column: 'combined', start, end: end - 24 * 60,
+                startTime: timeParts[0].trim(), endTime: timeParts[1].trim(),
+                weekday: row.description || '' };
+            }
+          } else {
+            if (now >= start && now < end) {
+              return { index: i, column: 'combined', start, end,
+                startTime: timeParts[0].trim(), endTime: timeParts[1].trim(),
+                weekday: row.description || '' };
+            }
+          }
+        }
+      }
+    }
+
+    // For Panchaka Muhurth format: row.time = "06:34 AM to 07:24 AM"
     if (row.time) {
       const timeParts = row.time.split(' to ');
       if (timeParts.length === 2) {

@@ -5,6 +5,11 @@ import LivePeriodTracker from '../components/LivePeriodTracker';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useAuth } from '../context/AuthContext';
 import styles from './Combine.module.css';
+<<<<<<< Updated upstream
+=======
+import './style.css';
+import './hero-styles.css';
+>>>>>>> Stashed changes
 
 const CombinePage = () => {
   const { localCity, localDate, setCityAndDate, selectedLat, selectedLng, setLocationDetails, timeZone } = useAuth();
@@ -177,11 +182,16 @@ const CombinePage = () => {
 
         <div id="tableToCapture">
           {/* Live Period Tracker */}
+<<<<<<< Updated upstream
           {bharagvData && Array.isArray(bharagvData) && bharagvData.length > 0 && (
             <div className={styles.panchangSection}>
               <h2 className={styles.sectionHeader}>Live Progress Tracker</h2>
               <LivePeriodTracker data={bharagvData} selectedDate={date} />
             </div>
+=======
+          {combinedData && Array.isArray(combinedData) && combinedData.length > 0 && (
+              <LivePeriodTracker data={combinedData} selectedDate={null} />
+>>>>>>> Stashed changes
           )}
 
           {combinedData && !loading && (
@@ -191,15 +201,24 @@ const CombinePage = () => {
                 <table className={styles.panchangTable}>
                   <thead>
                     <tr>
+<<<<<<< Updated upstream
                       <th className={styles.sno}>#</th>
                     
                       <th>Muhurta Description</th>
                       <th>Interval</th>
                       <th>Availability</th>
+=======
+                      <th>SNO</th>
+                      {/* <th>TYPE</th> */}
+                      <th>DESCRIPTION</th>
+                      <th>TIME & INTERVAL</th>
+                      <th>WEEKDAY</th>
+>>>>>>> Stashed changes
                     </tr>
                   </thead>
                   <tbody>
                     {combinedData.map((row, index) => (
+<<<<<<< Updated upstream
                       <tr key={index}>
                         <td className={styles.sno}>{row.sno}</td>
                     
@@ -219,6 +238,39 @@ const CombinePage = () => {
                           )}
                         </td>
                       </tr>
+=======
+                      <React.Fragment key={index}>
+                        <tr>
+                          <td>{row.sno}</td>
+                          {/* <td>{row.type}</td> */}
+                          <td>{row.description}</td>
+                          <td className={styles.timeCell}>
+                            {row.timeInterval.split(' to ').map((part, i, arr) => (
+                              <React.Fragment key={i}>
+                                <div className={styles.timeRange}>{part}</div>
+                                {i < arr.length - 1 && <div className={styles.toText}>to</div>}
+                              </React.Fragment>
+                            ))}
+                            {row.duration && <div className={styles.durationSmall}>({row.duration})</div>}
+                          </td>
+                          <td>
+                            {row.weekdays && row.weekdays.length > 0 ? (
+                              <table className="inner-table">
+                                <tbody>
+                                  {row.weekdays.map((weekday, subIndex) => (
+                                    <tr key={subIndex}>
+                                      <td><strong>{weekday.weekday}</strong>: {weekday.time}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            ) : (
+                              <span className="dim-text">-</span>
+                            )}
+                          </td>
+                        </tr>
+                      </React.Fragment>
+>>>>>>> Stashed changes
                     ))}
                   </tbody>
                 </table>

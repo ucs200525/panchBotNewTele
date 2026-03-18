@@ -186,7 +186,20 @@ const PanchakaMuhurth = () => {
                                 {item.category}
                               </span>
                             </td>
+<<<<<<< Updated upstream
                             <td className={`time-cell ${styles.timeCell}`}>{item.time}</td>
+=======
+                            <td className={`time-cell ${styles.timeCell}`}>
+                              {item.start && item.end ? (
+                                <>
+                                  <div className={styles.timeRange}>{item.start} - {item.end}</div>
+                                  {item.duration && <div className={styles.durationSmall}>{item.duration}</div>}
+                                </>
+                              ) : (
+                                item.time
+                              )}
+                            </td>
+>>>>>>> Stashed changes
                           </tr>
                         ))}
                       </tbody>

@@ -25,6 +25,7 @@ const LivePeriodTracker = ({ data, selectedDate }) => {
 
   // Check if selected date is today
   const isToday = () => {
+<<<<<<< Updated upstream
     if (!selectedDate) return true; // If no date provided, assume it's today
 
     const today = new Date();
@@ -33,6 +34,12 @@ const LivePeriodTracker = ({ data, selectedDate }) => {
     return today.getFullYear() === selected.getFullYear() &&
       today.getMonth() === selected.getMonth() &&
       today.getDate() === selected.getDate();
+=======
+    if (!selectedDate) return true;
+    const todayStr = new Date().toLocaleDateString('en-CA'); 
+    const selectedStr = new Date(selectedDate).toLocaleDateString('en-CA');
+    return todayStr === selectedStr;
+>>>>>>> Stashed changes
   };
 
   // Don't render if not viewing today's data
@@ -138,13 +145,63 @@ const LivePeriodTracker = ({ data, selectedDate }) => {
     return null;
   };
 
-  // Don't render if no current period
+  // Don't render if no current period and no data
   if (!currentPeriod) {
+    // Try to find the next upcoming period
+    const nowMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
+    let nextUp = null;
+    
+    if (data && data.length > 0) {
+      nextUp = data.find(row => {
+          const timeParts = row.time ? row.time.split(' to ') : [row.start1, row.end1];
+          if (timeParts.length >= 2) {
+              const start = require('../utils/periodHelpers').parseTimeToMinutes(timeParts[0]);
+              return start > nowMinutes;
+          }
+          return false;
+      });
+    }
+
+    if (!nextUp) {
+        return (
+          <div className="live-tracker-premium status-normal">
+            <div className="tracker-main-row">
+              <div className="tracker-left">
+                <div className="live-pulse" style={{ backgroundColor: '#94a3b8' }}></div>
+                <span className="current-time">
+                  {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </div>
+              <div className="tracker-center">
+                <span className="period-title">Waiting for Sunrise</span>
+                <span className="time-remaining">No active periods yet</span>
+              </div>
+            </div>
+          </div>
+        );
+    }
+    
+    // If we found an upcoming one, customize the view
     return (
+<<<<<<< Updated upstream
       <div className="live-tracker-compact">
         <div className="tracker-minimal">
           {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
           <span className="no-period">• No active period</span>
+=======
+      <div className="live-tracker-premium status-normal">
+        <div className="tracker-main-row">
+          <div className="tracker-left">
+            <div className="live-pulse" style={{ backgroundColor: '#3b82f6' }}></div>
+            <span className="current-time">
+              {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+            </span>
+          </div>
+          <div className="tracker-center">
+            <span className="period-title">Next: {nextUp.muhurat || nextUp.weekday || 'Auspicious Period'}</span>
+            <span className="time-remaining">Starts at {nextUp.time ? nextUp.time.split(' to ')[0] : nextUp.start1}</span>
+          </div>
+>>>>>>> Stashed changes
         </div>
       </div>
     );

@@ -716,7 +716,7 @@ const createBharagvTable = async (city, date, showNonBlue, is12HourFormat, lat, 
                 start2: row.start2 || "",
                 end2: row.end2 || "",
                 timeInterval1: row.start1 && row.end1 ? `${row.start1} to ${row.end1}` : "",
-                timeInterval2: "",
+                timeInterval2: row.start2 && row.end2 ? `${row.start2} to ${row.end2}` : "",
                 weekday: row.weekday || "-",
                 value1: row.value1 || "",
                 value2: row.value2 || "",
@@ -763,6 +763,7 @@ router.get('/getBharagvTable', async (req, res) => {
 // Function to create the dummy table with formatted time intervals
 // Function to create the dummy table with formatted time intervals
 const createDrikTable = async (city, date, lat, lng, timeZone) => {
+<<<<<<< Updated upstream
     logger.info({ message: 'createDrikTable called', city, date, lat, lng });
     // Fetch the muhurat data using the city and date
     const filteredData = await fetchmuhurat(city, date, lat, lng, timeZone); // Assuming fetchmuhurat is an async function
@@ -780,15 +781,65 @@ const createDrikTable = async (city, date, lat, lng, timeZone) => {
         }
 
         const timeIntervalFormatted = `${startTime} to ${endTime}`;
+=======
+    logger.info({ message: 'createDrikTable called (sync with main)', city, date, lat, lng });
+    // Fetch the muhurat data using the scraper (fetchmuhurat_old) as per user request
+    const filteredData = await fetchmuhurat_old(city, date); 
+
+    const baseDate = new Date(date);
+
+    // Create the drikTable by mapping over filteredData
+    const drikTable = filteredData.map((row) => {
+        const [startTimeStr, endTimeStr] = row.time.split(" to ");
+
+        let endTimeWithoutDate, endDatePart;
+
+        if (endTimeStr && endTimeStr.includes(", ")) {
+            [endTimeWithoutDate, endDatePart] = endTimeStr.split(", ");
+        } else {
+            endTimeWithoutDate = endTimeStr || "";
+            endDatePart = null;
+        }
+
+        const start = startTimeStr.trim();
+        const end = endTimeWithoutDate.trim();
+        
+        // Calculate duration if possible
+        let duration = "";
+        try {
+            const startDate = parseTime(start, baseDate, false);
+            const endDate = parseTime(end, baseDate, !!endDatePart);
+            if (startDate && endDate) {
+                const diffMs = endDate - startDate;
+                const hours = Math.floor(diffMs / (1000 * 60 * 60));
+                const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                duration = `${hours}h ${minutes}m`;
+            }
+        } catch (e) {
+            logger.warn({ message: 'Error calculating duration', error: e.message });
+        }
+
+        const formatWithDate = (timeStr, datePart) => {
+            if (!datePart) return timeStr;
+            return `${datePart} , ${timeStr}`;
+        };
+
+        const timeIntervalFormatted = endDatePart 
+            ? `${formatWithDate(start, endDatePart)} to ${formatWithDate(end, endDatePart)}`
+            : `${start} to ${end}`;
+>>>>>>> Stashed changes
 
         return {
             category: row.category,
             muhurat: row.muhurat,
             time: timeIntervalFormatted,
+            start: start,
+            end: end,
+            nextDay: !!endDatePart,
+            duration: duration
         };
     });
 
-    // Return the formatted table
     logger.info({ message: 'createDrikTable completed', rows: drikTable.length });
     return drikTable;
 };
@@ -831,7 +882,11 @@ router.get('/getDrikTable', async (req, res) => {
 const parseTime = (timeStr, baseDate, isNextDay = false) => {
     if (!timeStr) return null;
 
-    const [time, period] = timeStr.trim().split(" ");
+    const parts = timeStr.trim().split(" ");
+    if (parts.length < 2) return null;
+    
+    const time = parts[0];
+    const period = parts[1].replace(",", "").toUpperCase(); // Clean the period part
     const [hours, minutes] = time.split(":").map(Number);
     const date = new Date(baseDate);
 
@@ -850,19 +905,35 @@ const parseTime = (timeStr, baseDate, isNextDay = false) => {
 const splitInterval = (interval, baseDate) => {
     if (!interval || interval.trim() === "") return [null, null];
 
-    const [start, end] = interval.split(" to ");
-    if (!start || !end) return [null, null];
+    const [startRaw, endRaw] = interval.split(" to ");
+    if (!startRaw || !endRaw) return [null, null];
 
-    const isNextDayStart = start.includes(",");
-    const startTime = start.replace(/.*?,/, "").trim();
+    const parsePart = (raw) => {
+        let clean = raw.trim();
+        let nextDay = false;
+        
+        // Handle format: "Mar 19 , 12:04 AM" or "Mar 19, 12:04 AM"
+        if (clean.includes(",")) {
+            const parts = clean.split(",");
+            // If the comma is in the middle, the time might be second part
+            if (parts[0].trim().match(/^[A-Za-z]+ [0-9]+$/)) {
+                 clean = parts[1].trim(); 
+            } else {
+                 clean = parts[0].trim();
+            }
+            nextDay = true;
+        } 
+        
+        // Handle format: "02:28 AM (Mar 19)"
+        if (clean.includes("(")) {
+            clean = clean.split("(")[0].trim();
+            nextDay = true;
+        }
 
-    const isNextDayEnd = end.includes(",");
-    const endTime = end.replace(/.*?,/, "").trim();
+        return parseTime(clean, baseDate, nextDay);
+    };
 
-    return [
-        parseTime(startTime, baseDate, isNextDayStart),
-        parseTime(endTime, baseDate, isNextDayEnd),
-    ];
+    return [parsePart(startRaw), parsePart(endRaw)];
 };
 
 // Function to validate time interval
@@ -881,24 +952,40 @@ const processMuhuratAndPanchangam = (muhuratData, panchangamData, baseDate) => {
     const mergedData = [];
     let i = 0;
 
+    const formatTimeForUI = (dateObj, baseDate) => {
+        if (!dateObj) return "";
+        const options = { hour: '2-digit', minute: '2-digit', hour12: true };
+        const timePart = dateObj.toLocaleTimeString('en-US', options);
+        if (dateObj.getDate() !== baseDate.getDate()) {
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            return `${monthNames[dateObj.getMonth()]} ${dateObj.getDate()} , ${timePart}`;
+        }
+        return timePart;
+    };
+
     muhuratData.forEach((muhuratItem) => {
+        // Use normalized time from Muhurat item if available (start/end we created in createDrikTable)
         const [muhuratStart, muhuratEnd] = splitInterval(muhuratItem.time, baseDate);
         if (muhuratStart && muhuratEnd && validateInterval(muhuratStart, muhuratEnd)) {
             const weekdaysArray = [];
 
             panchangamData.forEach((panchangamItem) => {
-                const timeInterval = panchangamItem.timeInterval1;
-                const [start, end] = splitInterval(timeInterval, baseDate);
-                if (start && end && validateInterval(start, end)) {
-                    if (start <= muhuratEnd && end >= muhuratStart) {
-                        if (!weekdaysArray.find((item) => item.weekday === panchangamItem.weekday)) {
-                            weekdaysArray.push({
-                                weekday: panchangamItem.weekday,
-                                time: `${start.toLocaleTimeString()} - ${end.toLocaleTimeString()}`,
-                            });
+                // Check both timeInterval1 and timeInterval2
+                const intervals = [panchangamItem.timeInterval1, panchangamItem.timeInterval2].filter(t => t);
+                
+                intervals.forEach(timeInterval => {
+                    const [start, end] = splitInterval(timeInterval, baseDate);
+                    if (start && end && validateInterval(start, end)) {
+                        if (start < muhuratEnd && end > muhuratStart) {
+                            if (!weekdaysArray.find((item) => item.weekday === panchangamItem.weekday && item.time === `${formatTimeForUI(start, baseDate)} - ${formatTimeForUI(end, baseDate)}`)) {
+                                weekdaysArray.push({
+                                    weekday: panchangamItem.weekday,
+                                    time: `${formatTimeForUI(start, baseDate)} - ${formatTimeForUI(end, baseDate)}`,
+                                });
+                            }
                         }
                     }
-                }
+                });
             });
 
             mergedData.push({
@@ -1827,7 +1914,19 @@ router.post('/fetch_muhurat_old', async (req, res) => {
     const { city, date } = req.body;
     logger.info({ message: 'Route /fetch_muhurat_old called', city, date });
     try {
+<<<<<<< Updated upstream
         const muhuratData = await fetchmuhurat_old(city, date);
+=======
+        // Handle date formats (DD/MM/YYYY or YYYY-MM-DD)
+        let normalizedDate = date;
+        if (date.includes('/')) {
+            const [d, m, y] = date.split('/');
+            normalizedDate = `${y}-${m.toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
+        }
+        
+        // Use the improved createDrikTable with duration logic
+        const muhuratData = await createDrikTable(city, normalizedDate);
+>>>>>>> Stashed changes
         res.json(muhuratData);
     } catch (error) {
         logger.error({ message: "Error in /fetch_muhurat_old route", error: error.message });

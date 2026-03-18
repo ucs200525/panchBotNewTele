@@ -128,6 +128,10 @@ const Navbar = () => {
               <div className="submenu-content">
                 <Link to="/combine" className="submenu-link">Combined View</Link>
                 <Link to="/panchaka" className="submenu-link">Old Panchaka Tool</Link>
+<<<<<<< Updated upstream
+=======
+                <Link to="/" className="submenu-link">Bhargava Panchangam</Link>
+>>>>>>> Stashed changes
               </div>
             </div>
 
