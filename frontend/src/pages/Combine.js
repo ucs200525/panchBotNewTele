@@ -235,7 +235,14 @@ const CombinePage = () => {
               </div>
 
               <div className="table-footer-actions">
-                <TableScreenshot tableId="tableToCapture" city={city} date={date} weekday={weekday} />
+                <TableScreenshot 
+                  tableId="tableToCapture" 
+                  city={city} 
+                  date={date} 
+                  weekday={weekday} 
+                  backendEndpoint="/api/combine-image"
+                  backendData={{ showNonBlue, is12HourFormat }}
+                />
               </div>
 
               <p className={styles.info}>

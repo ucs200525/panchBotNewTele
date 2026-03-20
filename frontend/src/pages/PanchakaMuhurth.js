@@ -79,68 +79,67 @@ const PanchakaMuhurth = () => {
   return (
     <div className="content">
       {/* Hero Section */}
-      <div className="hero-section">
-        <div className="hero-content">
-          <h1 className="hero-title">Panchaka Muhurat</h1>
-          <p className="hero-subtitle">
+      <div className={styles.heroSection}>
+        <div className={styles.heroContent}>
+          <h1 className={styles.heroTitle}>Panchaka Muhurat</h1>
+          <p className={styles.heroSubtitle}>
             Comprehensive daily guide to auspicious and inauspicious time intervals
           </p>
-        </div>
 
-        {/* Hero Form */}
-        <div className="hero-form">
-          <form onSubmit={(e) => {
-            e.preventDefault();
-            getMuhuratData(city, date);
-          }}>
-            <div className="form-group-inline">
-              <div className="input-wrapper">
-                <label className="input-label">Location</label>
-                <CityAutocomplete
-                  value={city}
-                  onSelect={handleCitySelect}
-                  placeholder="Select city..."
-                />
+          <div className={styles.heroForm}>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              getMuhuratData(city, date);
+            }}>
+              <div className={styles.inputGrid}>
+                <div className={styles.inputWrapper}>
+                  <label className={styles.inputLabel}>Location</label>
+                  <CityAutocomplete
+                    value={city}
+                    onSelect={handleCitySelect}
+                    placeholder="Select city..."
+                  />
+                </div>
+
+                <div className={styles.inputWrapper}>
+                  <label className={styles.inputLabel}>Date</label>
+                  <input
+                    type="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    className={styles.dateInput}
+                  />
+                </div>
               </div>
 
-              <div className="input-wrapper">
-                <label className="input-label">Date</label>
-                <input
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="date-input-hero"
-                />
-              </div>
-            </div>
-
-            <div className="form-actions-hero">
-              <button
-                type="submit"
-                className="get-panchang-btn-hero"
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <span className="spinner-small"></span>
-                    Calculating...
-                  </>
-                ) : (
-                  'Find Muhurats'
-                )}
-              </button>
-
-              {allMuhuratData.length > 0 && (
+              <div className={styles.formActions}>
                 <button
-                  type="button"
-                  onClick={toggleShowAllRows}
-                  className="secondary-btn-hero"
+                  type="submit"
+                  className={styles.primaryBtn}
+                  disabled={loading}
                 >
-                  {showAll ? "Filter Good Only" : "Show All Periods"}
+                  {loading ? (
+                    <>
+                      <span className={styles.spinnerSmall}></span>
+                      Calculating...
+                    </>
+                  ) : (
+                    'Find Muhurats'
+                  )}
                 </button>
-              )}
-            </div>
-          </form>
+
+                {allMuhuratData.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={toggleShowAllRows}
+                    className={styles.secondaryBtn}
+                  >
+                    {showAll ? "Filter Good Only" : "Show All Periods"}
+                  </button>
+                )}
+              </div>
+            </form>
+          </div>
         </div>
       </div>
 
@@ -167,9 +166,9 @@ const PanchakaMuhurth = () => {
                 <LivePeriodTracker data={filteredData} selectedDate={date} />
               </div>
 
-              <div id="muhurats-table" className={`table-section ${styles.tableSection}`}>
-                <div className={`floating-section ${styles.floatingSection}`}>
-                  <div className={`table-wrapper ${styles.tableWrapper}`}>
+              <div id="muhurats-table" className={styles.tableSection}>
+                <div className={styles.floatingSection}>
+                  <div className={styles.tableWrapper}>
                     <table>
                       <thead>
                         <tr>
@@ -180,20 +179,20 @@ const PanchakaMuhurth = () => {
                       <tbody>
                         {filteredData.map((item, index) => (
                           <tr key={index} className={getCategoryClass(item.category)}>
-                            <td className="muhurat-cell">
-                              <div className={`muhurat-name ${styles.muhuratName}`}>{item.muhurat}</div>
-                              <span className={`category-badge badge-${item.category.toLowerCase().replace(' ', '-')} ${styles.categoryBadge}`}>
+                            <td className={styles.muhuratCell}>
+                              <div className={styles.muhuratName}>{item.muhurat}</div>
+                              <span className={`${styles.categoryBadge} ${styles['badge-' + item.category.toLowerCase().replace(' ', '-')]}`}>
                                 {item.category}
                               </span>
                             </td>
-                            <td className={`time-cell ${styles.timeCell}`}>
+                            <td className={styles.timeCell}>
                               {item.start && item.end ? (
                                 <>
                                   <div className={styles.timeRange}>{item.start} - {item.end}</div>
                                   {item.duration && <div className={styles.durationSmall}>{item.duration}</div>}
                                 </>
                               ) : (
-                                item.time
+                                <div className={styles.timeRange}>{item.time}</div>
                               )}
                             </td>
                           </tr>
@@ -202,12 +201,12 @@ const PanchakaMuhurth = () => {
                     </table>
                   </div>
 
-                  <div className="table-footer-actions">
+                  <div className={styles.tableFooterActions}>
                     <TableScreenshot
                       tableId="muhurats-table"
                       city={city}
                       date={date}
-                      backendEndpoint="/api/getOldSwissTable-image"
+                      backendEndpoint="/api/getSwissTable-image"
                     />
                   </div>
 
