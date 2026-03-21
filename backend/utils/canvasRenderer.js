@@ -62,9 +62,9 @@ async function renderAstrologyTable(title, city, date, headers, rows, type = 'st
     
     const width = 1200;
     const padding = 60;
-    const headerHeight = 80;
-    const tableHeaderHeight = 50; 
-    const baseRowHeight = 60;
+    const headerHeight = 100;
+    const tableHeaderHeight = 60; 
+    const baseRowHeight = 70;
     const cardWidth = width - (padding * 2);
     
     // Initial measurement
@@ -83,13 +83,23 @@ async function renderAstrologyTable(title, city, date, headers, rows, type = 'st
     const rowInfos = rows.map(row => {
         let maxLines = 1;
         if (type === 'combined') {
-            mctx.font = `13px ${fontFallbacks}`;
-            const weekdayText = row.weekdays ? row.weekdays.map(w => `${w.weekday}${w.time !== '-' ? ` (${w.time})` : ''}`).join(', ') : '-';
-            const wrappedWeekdays = wrapText(mctx, weekdayText, colWidths[4] - 20);
-            mctx.font = `bold 15px ${fontFallbacks}`;
+            mctx.font = `bold 20px ${fontFallbacks}`;
+            let wrappedWeekdays = [];
+            if (row.weekdays && row.weekdays.length > 0) {
+                row.weekdays.forEach(w => {
+                    const text = `- ${w.weekday}${w.time !== '-' ? ` (${w.time})` : ''}`;
+                    const lines = wrapText(mctx, text, colWidths[4] - 20);
+                    wrappedWeekdays.push(...lines);
+                });
+            } else {
+                wrappedWeekdays = ['-'];
+            }
+
+            mctx.font = `bold 20px ${fontFallbacks}`;
             const wrappedDesc = wrapText(mctx, row.description || '', colWidths[2] - 20);
+            
             maxLines = Math.max(wrappedWeekdays.length, wrappedDesc.length, 1);
-            return { row, height: Math.max(baseRowHeight, maxLines * 22 + 30), wrappedWeekdays, wrappedDesc };
+            return { row, height: Math.max(baseRowHeight, maxLines * 30 + 34), wrappedWeekdays, wrappedDesc };
         } else {
             return { row, height: baseRowHeight };
         }
@@ -98,8 +108,13 @@ async function renderAstrologyTable(title, city, date, headers, rows, type = 'st
     const totalTableHeight = rowInfos.reduce((acc, info) => acc + info.height, 0);
     const totalHeight = headerHeight + tableHeaderHeight + totalTableHeight + (padding * 2) + 60;
     
-    const canvas = createCanvas(width, totalHeight);
+    const scale = 2; // Retina scaling for crisp HD text rendering
+    const canvas = createCanvas(width * scale, totalHeight * scale);
     const ctx = canvas.getContext('2d');
+    
+    // Scale everything by 2x
+    ctx.scale(scale, scale);
+    ctx.antialias = 'subpixel'; // High quality font anti-aliasing
 
     // Background
     ctx.fillStyle = '#f1f5f9';
@@ -123,20 +138,20 @@ async function renderAstrologyTable(title, city, date, headers, rows, type = 'st
 
     // Title
     ctx.fillStyle = '#ffffff';
-    ctx.font = `bold 24px ${headerFontFallbacks}`;
+    ctx.font = `bold 32px ${headerFontFallbacks}`;
     ctx.textBaseline = 'middle';
     ctx.fillText(title.toUpperCase(), cardX + 30, cardY + headerHeight/2);
 
     // Location Badge
-    ctx.font = `bold 14px ${fontFallbacks}`;
+    ctx.font = `bold 20px ${fontFallbacks}`;
     let displayDate = date;
     try { if (date.includes('-')) displayDate = new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); } catch(e) {}
     const locationText = `${city} | ${displayDate}`;
     const badgeTextWidth = ctx.measureText(locationText).width;
     ctx.fillStyle = 'rgba(255,255,255,0.15)';
     ctx.beginPath();
-    if (ctx.roundRect) ctx.roundRect(cardX + cardWidth - badgeTextWidth - 60, cardY + headerHeight/2 - 15, badgeTextWidth + 30, 30, 15);
-    else ctx.rect(cardX + cardWidth - badgeTextWidth - 60, cardY + headerHeight/2 - 15, badgeTextWidth + 30, 30);
+    if (ctx.roundRect) ctx.roundRect(cardX + cardWidth - badgeTextWidth - 60, cardY + headerHeight/2 - 20, badgeTextWidth + 30, 40, 20);
+    else ctx.rect(cardX + cardWidth - badgeTextWidth - 60, cardY + headerHeight/2 - 20, badgeTextWidth + 30, 40);
     ctx.fill();
     ctx.fillStyle = '#ffffff';
     ctx.fillText(locationText, cardX + cardWidth - badgeTextWidth - 45, cardY + headerHeight/2);
@@ -144,7 +159,7 @@ async function renderAstrologyTable(title, city, date, headers, rows, type = 'st
     // Table Header
     const tableHeaderY = cardY + headerHeight;
     ctx.fillStyle = '#f8fafc'; ctx.fillRect(cardX, tableHeaderY, cardWidth, tableHeaderHeight);
-    ctx.fillStyle = '#64748b'; ctx.font = `bold 12px ${fontFallbacks}`;
+    ctx.fillStyle = '#64748b'; ctx.font = `bold 18px ${fontFallbacks}`;
     let headX = cardX + 30;
     headers.forEach((h, i) => {
         ctx.fillText(h.toUpperCase(), headX, tableHeaderY + tableHeaderHeight/2);
@@ -159,36 +174,36 @@ async function renderAstrologyTable(title, city, date, headers, rows, type = 'st
         if (rowIndex % 2 === 1) { ctx.fillStyle = '#f8fafc'; ctx.fillRect(cardX, currentY, cardWidth, height); }
         let rowX = cardX + 30; ctx.textBaseline = 'top'; const contentY = currentY + 15;
         if (type === 'combined') {
-            ctx.fillStyle = '#94a3b8'; ctx.font = `600 14px ${fontFallbacks}`;
+            ctx.fillStyle = '#94a3b8'; ctx.font = `bold 20px ${fontFallbacks}`;
             ctx.fillText(row.sno || (rowIndex + 1), rowX, contentY); rowX += colWidths[0];
-            ctx.fillStyle = '#64748b'; ctx.font = `13px ${fontFallbacks}`;
+            ctx.fillStyle = '#64748b'; ctx.font = `bold 20px ${fontFallbacks}`;
             ctx.fillText(row.type || '', rowX, contentY); rowX += colWidths[1];
-            ctx.fillStyle = '#1e293b'; ctx.font = `bold 15px ${fontFallbacks}`;
-            info.wrappedDesc.forEach((line, i) => ctx.fillText(line, rowX, contentY + (i * 22))); rowX += colWidths[2];
-            ctx.fillStyle = '#4f46e5'; ctx.font = `bold 14px ${fontFallbacks}`;
+            ctx.fillStyle = '#1e293b'; ctx.font = `bold 20px ${fontFallbacks}`;
+            info.wrappedDesc.forEach((line, i) => ctx.fillText(line, rowX, contentY + (i * 30))); rowX += colWidths[2];
+            ctx.fillStyle = '#4f46e5'; ctx.font = `bold 20px ${fontFallbacks}`;
             ctx.fillText(row.timeInterval || '', rowX, contentY); rowX += colWidths[3];
-            ctx.fillStyle = '#334155'; ctx.font = `13px ${fontFallbacks}`;
-            info.wrappedWeekdays.forEach((line, i) => ctx.fillText(line, rowX, contentY + (i * 22)));
+            ctx.fillStyle = '#334155'; ctx.font = `bold 20px ${fontFallbacks}`;
+            info.wrappedWeekdays.forEach((line, i) => ctx.fillText(line, rowX, contentY + (i * 30)));
         } else if (type === 'bhargava') {
-            ctx.fillStyle = '#4f46e5'; ctx.font = `bold 16px ${fontFallbacks}`;
+            ctx.fillStyle = '#4f46e5'; ctx.font = `bold 20px ${fontFallbacks}`;
             ctx.fillText(`${row.start1} - ${row.end1}`, rowX, contentY); rowX += colWidths[0];
             const isSpecial = row.isWednesdayColored, isAshubh = row.isColored;
             ctx.fillStyle = isSpecial ? '#f0fdf4' : (isAshubh ? '#fef2f2' : '#ffffff');
-            ctx.beginPath(); ctx.rect(rowX, contentY - 5, 120, 30); ctx.fill();
+            ctx.beginPath(); ctx.rect(rowX, contentY - 8, 140, 36); ctx.fill();
             ctx.fillStyle = isSpecial ? '#166534' : (isAshubh ? '#991b1b' : '#64748b');
-            ctx.font = `bold 12px ${fontFallbacks}`; ctx.fillText((row.weekday || '').toUpperCase(), rowX + 15, contentY + 5); rowX += colWidths[1];
+            ctx.font = `bold 18px ${fontFallbacks}`; ctx.fillText((row.weekday || '').toUpperCase(), rowX + 15, contentY + 2); rowX += colWidths[1];
             ctx.fillStyle = '#4f46e5'; ctx.fillText(`${row.start2} - ${row.end2}`, rowX, contentY); rowX += colWidths[2];
             ctx.fillStyle = '#94a3b8'; ctx.fillText(row.sNo, rowX, contentY);
         } else {
-            ctx.fillStyle = '#1e293b'; ctx.font = `bold 16px ${fontFallbacks}`;
+            ctx.fillStyle = '#1e293b'; ctx.font = `bold 20px ${fontFallbacks}`;
             ctx.fillText(row.muhurat || row.name || '', rowX, contentY); rowX += colWidths[0];
-            ctx.fillStyle = '#6366f1'; ctx.font = `bold 15px ${fontFallbacks}`;
+            ctx.fillStyle = '#6366f1'; ctx.font = `bold 20px ${fontFallbacks}`;
             ctx.fillText(row.time || '', rowX, contentY); rowX += colWidths[1];
             const cat = (row.category || '').toLowerCase(), isGood = cat.includes('good') || cat.includes('rahita'), isRisk = cat.includes('risk');
             ctx.fillStyle = isGood ? '#dcfce7' : (isRisk ? '#fff7ed' : '#fee2e2');
-            ctx.beginPath(); ctx.rect(rowX, contentY - 5, 100, 30); ctx.fill();
+            ctx.beginPath(); ctx.rect(rowX, contentY - 8, 120, 36); ctx.fill();
             ctx.fillStyle = isGood ? '#166534' : (isRisk ? '#9a3412' : '#991b1b');
-            ctx.font = `bold 11px ${fontFallbacks}`; ctx.fillText((row.category || '').toUpperCase(), rowX + 10, contentY + 5);
+            ctx.font = `bold 16px ${fontFallbacks}`; ctx.fillText((row.category || '').toUpperCase(), rowX + 15, contentY + 2);
         }
         ctx.beginPath(); ctx.moveTo(cardX, currentY + height); ctx.lineTo(cardX + cardWidth, currentY + height); ctx.stroke();
         currentY += height;

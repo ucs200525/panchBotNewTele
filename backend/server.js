@@ -12,6 +12,7 @@ const dashaRoutes = require('./routes/dashaRoutes');
 const astronomicalRoutes = require('./routes/astronomicalRoutes');
 const lagnaRoutes = require('./routes/lagnaRoutes');
 const newRoutes = require('./routes/newRoutes');
+const subscriptionRoutes = require('./routes/subscriptionRoutes'); // Import Subscription Routes
 const adminRoutes = require('./routes/adminRoutes'); // Import Admin Routes
 const analyticsRoutes = require('./routes/analyticsRoutes'); // Import Analytics Routes
 const { excludeFromTracking } = require('./middleware/analytics'); // Import Analytics Middleware
@@ -56,6 +57,7 @@ app.use('/api/astronomical', astronomicalRoutes);
 app.use('/api/lagna', lagnaRoutes);
 app.use('/admin', adminRoutes); // Mount Admin API
 app.use('/api/analytics', analyticsRoutes); // Mount Analytics API (admin-protected)
+app.use('/api', subscriptionRoutes); // Mount Subscription API (for bot preferences)
 
 
 // Error Handling Middleware
