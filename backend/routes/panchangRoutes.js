@@ -7,12 +7,11 @@ const fetch = require('node-fetch'); // Make sure to install node-fetch if you h
 const axios = require('axios');
 const cheerio = require('cheerio');
 const path = require('path');
-const chromium = require('@sparticuz/chromium');
-const puppeteerCore = require('puppeteer-core');
-
 const getBrowser = async () => {
     let browser;
     if (process.env.AWS_LAMBDA_FUNCTION_VERSION || process.env.VERCEL || process.env.NODE_ENV === 'production') {
+        const chromium = require('@sparticuz/chromium');
+        const puppeteerCore = require('puppeteer-core');
         browser = await puppeteerCore.launch({
             args: chromium.args,
             defaultViewport: chromium.defaultViewport,
@@ -827,46 +826,34 @@ router.get('/getDrikTable', async (req, res) => {
     const { city, date, goodTimingsOnly, lat, lng, timeZone } = req.query;
     logger.info({ message: 'Route /getDrikTable called', query: req.query });
 
-    // If goodTimingsOnly is not provided, set it to true by default
-    const isGoodTimingsOnly = goodTimingsOnly !== 'false'; // Defaults to true unless 'false' is explicitly passed
+    const isGoodTimingsOnly = goodTimingsOnly !== 'false';
 
     if (!city || !date) {
         return res.status(400).send('City and date are required');
     }
 
     try {
-        // Fetch the complete table
         const table = await createDrikTable(city, date, lat, lng, timeZone);
-
-        // If goodTimingsOnly is true, filter the table to include only "Good" category
         if (isGoodTimingsOnly) {
             const filteredTable = table.filter(row => row.category === 'Good');
-            return res.json(filteredTable); // Send the filtered table
+            return res.json(filteredTable);
         }
-
-        // If goodTimingsOnly is false, return the full table
-        res.json(table); // Send the complete table as a JSON response
+        res.json(table);
     } catch (error) {
         logger.error({ message: 'Route /getDrikTable error', error: error.message });
-        console.error(error);
         res.status(500).send('Error generating table');
     }
 });
 
-
-
 ////////////////////////////////////////////////COMBINE--PANCHAGAM//////////////////////////////////
 
-
-// Helper function to parse time strings (without seconds)
 const parseTime = (timeStr, baseDate, isNextDay = false) => {
     if (!timeStr) return null;
-
     const parts = timeStr.trim().split(" ");
     if (parts.length < 2) return null;
     
     const time = parts[0];
-    const period = parts[1].replace(",", "").toUpperCase(); // Clean the period part
+    const period = parts[1].replace(",", "").toUpperCase();
     const [hours, minutes] = time.split(":").map(Number);
     const date = new Date(baseDate);
 
@@ -877,14 +864,11 @@ const parseTime = (timeStr, baseDate, isNextDay = false) => {
     );
 
     if (isNextDay) date.setDate(date.getDate() + 1);
-
     return date;
 };
 
-// Function to split intervals and handle incomplete intervals
 const splitInterval = (interval, baseDate) => {
     if (!interval || interval.trim() === "") return [null, null];
-
     const [startRaw, endRaw] = interval.split(" to ");
     if (!startRaw || !endRaw) return [null, null];
 
@@ -892,10 +876,8 @@ const splitInterval = (interval, baseDate) => {
         let clean = raw.trim();
         let nextDay = false;
         
-        // Handle format: "Mar 19 , 12:04 AM" or "Mar 19, 12:04 AM"
         if (clean.includes(",")) {
             const parts = clean.split(",");
-            // If the comma is in the middle, the time might be second part
             if (parts[0].trim().match(/^[A-Za-z]+ [0-9]+$/)) {
                  clean = parts[1].trim(); 
             } else {
@@ -904,7 +886,6 @@ const splitInterval = (interval, baseDate) => {
             nextDay = true;
         } 
         
-        // Handle format: "02:28 AM (Mar 19)"
         if (clean.includes("(")) {
             clean = clean.split("(")[0].trim();
             nextDay = true;
@@ -916,17 +897,10 @@ const splitInterval = (interval, baseDate) => {
     return [parsePart(startRaw), parsePart(endRaw)];
 };
 
-// Function to validate time interval
 const validateInterval = (start, end) => {
-    if (!start || !end) {
-        //   console.log("Invalid Interval:", start, end);
-        return false;
-    }
-    // console.log("Valid Interval:", start, end);
-    return true;
+    return !!(start && end);
 };
 
-// Function to process Muhurat and Panchangam data
 const processMuhuratAndPanchangam = (muhuratData, panchangamData, baseDate) => {
     logger.info({ message: 'processMuhuratAndPanchangam called', muhuratRows: muhuratData.length, panchangamRows: panchangamData.length });
     const mergedData = [];
@@ -944,15 +918,12 @@ const processMuhuratAndPanchangam = (muhuratData, panchangamData, baseDate) => {
     };
 
     muhuratData.forEach((muhuratItem) => {
-        // Use normalized time from Muhurat item if available (start/end we created in createDrikTable)
         const [muhuratStart, muhuratEnd] = splitInterval(muhuratItem.time, baseDate);
         if (muhuratStart && muhuratEnd && validateInterval(muhuratStart, muhuratEnd)) {
             const weekdaysArray = [];
 
             panchangamData.forEach((panchangamItem) => {
-                // Check both timeInterval1 and timeInterval2
                 const intervals = [panchangamItem.timeInterval1, panchangamItem.timeInterval2].filter(t => t);
-                
                 intervals.forEach(timeInterval => {
                     const [start, end] = splitInterval(timeInterval, baseDate);
                     if (start && end && validateInterval(start, end)) {
@@ -983,34 +954,27 @@ const processMuhuratAndPanchangam = (muhuratData, panchangamData, baseDate) => {
     return mergedData;
 };
 
-// API endpoint to fetch combined data
-// API endpoint to fetch combined data
 router.post("/combine", (req, res) => {
     logger.info({ message: 'Route /combine called', city: req.body.city, date: req.body.date });
     const { muhuratData, panchangamData, city, date } = req.body;
 
     if (!muhuratData || !panchangamData || !city || !date) {
-        logger.warn('Route /combine missing data');
         return res.status(400).json({ error: "Invalid input data" });
     }
 
     const baseDate = new Date(date);
     const finalData = processMuhuratAndPanchangam(muhuratData, panchangamData, baseDate);
-
     res.json(finalData);
 });
 
-
-
-// Helper to convert YYYY-MM-DD to DD/MM/YYYY
 function convertToDDMMYYYY(dateString) {
     const [year, month, day] = dateString.split("-");
-    return `${day}/${month}/${year}`;
+    return `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year}`;
 }
 
 router.post("/combine-image", async (req, res) => {
     logger.info({ message: 'Route /combine-image called', body: req.body });
-    let { city, date, showNonBlue, is12HourFormat } = req.body;
+    let { city, date, showNonBlue, is12HourFormat, lat, lng, timeZone } = req.body;
 
     if (!city || !date) {
         return res.status(400).json({ error: "City and Date are required" });
@@ -1021,187 +985,203 @@ router.post("/combine-image", async (req, res) => {
 
     try {
         const dateDDMMYYYY = convertToDDMMYYYY(date);
-
-        // 1. Fetch Drik Data (requires DD/MM/YYYY)
-        const fullMuhuratData = await createDrikTable(city, dateDDMMYYYY);
-        // Filter Drik Data based on showNonBlue (equivalent to goodTimingsOnly)
+        const fullMuhuratData = await createDrikTable(city, dateDDMMYYYY, lat, lng, timeZone);
         const muhuratData = showNonBlue ? fullMuhuratData.filter(row => row.category === 'Good') : fullMuhuratData;
-
-        // 2. Fetch Panchangam Data (requires YYYY-MM-DD)
-        const panchangamData = await createBharagvTable(city, date, showNonBlue, is12HourFormat);
+        const panchangamData = await createBharagvTable(city, date, showNonBlue, is12HourFormat, lat, lng, timeZone);
 
         const baseDate = new Date(date);
         const finalData = processMuhuratAndPanchangam(muhuratData, panchangamData, baseDate);
 
-        // Generate HTML content with improved styling
         const htmlContent = `
             <!DOCTYPE html>
             <html>
             <head>
+                <meta charset="UTF-8">
                 <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Outfit:wght@400;600;700;800&display=swap');
                     body {
-                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                        font-family: 'Inter', system-ui, -apple-system, sans-serif;
                         padding: 40px;
-                        background: #f8f9fa;
-                        color: #333;
-                        line-height: 1.6;
+                        background: #f1f5f9;
+                        margin: 0;
+                        color: #1e293b;
                     }
                     .container {
-                        max-width: 1200px;
+                        max-width: 1100px;
                         margin: 0 auto;
                         background: #ffffff;
-                        border-radius: 8px;
-                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                        padding: 30px;
+                        border-radius: 24px;
+                        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+                        overflow: hidden;
                     }
-                    .header {
-                        text-align: center;
-                        margin-bottom: 30px;
-                        padding-bottom: 20px;
-                        border-bottom: 2px solid #e9ecef;
+                    .branding {
+                        background: #1e293b;
+                        color: white;
+                        padding: 24px 32px;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
                     }
-                    .header h2 {
-                        color: #2c3e50;
-                        font-size: 28px;
-                        margin-bottom: 10px;
+                    .branding-title {
+                        font-family: 'Outfit', sans-serif;
+                        font-size: 22px;
+                        font-weight: 800;
+                        letter-spacing: 1px;
+                        text-transform: uppercase;
                     }
-                    .header h3 {
-                        color: #6c757d;
-                        font-size: 20px;
-                        font-weight: normal;
+                    .branding-info {
+                        display: flex;
+                        align-items: center;
+                        gap: 16px;
+                    }
+                    .location-badge {
+                        background: rgba(255,255,255,0.15);
+                        padding: 6px 14px;
+                        border-radius: 100px;
+                        font-size: 14px;
+                        font-weight: 700;
+                    }
+                    .date-text {
+                        font-size: 14px;
+                        opacity: 0.8;
+                    }
+                    .table-content {
+                        padding: 32px;
                     }
                     table {
                         width: 100%;
-                        border-collapse: separate;
-                        border-spacing: 0;
-                        margin-bottom: 30px;
-                        border-radius: 6px;
-                        overflow: hidden;
-                    }
-                    th, td {
-                        border: 1px solid #dee2e6;
-                        padding: 15px;
-                        text-align: left;
-                        vertical-align: top;
+                        border-collapse: collapse;
+                        font-size: 14px;
                     }
                     th {
-                        background-color: #4a90e2;
-                        color: white;
-                        font-weight: 600;
+                        background: #f8fafc;
+                        color: #64748b;
+                        font-weight: 700;
+                        font-size: 11px;
                         text-transform: uppercase;
-                        font-size: 14px;
-                        letter-spacing: 0.5px;
+                        letter-spacing: 0.05em;
+                        padding: 16px 20px;
+                        text-align: left;
+                        border-bottom: 2px solid #e2e8f0;
                     }
-                    tr:nth-child(even) {
-                        background-color: #f8f9fa;
+                    td {
+                        padding: 16px 20px;
+                        border-bottom: 1px solid #f1f5f9;
+                        color: #1e293b;
+                        vertical-align: top;
                     }
-                    tr:hover {
-                        background-color: #f2f4f6;
+                    .muhurat-cell {
+                        font-weight: 800;
+                        color: #1e293b;
+                        font-size: 15px;
+                    }
+                    .time-cell {
+                        font-weight: 700;
+                        color: #4f46e5;
+                        font-family: 'Inter', sans-serif;
                     }
                     .weekday-list {
                         list-style: none;
                         padding: 0;
                         margin: 0;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 6px;
                     }
-                    .weekday-item {
-                        margin: 8px 0;
-                        padding: 6px 10px;
-                        background: #f8f9fa;
-                        border-radius: 4px;
-                        font-size: 14px;
-                    }
-                    .weekday-item:hover {
-                        background: #e9ecef;
-                    }
-                    td:first-child {
+                    .weekday-badge {
+                        display: inline-block;
+                        padding: 4px 10px;
+                        background: #f1f5f9;
+                        border-radius: 6px;
+                        font-size: 12px;
                         font-weight: 600;
-                        color: #495057;
+                        color: #475569;
                     }
-                    td:nth-child(2) {
-                        color: #6c757d;
+                    .weekday-time {
+                        font-weight: 700;
+                        color: #6366f1;
+                        margin-left: 6px;
                     }
-                    td:nth-child(3) {
-                        color: #2c3e50;
-                    }
-                    td:nth-child(4) {
-                        color: #0056b3;
-                        font-family: monospace;
+                    .watermark {
+                        text-align: center;
+                        padding: 16px;
+                        color: #94a3b8;
+                        font-size: 12px;
+                        font-weight: 600;
+                        background: #f8fafc;
+                        letter-spacing: 1px;
                     }
                 </style>
             </head>
             <body>
                 <div class="container">
-                    <div class="header">
-                        <h2>Combined Muhurat and Panchangam Data</h2>
-                        <h3>${city} - ${date}</h3>
+                    <div class="branding">
+                        <div class="branding-title">Combined Muhurat & Panchanga</div>
+                        <div class="branding-info">
+                            <span class="location-badge">${city}</span>
+                            <span class="date-text">${date}</span>
+                        </div>
                     </div>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>No.</th>
-                                <th>Type</th>
-                                <th>Description</th>
-                                <th>Time Interval</th>
-                                <th>Weekdays</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${finalData.map(item => `
+                    <div class="table-content">
+                        <table>
+                            <thead>
                                 <tr>
-                                    <td>${item.sno}</td>
-                                    <td>${item.type}</td>
-                                    <td>${item.description}</td>
-                                    <td>${item.timeInterval}</td>
-                                    <td>
-                                        <ul class="weekday-list">
-                                            ${item.weekdays.map(day => `
-                                                <li class="weekday-item">${day.weekday} ${day.time !== '-' ? `(${day.time})` : ''}</li>
-                                            `).join('')}
-                                        </ul>
-                                    </td>
+                                    <th width="5%">#</th>
+                                    <th width="15%">Type</th>
+                                    <th width="30%">Description</th>
+                                    <th width="20%">Muhurat Interval</th>
+                                    <th width="30%">Overlapping Periods</th>
                                 </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                ${finalData.map(item => `
+                                    <tr>
+                                        <td style="color: #94a3b8; font-weight: 600;">${item.sno}</td>
+                                        <td><span class="weekday-badge" style="background:#e0e7ff; color:#4338ca;">${item.type}</span></td>
+                                        <td class="muhurat-cell">${item.description}</td>
+                                        <td class="time-cell">${item.timeInterval}</td>
+                                        <td>
+                                            <div class="weekday-list">
+                                                ${item.weekdays.map(day => `
+                                                    <div>
+                                                        <span class="weekday-badge">${day.weekday}</span>
+                                                        ${day.time !== '-' ? `<span class="weekday-time">${day.time}</span>` : ''}
+                                                    </div>
+                                                `).join('')}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="watermark">GENERATED BY PANCHANGAM.AI</div>
                 </div>
             </body>
             </html>
         `;
 
-        // Launch puppeteer
         const browser = await getBrowser();
         const page = await browser.newPage();
-
-        // Set content and wait for it to load
         await page.setContent(htmlContent);
-        await page.setViewport({ width: 1200, height: 800 });
+        await page.setViewport({ width: 1080, height: 1200, deviceScaleFactor: 2 });
+        await page.evaluateHandle('document.fonts.ready');
+        await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 500)));
 
-        // Wait for any dynamic content to load
-        await page.evaluate(() => {
-            return new Promise(resolve => {
-                setTimeout(resolve, 1000);
-            });
+        const contentHeight = await page.evaluate(() => {
+            const container = document.querySelector('.container');
+            return container ? container.offsetHeight + 80 : document.body.scrollHeight;
         });
 
-        // Take screenshot
-        const screenshot = await page.screenshot({
-            fullPage: true,
-            type: 'png',
-            encoding: 'binary'
-        });
-
-        // Close browser
+        await page.setViewport({ width: 1080, height: contentHeight, deviceScaleFactor: 2 });
+        const screenshot = await page.screenshot({ fullPage: false, type: 'png', encoding: 'binary' });
         await browser.close();
 
-        // Set response headers
         res.setHeader('Content-Type', 'image/png');
-        res.setHeader('Content-Disposition', `attachment; filename=combined-data-${city}-${date}.png`);
-
-        // Send the image
+        res.setHeader('Content-Disposition', `attachment; filename=combined-${city}-${date}.png`);
         res.send(screenshot);
-
     } catch (error) {
-        console.error("Error generating image:", error);
+        logger.error({ message: 'Route /combine-image error', error: error.message });
         res.status(500).json({ error: "Failed to generate image" });
     }
 });
@@ -1356,13 +1336,13 @@ router.post("/getDrikTable-image", async (req, res) => {
 
 router.post("/getBharagvTable-image", async (req, res) => {
     logger.info({ message: 'Route /getBharagvTable-image called', body: req.body });
-    const { city, date, showNonBlue, is12HourFormat } = req.body;
+    const { city, date, showNonBlue, is12HourFormat, lat, lng, timeZone } = req.body;
 
     if (!city || !date) {
         return res.status(400).send('City and date are required');
     }
     try {
-        const table = await createBharagvTable(city, date, showNonBlue === 'true', is12HourFormat);
+        const table = await createBharagvTable(city, date, showNonBlue, is12HourFormat, lat, lng, timeZone);
 
         // Generate HTML content
         const htmlContent = `
@@ -1548,12 +1528,12 @@ router.post("/getBharagvTable-image", async (req, res) => {
 
 router.post("/getSwissTable-image", async (req, res) => {
     logger.info({ message: 'Route /getSwissTable-image called', body: req.body });
-    const { city, date } = req.body;
+    const { city, date, lat, lng, timeZone } = req.body;
 
     if (!city || !date) return res.status(400).send('City and date are required');
 
     try {
-        const table = await fetchmuhurat(city, date);
+        const table = await fetchmuhurat(city, date, lat, lng, timeZone);
 
         const htmlContent = `
             <!DOCTYPE html>

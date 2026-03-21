@@ -12,142 +12,202 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            color: #fff;
+            color: #f1f5f9;
         }
 
         .container {
             text-align: center;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
             padding: 3rem;
-            border-radius: 20px;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            max-width: 600px;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 700px;
+            width: 90%;
         }
 
         h1 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            font-size: 2.8rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
         }
 
         .emoji {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            animation: bounce 2s infinite;
+            font-size: 4.5rem;
+            margin-bottom: 1.5rem;
+            filter: drop-shadow(0 0 20px rgba(96, 165, 250, 0.5));
+            animation: float 3s ease-in-out infinite;
         }
 
-        @keyframes bounce {
-            0%, 100% {
-                transform: translateY(0);
-            }
-            50% {
-                transform: translateY(-20px);
-            }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
         }
 
         p {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             margin-bottom: 1.5rem;
             line-height: 1.6;
+            color: #94a3b8;
         }
 
         .status {
-            display: inline-block;
-            background: rgba(72, 187, 120, 0.3);
-            padding: 0.5rem 1.5rem;
-            border-radius: 50px;
-            font-weight: bold;
-            margin-top: 1rem;
+            display: inline-flex;
+            align-items: center;
+            background: rgba(34, 197, 94, 0.1);
+            padding: 0.6rem 1.4rem;
+            border-radius: 99px;
+            font-weight: 600;
+            color: #4ade80;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(34, 197, 94, 0.2);
         }
 
         .status::before {
-            content: "●";
-            color: #48bb78;
-            margin-right: 0.5rem;
+            content: "";
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+            margin-right: 10px;
+            box-shadow: 0 0 10px #22c55e;
             animation: pulse 2s infinite;
         }
 
         @keyframes pulse {
-            0%, 100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.5;
-            }
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
         }
 
         .info {
-            margin-top: 2rem;
-            padding: 1.5rem;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
+            text-align: left;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 2rem;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .info h2 {
-            margin-bottom: 1rem;
-            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 1.4rem;
+            color: #f8fafc;
+            border-bottom: 2px solid rgba(96, 165, 250, 0.2);
+            padding-bottom: 0.5rem;
+            display: inline-block;
         }
 
-        .commands {
-            text-align: left;
-            list-style: none;
-            margin-top: 1rem;
+        .command-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
         }
 
-        .commands li {
-            padding: 0.5rem;
-            margin: 0.5rem 0;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            font-family: 'Courier New', monospace;
+        .command-item {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 0.8rem 1rem;
+            border-radius: 12px;
+            transition: all 0.2s;
+            border: 1px solid rgba(255, 255, 255, 0.02);
         }
 
-        .commands li strong {
-            color: #ffd700;
+        .command-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+            transform: translateX(5px);
+            border-color: rgba(96, 165, 250, 0.3);
         }
 
-        a {
-            color: #ffd700;
-            text-decoration: none;
+        .command-code {
+            color: #60a5fa;
+            font-family: 'Fira Code', 'Courier New', monospace;
             font-weight: bold;
+            margin-right: 12px;
+            min-width: 85px;
         }
 
-        a:hover {
-            text-decoration: underline;
+        .command-desc {
+            font-size: 0.95rem;
+            color: #cbd5e1;
+        }
+
+        .footer {
+            margin-top: 2.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        code {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            color: #e2e8f0;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="emoji">🤖</div>
-        <h1>Panchang Telegram Bot</h1>
-        <p>Your bot is up and running!</p>
-        <div class="status">Status: Active</div>
+        <div class="emoji">🕉️</div>
+        <h1>Panchang Bot</h1>
+        <p>Premium Astrological Insights via Telegram</p>
+        
+        <div class="status">Bot Engine Active</div>
         
         <div class="info">
-            <h2>How to Use</h2>
-            <p>Open Telegram and search for your bot, then start chatting!</p>
+            <h2>Available Commands</h2>
             
-            <ul class="commands">
-                <li><strong>/start</strong> - Welcome message</li>
-                <li><strong>/combined</strong> - Generate combined Panchang image</li>
-                <li><strong>/drik</strong> - Generate Drik Panchang table</li>
-                <li><strong>/bhargav</strong> - Generate Bhargav Panchangam table</li>
-                <li><strong>/help</strong> - Show available commands</li>
-            </ul>
+            <div class="command-grid">
+                <div class="command-item">
+                    <span class="command-code">/gt</span>
+                    <span class="command-desc">Today Timings (Bhargava)</span>
+                </div>
+                <div class="command-item">
+                    <span class="command-code">/dgt</span>
+                    <span class="command-desc">Daily Timings (Drik)</span>
+                </div>
+                <div class="command-item">
+                    <span class="command-code">/cgt</span>
+                    <span class="command-desc">Combined Timings</span>
+                </div>
+                <div class="command-item">
+                    <span class="command-code">/subscribe</span>
+                    <span class="command-desc">Get Daily Live Updates</span>
+                </div>
+                <div class="command-item">
+                    <span class="command-code">/status</span>
+                    <span class="command-desc">Subscription Status</span>
+                </div>
+                <div class="command-item">
+                    <span class="command-code">/stop</span>
+                    <span class="command-desc">Unsubscribe</span>
+                </div>
+                <div class="command-item">
+                    <span class="command-code">/help</span>
+                    <span class="command-desc">Show All Commands</span>
+                </div>
+                <div class="command-item">
+                    <span class="command-code">/cancel</span>
+                    <span class="command-desc">Cancel Current Action</span>
+                </div>
+            </div>
         </div>
         
-        <p style="margin-top: 2rem; font-size: 0.9rem; opacity: 0.8;">
-            This is a webhook endpoint. The bot communicates via <code>/api/webhook</code>
-        </p>
+        <div class="footer">
+            Webhook endpoint enabled at <code>/api/webhook</code>. Connected to production backend.
+        </div>
     </div>
 </body>
 </html>

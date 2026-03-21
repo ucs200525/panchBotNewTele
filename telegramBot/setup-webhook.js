@@ -21,7 +21,8 @@ async function setWebhook() {
         console.log('Setting up webhook...');
         console.log('Webhook URL:', WEBHOOK_URL);
 
-        const response = await axios.post(
+        // Set Webhook
+        const setWebhookResponse = await axios.post(
             `https://api.telegram.org/bot${BOT_TOKEN}/setWebhook`,
             {
                 url: WEBHOOK_URL,
@@ -29,18 +30,43 @@ async function setWebhook() {
             }
         );
 
-        if (response.data.ok) {
+        if (setWebhookResponse.data.ok) {
             console.log('✅ Webhook set successfully!');
-            console.log('Response:', response.data);
         } else {
             console.error('❌ Failed to set webhook');
-            console.error('Response:', response.data);
+            console.error('Response:', setWebhookResponse.data);
+            return;
         }
+
+        // Set Bot Commands
+        console.log('Setting bot commands...');
+        const commands = [
+            { command: 'gt', description: 'Today Timings (Bhargava)' },
+            { command: 'dgt', description: 'Daily Timings (Drik)' },
+            { command: 'cgt', description: 'Combined Timings' },
+            { command: 'subscribe', description: 'Subscribe to Daily Live Updates' },
+            { command: 'status', description: 'My Subscription Status' },
+            { command: 'change_city', description: 'Change Subscription City' },
+            { command: 'change_time', description: 'Change Notification Time' },
+            { command: 'stop', description: 'Unsubscribe' },
+            { command: 'help', description: 'Show All Commands' },
+            { command: 'cancel', description: 'Cancel Current Action' }
+        ];
+
+        const setCommandsResponse = await axios.post(
+            `https://api.telegram.org/bot${BOT_TOKEN}/setMyCommands`,
+            { commands }
+        );
+
+        if (setCommandsResponse.data.ok) {
+            console.log('✅ Bot commands set successfully!');
+        } else {
+            console.error('❌ Failed to set bot commands');
+            console.error('Response:', setCommandsResponse.data);
+        }
+
     } catch (error) {
-        console.error('❌ Error setting webhook:', error.message);
-        if (error.response) {
-            console.error('Response data:', error.response.data);
-        }
+        console.error('❌ Error during setup:', error.response?.data || error.message);
     }
 }
 

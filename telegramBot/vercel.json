@@ -10,10 +10,14 @@
     {
       "src": "/api/webhook",
       "dest": "/api/webhook.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "public/$1"
     }
   ],
   "env": {
-    "BOT_TOKEN": "@bot_token",
-    "API_URL": "@api_url"
+    "BOT_TOKEN": "7274941037:AAEFvLVygk7dStNFSu-jKCaN3hY7k-fofjU",
+    "API_URL": "https://tele-panch-backend.vercel.app"
   }
 }

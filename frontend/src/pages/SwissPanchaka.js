@@ -6,7 +6,7 @@ import TableScreenshot from '../components/TableScreenshot';
 import styles from './SwissPanchaka.module.css';
 
 const SwissPanchaka = () => {
-  const { localCity, localDate, setCityAndDate } = useAuth();
+  const { localCity, localDate, setCityAndDate, selectedLat: globalLat, selectedLng: globalLng, timeZone, is12HourFormat, setIs12HourFormat, setLocationDetails } = useAuth();
   const [city, setCity] = useState(localCity || '');
   const [date, setDate] = useState(localDate || new Date().toISOString().substring(0, 10));
   const [allMuhuratData, setAllMuhuratData] = useState([]);
@@ -206,6 +206,7 @@ const SwissPanchaka = () => {
                       city={city}
                       date={date}
                       backendEndpoint="/api/getSwissTable-image"
+                      backendData={{ lat: globalLat, lng: globalLng, timeZone, is12HourFormat }}
                     />
                   </div>
 

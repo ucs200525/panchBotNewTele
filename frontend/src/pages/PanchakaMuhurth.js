@@ -3,10 +3,11 @@ import { useAuth } from '../context/AuthContext';
 import { CityAutocomplete } from '../components/forms';
 import LivePeriodTracker from '../components/LivePeriodTracker';
 import TableScreenshot from '../components/TableScreenshot';
-import styles from './PanchakaMuhurth.module.css';
+import styles from './Combine.module.css'; // Let's use the same clean styles as Combine
+import './hero-styles.css';
 
 const PanchakaMuhurth = () => {
-  const { localCity, localDate, setCityAndDate } = useAuth();
+  const { localCity, localDate, setCityAndDate, selectedLat, selectedLng, timeZone } = useAuth();
   const [city, setCity] = useState(localCity || '');
   const [date, setDate] = useState(localDate || new Date().toISOString().substring(0, 10));
   const [allMuhuratData, setAllMuhuratData] = useState([]);
@@ -22,7 +23,6 @@ const PanchakaMuhurth = () => {
   useEffect(() => {
     sessionStorage.setItem('filteredData', JSON.stringify(filteredData));
   }, [filteredData]);
-
 
   const getMuhuratData = async (cityName, dateValue) => {
     if (!cityName || !dateValue) return;
@@ -63,17 +63,6 @@ const PanchakaMuhurth = () => {
   const handleCitySelect = (cityObj) => {
     setCity(cityObj.name);
     localStorage.setItem('selectedCity', cityObj.name);
-  };
-
-  // Get category color class
-  const getCategoryClass = (category) => {
-    const cat = category.toLowerCase();
-    if (cat.includes('good')) return 'cat-good';
-    if (cat.includes('danger')) return 'cat-danger';
-    if (cat.includes('risk')) return 'cat-risk';
-    if (cat.includes('bad') || cat.includes('disease')) return 'cat-bad';
-    if (cat.includes('evil')) return 'cat-evil';
-    return '';
   };
 
   return (
@@ -144,83 +133,84 @@ const PanchakaMuhurth = () => {
         </div>
       </div>
 
-      <div className="results-section">
+      <div className={`results-section ${styles.panchangResults}`}>
         {error && (
           <div className="error-box-hero">
             {error}
           </div>
         )}
 
-        {
-          loading && (
-            <div className="loading-spinner">
-              <div className="spinner"></div>
-            </div>
-          )
-        }
+        {loading && (
+          <div className="loading-spinner">
+            <div className="spinner"></div>
+          </div>
+        )}
 
-        {/* Live Period Tracker */}
-        {
-          filteredData && filteredData.length > 0 && (
-            <div className="results-section">
-              <div className="floating-section">
-                <LivePeriodTracker data={filteredData} selectedDate={date} />
-              </div>
+        {filteredData && filteredData.length > 0 && (
+          <div id="tableToCapture">
+            <LivePeriodTracker data={filteredData} selectedDate={date} />
 
-              <div id="muhurats-table" className={`table-section ${styles.tableSection}`}>
-                <div className={`floating-section ${styles.floatingSection}`}>
-                  <div className={`table-wrapper ${styles.tableWrapper}`}>
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>Muhurat / Category</th>
-                          <th>Timings & Interval</th>
+            <div className={styles.panchangSection}>
+              <h2 className={styles.sectionHeader}>Muhurat Report</h2>
+              <div className={styles.tableWrapper}>
+                <table className={styles.panchangTable}>
+                  <thead>
+                    <tr>
+                      <th>Muhurat / Category</th>
+                      <th>Timings & Interval</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredData.map((item, index) => {
+                      const catLower = item.category.toLowerCase();
+                      const isGood = catLower.includes('good') || catLower.includes('rahitam');
+                      const isDanger = catLower.includes('danger') || catLower.includes('evil') || catLower.includes('bad') || catLower.includes('disease');
+                      
+                      let accentColor = '#3b82f6';
+                      if (isGood) accentColor = '#1aae75';
+                      if (isDanger) accentColor = '#ef4444';
+
+                      return (
+                        <tr key={index}>
+                          <td style={{ fontWeight: '700', color: accentColor }}>
+                            {item.muhurat} <span className="toText">({item.category})</span>
+                          </td>
+                          <td className={styles.timeCell}>
+                            {item.start && item.end ? (
+                              <>
+                                <div className={styles.timeRange} style={{ color: accentColor }}>
+                                  {item.start} - {item.end}
+                                </div>
+                              </>
+                            ) : (
+                              <div className={styles.timeRange} style={{ color: accentColor }}>{item.time}</div>
+                            )}
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {filteredData.map((item, index) => (
-                          <tr key={index} className={getCategoryClass(item.category)}>
-                            <td className="muhurat-cell">
-                              <div className={`muhurat-name ${styles.muhuratName}`}>{item.muhurat}</div>
-                              <span className={`category-badge badge-${item.category.toLowerCase().replace(' ', '-')} ${styles.categoryBadge}`}>
-                                {item.category}
-                              </span>
-                            </td>
-                            <td className={`time-cell ${styles.timeCell}`}>
-                              {item.start && item.end ? (
-                                <>
-                                  <div className={styles.timeRange}>{item.start} - {item.end}</div>
-                                  {item.duration && <div className={styles.durationSmall}>{item.duration}</div>}
-                                </>
-                              ) : (
-                                item.time
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  <div className="table-footer-actions">
-                    <TableScreenshot
-                      tableId="muhurats-table"
-                      city={city}
-                      date={date}
-                      backendEndpoint="/api/getOldSwissTable-image"
-                    />
-                  </div>
-
-                  <div className="information">
-                    <p className="info">Panchaka Muhurat considers five aspects of the time to determine its quality. Choose "Good" periods for important ventures and avoid "Danger" or "Risk" periods when possible.</p>
-                  </div>
-                </div>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
+
+              <div className="table-footer-actions">
+                <TableScreenshot
+                  tableId="tableToCapture"
+                  city={city}
+                  date={date}
+                  backendEndpoint="/api/getOldSwissTable-image"
+                  backendData={{ lat: selectedLat, lng: selectedLng, timeZone }}
+                />
+              </div>
+
+              <p className={styles.info}>
+                Panchaka Muhurat considers five aspects of the time to determine its quality. Choose "Good" periods for important ventures and avoid "Danger" or "Risk" periods when possible.
+              </p>
             </div>
-          )
-        }
-      </div >
-    </div >
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 
