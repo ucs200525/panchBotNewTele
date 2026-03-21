@@ -241,7 +241,7 @@ const CombinePage = () => {
                   date={date} 
                   weekday={weekday} 
                   backendEndpoint="/api/combine-image"
-                  backendData={{ showNonBlue, is12HourFormat }}
+                  backendData={{ showNonBlue, is12HourFormat, lat: selectedLat, lng: selectedLng, timeZone }}
                 />
               </div>
 

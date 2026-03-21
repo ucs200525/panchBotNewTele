@@ -1010,7 +1010,7 @@ function convertToDDMMYYYY(dateString) {
 
 router.post("/combine-image", async (req, res) => {
     logger.info({ message: 'Route /combine-image called', body: req.body });
-    let { city, date, showNonBlue, is12HourFormat } = req.body;
+    let { city, date, showNonBlue, is12HourFormat, lat, lng, timeZone } = req.body;
 
     if (!city || !date) {
         return res.status(400).json({ error: "City and Date are required" });
@@ -1023,12 +1023,12 @@ router.post("/combine-image", async (req, res) => {
         const dateDDMMYYYY = convertToDDMMYYYY(date);
 
         // 1. Fetch Drik Data (requires DD/MM/YYYY)
-        const fullMuhuratData = await createDrikTable(city, dateDDMMYYYY);
+        const fullMuhuratData = await createDrikTable(city, dateDDMMYYYY, lat, lng, timeZone);
         // Filter Drik Data based on showNonBlue (equivalent to goodTimingsOnly)
         const muhuratData = showNonBlue ? fullMuhuratData.filter(row => row.category === 'Good') : fullMuhuratData;
 
         // 2. Fetch Panchangam Data (requires YYYY-MM-DD)
-        const panchangamData = await createBharagvTable(city, date, showNonBlue, is12HourFormat);
+        const panchangamData = await createBharagvTable(city, date, showNonBlue, is12HourFormat, lat, lng, timeZone);
 
         const baseDate = new Date(date);
         const finalData = processMuhuratAndPanchangam(muhuratData, panchangamData, baseDate);
@@ -1356,13 +1356,13 @@ router.post("/getDrikTable-image", async (req, res) => {
 
 router.post("/getBharagvTable-image", async (req, res) => {
     logger.info({ message: 'Route /getBharagvTable-image called', body: req.body });
-    const { city, date, showNonBlue, is12HourFormat } = req.body;
+    const { city, date, showNonBlue, is12HourFormat, lat, lng, timeZone } = req.body;
 
     if (!city || !date) {
         return res.status(400).send('City and date are required');
     }
     try {
-        const table = await createBharagvTable(city, date, showNonBlue === 'true', is12HourFormat);
+        const table = await createBharagvTable(city, date, showNonBlue === 'true', is12HourFormat, lat, lng, timeZone);
 
         // Generate HTML content
         const htmlContent = `
@@ -1548,12 +1548,12 @@ router.post("/getBharagvTable-image", async (req, res) => {
 
 router.post("/getSwissTable-image", async (req, res) => {
     logger.info({ message: 'Route /getSwissTable-image called', body: req.body });
-    const { city, date } = req.body;
+    const { city, date, lat, lng, timeZone } = req.body;
 
     if (!city || !date) return res.status(400).send('City and date are required');
 
     try {
-        const table = await fetchmuhurat(city, date);
+        const table = await fetchmuhurat(city, date, lat, lng, timeZone);
 
         const htmlContent = `
             <!DOCTYPE html>

@@ -3,10 +3,11 @@ import { useAuth } from '../context/AuthContext';
 import { CityAutocomplete } from '../components/forms';
 import LivePeriodTracker from '../components/LivePeriodTracker';
 import TableScreenshot from '../components/TableScreenshot';
-import styles from './PanchakaMuhurth.module.css';
+import styles from './Combine.module.css'; // Let's use the same clean styles as Combine
+import './hero-styles.css';
 
 const PanchakaMuhurth = () => {
-  const { localCity, localDate, setCityAndDate } = useAuth();
+  const { localCity, localDate, setCityAndDate, selectedLat, selectedLng, timeZone } = useAuth();
   const [city, setCity] = useState(localCity || '');
   const [date, setDate] = useState(localDate || new Date().toISOString().substring(0, 10));
   const [allMuhuratData, setAllMuhuratData] = useState([]);
@@ -22,7 +23,6 @@ const PanchakaMuhurth = () => {
   useEffect(() => {
     sessionStorage.setItem('filteredData', JSON.stringify(filteredData));
   }, [filteredData]);
-
 
   const getMuhuratData = async (cityName, dateValue) => {
     if (!cityName || !dateValue) return;
@@ -65,161 +65,154 @@ const PanchakaMuhurth = () => {
     localStorage.setItem('selectedCity', cityObj.name);
   };
 
-  // Get category color class
-  const getCategoryClass = (category) => {
-    const cat = category.toLowerCase();
-    if (cat.includes('good')) return 'cat-good';
-    if (cat.includes('danger')) return 'cat-danger';
-    if (cat.includes('risk')) return 'cat-risk';
-    if (cat.includes('bad') || cat.includes('disease')) return 'cat-bad';
-    if (cat.includes('evil')) return 'cat-evil';
-    return '';
-  };
-
   return (
     <div className="content">
       {/* Hero Section */}
-      <div className={styles.heroSection}>
-        <div className={styles.heroContent}>
-          <h1 className={styles.heroTitle}>Panchaka Muhurat</h1>
-          <p className={styles.heroSubtitle}>
+      <div className="hero-section">
+        <div className="hero-content">
+          <h1 className="hero-title">Panchaka Muhurat</h1>
+          <p className="hero-subtitle">
             Comprehensive daily guide to auspicious and inauspicious time intervals
           </p>
+        </div>
 
-          <div className={styles.heroForm}>
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              getMuhuratData(city, date);
-            }}>
-              <div className={styles.inputGrid}>
-                <div className={styles.inputWrapper}>
-                  <label className={styles.inputLabel}>Location</label>
-                  <CityAutocomplete
-                    value={city}
-                    onSelect={handleCitySelect}
-                    placeholder="Select city..."
-                  />
-                </div>
-
-                <div className={styles.inputWrapper}>
-                  <label className={styles.inputLabel}>Date</label>
-                  <input
-                    type="date"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    className={styles.dateInput}
-                  />
-                </div>
+        {/* Hero Form */}
+        <div className="hero-form">
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            getMuhuratData(city, date);
+          }}>
+            <div className="form-group-inline">
+              <div className="input-wrapper">
+                <label className="input-label">Location</label>
+                <CityAutocomplete
+                  value={city}
+                  onSelect={handleCitySelect}
+                  placeholder="Select city..."
+                />
               </div>
 
-              <div className={styles.formActions}>
-                <button
-                  type="submit"
-                  className={styles.primaryBtn}
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <>
-                      <span className={styles.spinnerSmall}></span>
-                      Calculating...
-                    </>
-                  ) : (
-                    'Find Muhurats'
-                  )}
-                </button>
+              <div className="input-wrapper">
+                <label className="input-label">Date</label>
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="date-input-hero"
+                />
+              </div>
+            </div>
 
-                {allMuhuratData.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={toggleShowAllRows}
-                    className={styles.secondaryBtn}
-                  >
-                    {showAll ? "Filter Good Only" : "Show All Periods"}
-                  </button>
+            <div className="form-actions-hero">
+              <button
+                type="submit"
+                className="get-panchang-btn-hero"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <span className="spinner-small"></span>
+                    Calculating...
+                  </>
+                ) : (
+                  'Find Muhurats'
                 )}
-              </div>
-            </form>
-          </div>
+              </button>
+
+              {allMuhuratData.length > 0 && (
+                <button
+                  type="button"
+                  onClick={toggleShowAllRows}
+                  className="secondary-btn-hero"
+                >
+                  {showAll ? "Filter Good Only" : "Show All Periods"}
+                </button>
+              )}
+            </div>
+          </form>
         </div>
       </div>
 
-      <div className="results-section">
+      <div className={`results-section ${styles.panchangResults}`}>
         {error && (
           <div className="error-box-hero">
             {error}
           </div>
         )}
 
-        {
-          loading && (
-            <div className="loading-spinner">
-              <div className="spinner"></div>
-            </div>
-          )
-        }
+        {loading && (
+          <div className="loading-spinner">
+            <div className="spinner"></div>
+          </div>
+        )}
 
-        {/* Live Period Tracker */}
-        {
-          filteredData && filteredData.length > 0 && (
-            <div className="results-section">
-              <div className="floating-section">
-                <LivePeriodTracker data={filteredData} selectedDate={date} />
-              </div>
+        {filteredData && filteredData.length > 0 && (
+          <div id="tableToCapture">
+            <LivePeriodTracker data={filteredData} selectedDate={date} />
 
-              <div id="muhurats-table" className={styles.tableSection}>
-                <div className={styles.floatingSection}>
-                  <div className={styles.tableWrapper}>
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>Muhurat / Category</th>
-                          <th>Timings & Interval</th>
+            <div className={styles.panchangSection}>
+              <h2 className={styles.sectionHeader}>Muhurat Report</h2>
+              <div className={styles.tableWrapper}>
+                <table className={styles.panchangTable}>
+                  <thead>
+                    <tr>
+                      <th>Muhurat / Category</th>
+                      <th>Timings & Interval</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredData.map((item, index) => {
+                      const catLower = item.category.toLowerCase();
+                      const isGood = catLower.includes('good') || catLower.includes('rahitam');
+                      const isDanger = catLower.includes('danger') || catLower.includes('evil') || catLower.includes('bad') || catLower.includes('disease');
+                      
+                      let accentColor = '#3b82f6';
+                      if (isGood) accentColor = '#1aae75';
+                      if (isDanger) accentColor = '#ef4444';
+
+                      return (
+                        <tr key={index}>
+                          <td style={{ fontWeight: '700', color: accentColor }}>
+                            {item.muhurat}
+                            <span className="toText">{item.category}</span>
+                          </td>
+                          <td className={styles.timeCell}>
+                            {item.start && item.end ? (
+                              <>
+                                <div className={styles.timeRange} style={{ color: accentColor }}>
+                                  {item.start} - {item.end}
+                                </div>
+                                {item.duration && <div className={styles.durationSmall}>({item.duration})</div>}
+                              </>
+                            ) : (
+                              <div className={styles.timeRange} style={{ color: accentColor }}>{item.time}</div>
+                            )}
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {filteredData.map((item, index) => (
-                          <tr key={index} className={getCategoryClass(item.category)}>
-                            <td className={styles.muhuratCell}>
-                              <div className={styles.muhuratName}>{item.muhurat}</div>
-                              <span className={`${styles.categoryBadge} ${styles['badge-' + item.category.toLowerCase().replace(' ', '-')]}`}>
-                                {item.category}
-                              </span>
-                            </td>
-                            <td className={styles.timeCell}>
-                              {item.start && item.end ? (
-                                <>
-                                  <div className={styles.timeRange}>{item.start} - {item.end}</div>
-                                  {item.duration && <div className={styles.durationSmall}>{item.duration}</div>}
-                                </>
-                              ) : (
-                                <div className={styles.timeRange}>{item.time}</div>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  <div className={styles.tableFooterActions}>
-                    <TableScreenshot
-                      tableId="muhurats-table"
-                      city={city}
-                      date={date}
-                      backendEndpoint="/api/getSwissTable-image"
-                    />
-                  </div>
-
-                  <div className="information">
-                    <p className="info">Panchaka Muhurat considers five aspects of the time to determine its quality. Choose "Good" periods for important ventures and avoid "Danger" or "Risk" periods when possible.</p>
-                  </div>
-                </div>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
+
+              <div className="table-footer-actions">
+                <TableScreenshot
+                  tableId="tableToCapture"
+                  city={city}
+                  date={date}
+                  backendEndpoint="/api/getOldSwissTable-image"
+                  backendData={{ lat: selectedLat, lng: selectedLng, timeZone }}
+                />
+              </div>
+
+              <p className={styles.info}>
+                Panchaka Muhurat considers five aspects of the time to determine its quality. Choose "Good" periods for important ventures and avoid "Danger" or "Risk" periods when possible.
+              </p>
             </div>
-          )
-        }
-      </div >
-    </div >
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 

@@ -69,6 +69,7 @@ const TimeConverterApp = () => {
     localDate,
     selectedLat: globalLat,
     selectedLng: globalLng,
+    timeZone,
     is12HourFormat,
     setIs12HourFormat,
     setLocationDetails,
@@ -358,7 +359,7 @@ const TimeConverterApp = () => {
                 city={cityName}
                 date={currentDate}
                 backendEndpoint="/api/getBharagvTable-image"
-                backendData={{ showNonBlue, is12HourFormat }}
+                backendData={{ showNonBlue, is12HourFormat, lat: globalLat, lng: globalLng, timeZone }}
               />
             </div>
           </div>

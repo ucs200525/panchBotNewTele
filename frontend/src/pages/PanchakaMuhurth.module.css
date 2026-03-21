@@ -191,10 +191,17 @@
 }
 
 /* Category Specific Styles */
-:global(.cat-good) { background-color: rgba(34, 197, 94, 0.03); }
+:global(.cat-good) { 
+    background-color: rgba(34, 197, 94, 0.03); 
+}
 :global(.cat-danger), :global(.cat-risk), :global(.cat-bad), :global(.cat-evil) { 
     background-color: rgba(239, 68, 68, 0.02); 
 }
+
+/* Sub-Badges Colors */
+.badge-good { background: #dcfce7; color: #15803d; }
+.badge-bad, .badge-evil, .badge-danger, .badge-disease { background: #fee2e2; color: #b91c1c; }
+.badge-caution, .badge-risk { background: #fff7ed; color: #c2410c; }
 
 .tableFooterActions {
     margin-top: 2rem;
