@@ -4,6 +4,10 @@
     {
       "src": "api/webhook.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "api/cron.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
@@ -12,8 +16,18 @@
       "dest": "/api/webhook.js"
     },
     {
+      "src": "/api/cron",
+      "dest": "/api/cron.js"
+    },
+    {
       "src": "/(.*)",
       "dest": "public/$1"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron",
+      "schedule": "0 0 * * *"
     }
   ],
   "env": {

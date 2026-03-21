@@ -100,11 +100,11 @@ Available Commands:
         }
 
         if (commandText === '/subscribe') {
-            userStates[chatId] = { command: '/subscribe', step: 'image_type' };
-            await bot.sendMessage(chatId, '🖼 What type of Panchangam image do you want to receive daily?', {
+            userStates[chatId] = { command: '/subscribe', step: 'image_type', selectedTypes: [] };
+            await bot.sendMessage(chatId, '🖼 What type of Panchangam images do you want to receive daily? (Select all that apply, then press Done)', {
                 reply_markup: {
-                    keyboard: [['Bhargava', 'Drik', 'Combined']],
-                    one_time_keyboard: true,
+                    keyboard: [['Bhargava', 'Drik'], ['Combined', 'Done ✅']],
+                    one_time_keyboard: false,
                     resize_keyboard: true
                 }
             });
@@ -115,9 +115,9 @@ Available Commands:
         if (commandText === '/status') {
             try {
                 const response = await axios.get(`${API_URL}/api/status?chatId=${chatId}`);
-                const { isSubscribed, city, time, imageType } = response.data;
+                const { isSubscribed, city, time, imageTypes } = response.data;
                 if (isSubscribed) {
-                    const imgText = imageType ? `\n🖼 Format: ${imageType}` : '';
+                    const imgText = (imageTypes && imageTypes.length > 0) ? `\n🖼 Formats: ${imageTypes.join(', ')}` : '';
                     await bot.sendMessage(chatId, `🔔 Subscription Status:\n\n✅ Subscribed\n📍 City: ${city}\n⏰ Time: ${time}${imgText}`);
                 } else {
                     await bot.sendMessage(chatId, '❌ Not subscribed. Use /subscribe to start.');
@@ -164,13 +164,30 @@ Available Commands:
     if (!state) return;
 
     try {
-        // Step 0: Image Type (Subscription only)
+        // Step 0: Image Type (Subscription multiselect)
         if (state.step === 'image_type') {
-            state.imageType = text;
-            state.step = 'city';
-            await bot.sendMessage(chatId, '📍 Please enter the city name:', {
-                reply_markup: { remove_keyboard: true }
-            });
+            if (text === 'Done ✅') {
+                if (state.selectedTypes.length === 0) {
+                    await bot.sendMessage(chatId, '⚠️ Please select at least one type!');
+                    return;
+                }
+                state.step = 'city';
+                await bot.sendMessage(chatId, '📍 Please enter the city name:', {
+                    reply_markup: { remove_keyboard: true }
+                });
+            } else {
+                const typeMap = { 'Bhargava': 'Bhargava', 'Drik': 'Drik', 'Combined': 'Combined' };
+                const selected = typeMap[text];
+                if (selected) {
+                    if (!state.selectedTypes.includes(selected)) {
+                        state.selectedTypes.push(selected);
+                        await bot.sendMessage(chatId, `✅ Added: ${selected}\nSelected: ${state.selectedTypes.join(', ')}`);
+                    } else {
+                        state.selectedTypes = state.selectedTypes.filter(t => t !== selected);
+                        await bot.sendMessage(chatId, `❌ Removed: ${selected}\nSelected: ${state.selectedTypes.join(', ')}`);
+                    }
+                }
+            }
             return;
         }
 
@@ -276,9 +293,9 @@ Available Commands:
                     chatId: chatId.toString(),
                     city: state.city,
                     time: state.time,
-                    imageType: state.imageType
+                    imageTypes: state.selectedTypes
                 });
-                await bot.sendMessage(chatId, `✅ Subscribed for daily updates!\n📍 City: ${state.city}\n⏰ Time: ${state.time}\n🖼 Format: ${state.imageType}`);
+                await bot.sendMessage(chatId, `✅ Subscribed for daily updates!\n📍 City: ${state.city}\n⏰ Time: ${state.time}\n🖼 Images: ${state.selectedTypes.join(', ')}`);
             } catch (err) {
                 await bot.sendMessage(chatId, '❌ Subscription failed.');
             }
