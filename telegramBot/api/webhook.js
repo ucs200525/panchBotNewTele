@@ -298,34 +298,6 @@ Available Commands:
                 });
 
                 await bot.sendMessage(chatId, `✅ Subscribed for daily updates!\n📍 City: ${state.city}\n⏰ Time: ${state.time}\n🖼 Images: ${state.selectedTypes.join(', ')}`);
-                
-                // 2. Send immediate preview images
-                await bot.sendMessage(chatId, '🚀 Sending you today\'s preview images now...');
-                const date = getTodayDate();
-                
-                for (const type of state.selectedTypes) {
-                    if (type === 'Bhargava') {
-                        await fetchAndSendImage(bot, chatId, '/api/getBharagvTable-image', {
-                            city: state.city,
-                            date: date,
-                            showNonBlue: true,
-                            is12HourFormat: true
-                        }, `Bhargava Panchangam (Preview)\n📍 ${state.city}\n📅 ${date}`);
-                    } else if (type === 'Drik') {
-                        await fetchAndSendImage(bot, chatId, '/api/getDrikTable-image', {
-                            city: state.city,
-                            date: date,
-                            goodTimingsOnly: true
-                        }, `Drik Panchang Table (Preview)\n📍 ${state.city}\n📅 ${date}`);
-                    } else if (type === 'Combined') {
-                        await fetchAndSendImage(bot, chatId, '/api/combine-image', {
-                            city: state.city,
-                            date: date,
-                            showNonBlue: true,
-                            is12HourFormat: true
-                        }, `Combined Panchang (Preview)\n📍 ${state.city}\n📅 ${date}`);
-                    }
-                }
 
             } catch (err) {
                 console.error('Subscription error:', err.message);

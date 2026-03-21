@@ -55,10 +55,15 @@ module.exports = async (req, res) => {
     try {
         const bot = new TelegramBot(token);
         
-        // 1. Get current time in HH:MM format
+        // 1. Get current time in HH:MM format (Asia/Kolkata timezone/IST)
         const now = new Date();
-        const currentTime = `${String(now.getUTCHours()).padStart(2, '0')}:${String(now.getUTCMinutes()).padStart(2, '0')}`;
-        console.log(`[Cron] Triggered at ${currentTime} UTC`);
+        const currentTime = now.toLocaleTimeString('en-GB', { 
+            timeZone: 'Asia/Kolkata', 
+            hour12: false, 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+        console.log(`[Cron] Triggered at ${currentTime} IST`);
 
         // 2. Fetch users from backend scheduled for 'now'
         // Your backend route GET /api/getScheduledUsers?time=HH:MM should return an array of users
