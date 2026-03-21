@@ -173,8 +173,7 @@ const PanchakaMuhurth = () => {
                       return (
                         <tr key={index}>
                           <td style={{ fontWeight: '700', color: accentColor }}>
-                            {item.muhurat}
-                            <span className="toText">{item.category}</span>
+                            {item.muhurat} <span className="toText">({item.category})</span>
                           </td>
                           <td className={styles.timeCell}>
                             {item.start && item.end ? (
@@ -182,7 +181,6 @@ const PanchakaMuhurth = () => {
                                 <div className={styles.timeRange} style={{ color: accentColor }}>
                                   {item.start} - {item.end}
                                 </div>
-                                {item.duration && <div className={styles.durationSmall}>({item.duration})</div>}
                               </>
                             ) : (
                               <div className={styles.timeRange} style={{ color: accentColor }}>{item.time}</div>

@@ -7,28 +7,7 @@ const fetch = require('node-fetch'); // Make sure to install node-fetch if you h
 const axios = require('axios');
 const cheerio = require('cheerio');
 const path = require('path');
-const chromium = require('@sparticuz/chromium');
-const puppeteerCore = require('puppeteer-core');
-
-const getBrowser = async () => {
-    let browser;
-    if (process.env.AWS_LAMBDA_FUNCTION_VERSION || process.env.VERCEL || process.env.NODE_ENV === 'production') {
-        browser = await puppeteerCore.launch({
-            args: chromium.args,
-            defaultViewport: chromium.defaultViewport,
-            executablePath: await chromium.executablePath(),
-            headless: chromium.headless,
-            ignoreHTTPSErrors: true,
-        });
-    } else {
-        const puppeteer = require('puppeteer');
-        browser = await puppeteer.launch({
-            headless: 'new',
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
-        });
-    }
-    return browser;
-};
+const { renderAstrologyTable } = require('../utils/canvasRenderer');
 
 // In-memory cache for coordinates to avoid redundant OpenCage calls
 const coordCache = new Map();
@@ -802,7 +781,7 @@ const createDrikTable = async (city, date, lat, lng, timeZone) => {
 
         const formatWithDate = (timeStr, datePart) => {
             if (!datePart) return timeStr;
-            return `${datePart} , ${timeStr}`;
+            return `${datePart}, ${timeStr}`;
         };
 
         const timeIntervalFormatted = endDatePart 
@@ -971,7 +950,7 @@ const processMuhuratAndPanchangam = (muhuratData, panchangamData, baseDate) => {
             mergedData.push({
                 sno: i + 1,
                 type: "Muhurat",
-                description: `${muhuratItem.muhurat} - ${muhuratItem.category}`,
+                description: `${muhuratItem.muhurat} (${muhuratItem.category})`,
                 timeInterval: muhuratItem.time,
                 weekdays: weekdaysArray.length > 0 ? weekdaysArray : [{ weekday: "-", time: "-" }],
             });
@@ -1033,172 +1012,19 @@ router.post("/combine-image", async (req, res) => {
         const baseDate = new Date(date);
         const finalData = processMuhuratAndPanchangam(muhuratData, panchangamData, baseDate);
 
-        // Generate HTML content with improved styling
-        const htmlContent = `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <style>
-                    body {
-                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                        padding: 40px;
-                        background: #f8f9fa;
-                        color: #333;
-                        line-height: 1.6;
-                    }
-                    .container {
-                        max-width: 1200px;
-                        margin: 0 auto;
-                        background: #ffffff;
-                        border-radius: 8px;
-                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                        padding: 30px;
-                    }
-                    .header {
-                        text-align: center;
-                        margin-bottom: 30px;
-                        padding-bottom: 20px;
-                        border-bottom: 2px solid #e9ecef;
-                    }
-                    .header h2 {
-                        color: #2c3e50;
-                        font-size: 28px;
-                        margin-bottom: 10px;
-                    }
-                    .header h3 {
-                        color: #6c757d;
-                        font-size: 20px;
-                        font-weight: normal;
-                    }
-                    table {
-                        width: 100%;
-                        border-collapse: separate;
-                        border-spacing: 0;
-                        margin-bottom: 30px;
-                        border-radius: 6px;
-                        overflow: hidden;
-                    }
-                    th, td {
-                        border: 1px solid #dee2e6;
-                        padding: 15px;
-                        text-align: left;
-                        vertical-align: top;
-                    }
-                    th {
-                        background-color: #4a90e2;
-                        color: white;
-                        font-weight: 600;
-                        text-transform: uppercase;
-                        font-size: 14px;
-                        letter-spacing: 0.5px;
-                    }
-                    tr:nth-child(even) {
-                        background-color: #f8f9fa;
-                    }
-                    tr:hover {
-                        background-color: #f2f4f6;
-                    }
-                    .weekday-list {
-                        list-style: none;
-                        padding: 0;
-                        margin: 0;
-                    }
-                    .weekday-item {
-                        margin: 8px 0;
-                        padding: 6px 10px;
-                        background: #f8f9fa;
-                        border-radius: 4px;
-                        font-size: 14px;
-                    }
-                    .weekday-item:hover {
-                        background: #e9ecef;
-                    }
-                    td:first-child {
-                        font-weight: 600;
-                        color: #495057;
-                    }
-                    td:nth-child(2) {
-                        color: #6c757d;
-                    }
-                    td:nth-child(3) {
-                        color: #2c3e50;
-                    }
-                    td:nth-child(4) {
-                        color: #0056b3;
-                        font-family: monospace;
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <div class="header">
-                        <h2>Combined Muhurat and Panchangam Data</h2>
-                        <h3>${city} - ${date}</h3>
-                    </div>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>No.</th>
-                                <th>Type</th>
-                                <th>Description</th>
-                                <th>Time Interval</th>
-                                <th>Weekdays</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${finalData.map(item => `
-                                <tr>
-                                    <td>${item.sno}</td>
-                                    <td>${item.type}</td>
-                                    <td>${item.description}</td>
-                                    <td>${item.timeInterval}</td>
-                                    <td>
-                                        <ul class="weekday-list">
-                                            ${item.weekdays.map(day => `
-                                                <li class="weekday-item">${day.weekday} ${day.time !== '-' ? `(${day.time})` : ''}</li>
-                                            `).join('')}
-                                        </ul>
-                                    </td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            </body>
-            </html>
-        `;
+        // Generate Image using Canvas instead of Puppeteer
+        const buffer = await renderAstrologyTable(
+            "Combined Muhurat & Panchanga",
+            city,
+            date,
+            ["No.", "Type", "Description", "Time Interval", "Weekdays"],
+            finalData,
+            'combined'
+        );
 
-        // Launch puppeteer
-        const browser = await getBrowser();
-        const page = await browser.newPage();
-
-        // Set content and wait for it to load
-        await page.setContent(htmlContent);
-        await page.setViewport({ width: 1200, height: 800 });
-
-        // Wait for any dynamic content to load
-        await page.evaluate(() => {
-            return new Promise(resolve => {
-                setTimeout(resolve, 1000);
-            });
-        });
-
-        // Take screenshot
-        const screenshot = await page.screenshot({
-            fullPage: true,
-            type: 'png',
-            encoding: 'binary'
-        });
-
-        // Close browser
-        await browser.close();
-
-        // Set response headers
         res.setHeader('Content-Type', 'image/png');
-        res.setHeader('Content-Disposition', `attachment; filename=combined-data-${city}-${date}.png`);
-
-        // Send the image
-        res.send(screenshot);
+        res.setHeader('Content-Disposition', `attachment; filename=combined-${city}-${date}.png`);
+        res.send(buffer);
 
     } catch (error) {
         console.error("Error generating image:", error);
@@ -1224,127 +1050,18 @@ router.post("/getDrikTable-image", async (req, res) => {
 
         const finalData = goodTimingsOnly ? tableData.filter(row => row.category === 'Good') : tableData;
 
-        // Generate HTML content
-        const htmlContent = `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <style>
-                    body {
-                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                        padding: 40px;
-                        background: #f8f9fa;
-                        color: #333;
-                        line-height: 1.6;
-                    }
-                    .container {
-                        max-width: 1200px;
-                        margin: 0 auto;
-                        background: #ffffff;
-                        border-radius: 8px;
-                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                        padding: 30px;
-                    }
-                    .header {
-                        text-align: center;
-                        margin-bottom: 30px;
-                        padding-bottom: 20px;
-                        border-bottom: 2px solid #e9ecef;
-                    }
-                    .header h2 {
-                        color: #2c3e50;
-                        font-size: 28px;
-                        margin-bottom: 10px;
-                    }
-                    .header h3 {
-                        color: #6c757d;
-                        font-size: 20px;
-                        font-weight: normal;
-                    }
-                    table {
-                        width: 100%;
-                        border-collapse: separate;
-                        border-spacing: 0;
-                        margin-bottom: 30px;
-                        border-radius: 6px;
-                        overflow: hidden;
-                    }
-                    th, td {
-                        border: 1px solid #dee2e6;
-                        padding: 15px;
-                        text-align: left;
-                    }
-                    th {
-                        background-color: #4a90e2;
-                        color: white;
-                        font-weight: 600;
-                        text-transform: uppercase;
-                        font-size: 14px;
-                        letter-spacing: 0.5px;
-                    }
-                    tr:nth-child(even) {
-                        background-color: #f8f9fa;
-                    }
-                    tr:hover {
-                        background-color: #f2f4f6;
-                    }
-                    .good-timing {
-                        color: #28a745;
-                        font-weight: 600;
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <div class="header">
-                        <h2>Drik Panchang Muhurat Table</h2>
-                        <h3>${city} - ${date}</h3>
-                    </div>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Muhurat</th>
-                                <th>Category</th>
-                                <th>Time</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${finalData.map(item => `
-                                <tr>
-                                    <td>${item.muhurat}</td>
-                                    <td>${item.category}</td>
-                                    <td class="${item.category === 'Good' ? 'good-timing' : ''}">${item.time}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            </body>
-            </html>
-        `;
+        // Generate Image using Canvas instead of Puppeteer
+        const buffer = await renderAstrologyTable(
+            "Drik Panchang Muhuruts",
+            city,
+            date,
+            ["Muhurat", "Category", "Time"],
+            finalData
+        );
 
-        // Launch puppeteer and generate image
-        const browser = await getBrowser();
-        const page = await browser.newPage();
-        await page.setContent(htmlContent);
-        await page.setViewport({ width: 1200, height: 800 });
-
-        // Wait for content to load
-        await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 1000)));
-
-        // Take screenshot
-        const screenshot = await page.screenshot({
-            fullPage: true,
-            type: 'png',
-            encoding: 'binary'
-        });
-
-        await browser.close();
-
-        // Send response
         res.setHeader('Content-Type', 'image/png');
-        res.setHeader('Content-Disposition', `attachment; filename=drik-table-${city}-${date}.png`);
-        res.send(screenshot);
+        res.setHeader('Content-Disposition', `attachment; filename=muhuruts-${city}-${date}.png`);
+        res.send(buffer);
 
     } catch (error) {
         console.error("Error generating image:", error);
@@ -1364,181 +1081,19 @@ router.post("/getBharagvTable-image", async (req, res) => {
     try {
         const table = await createBharagvTable(city, date, showNonBlue === 'true', is12HourFormat, lat, lng, timeZone);
 
-        // Generate HTML content
-        const htmlContent = `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <style>
-                    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Outfit:wght@400;600;700;800&display=swap');
-                    body {
-                        font-family: 'Inter', system-ui, -apple-system, sans-serif;
-                        padding: 40px;
-                        background: #f1f5f9;
-                        margin: 0;
-                    }
-                    .container {
-                        max-width: 1000px;
-                        margin: 0 auto;
-                        background: #ffffff;
-                        border-radius: 24px;
-                        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
-                        overflow: hidden;
-                    }
-                    .branding {
-                        background: #1e293b;
-                        color: white;
-                        padding: 24px 32px;
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                    }
-                    .branding-title {
-                        font-family: 'Outfit', sans-serif;
-                        font-size: 22px;
-                        font-weight: 800;
-                        letter-spacing: 1px;
-                        text-transform: uppercase;
-                    }
-                    .branding-info {
-                        display: flex;
-                        align-items: center;
-                        gap: 16px;
-                    }
-                    .location-badge {
-                        background: rgba(255,255,255,0.15);
-                        padding: 6px 14px;
-                        border-radius: 100px;
-                        font-size: 14px;
-                        font-weight: 700;
-                    }
-                    .date-text {
-                        font-size: 14px;
-                        opacity: 0.8;
-                    }
-                    .table-content {
-                        padding: 32px;
-                    }
-                    table {
-                        width: 100%;
-                        border-collapse: collapse;
-                        font-size: 15px;
-                    }
-                    th {
-                        background: #f8fafc;
-                        color: #64748b;
-                        font-weight: 700;
-                        font-size: 12px;
-                        text-transform: uppercase;
-                        letter-spacing: 0.05em;
-                        padding: 16px 20px;
-                        text-align: left;
-                        border-bottom: 2px solid #e2e8f0;
-                    }
-                    td {
-                        padding: 16px 20px;
-                        border-bottom: 1px solid #f1f5f9;
-                        color: #1e293b;
-                        vertical-align: middle;
-                    }
-                    .time-cell {
-                        font-weight: 700;
-                        color: #4f46e5;
-                        font-family: 'Inter', sans-serif;
-                    }
-                    .status-cell {
-                        font-weight: 700;
-                        font-size: 13px;
-                        border-radius: 8px;
-                    }
-                    .period-special { background: #f0fdf4; color: #166534; padding: 6px 12px; border-radius: 6px; }
-                    .period-ashubh { background: #fef2f2; color: #991b1b; padding: 6px 12px; border-radius: 6px; }
-                    .period-normal { color: #64748b; padding: 6px 12px; }
-                    
-                    .watermark {
-                        text-align: center;
-                        padding: 16px;
-                        color: #94a3b8;
-                        font-size: 12px;
-                        font-weight: 600;
-                        background: #f8fafc;
-                        letter-spacing: 1px;
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <div class="branding">
-                        <div class="branding-title">Bhargava Panchangam</div>
-                        <div class="branding-info">
-                            <span class="location-badge">${city}</span>
-                            <span class="date-text">${date}</span>
-                        </div>
-                    </div>
-                    <div class="table-content">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Start-End 1</th>
-                                    <th>Weekday</th>
-                                    <th>Start-End 2</th>
-                                    <th>S.No</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${table.map(item => `
-                                    <tr>
-                                        <td class="time-cell">${item.start1} - ${item.end1}</td>
-                                        <td>
-                                            <span class="${item.isWednesdayColored ? 'period-special' : item.isColored ? 'period-ashubh' : 'period-normal'}">
-                                                ${item.weekday}
-                                            </span>
-                                        </td>
-                                        <td class="time-cell">${item.start2} - ${item.end2}</td>
-                                        <td style="font-weight: 600; color: #94a3b8;">${item.sNo}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="watermark">GENERATED BY PANCHANGAM.AI</div>
-                </div>
-            </body>
-            </html>
-        `;
-
-        const browser = await getBrowser();
-
-        const page = await browser.newPage();
-        await page.setContent(htmlContent);
-
-        await page.evaluateHandle('document.fonts.ready');
-        await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 500)));
-
-        // Precise height calculation: container height + vertical padding (40px * 2)
-        const contentHeight = await page.evaluate(() => {
-            const container = document.querySelector('.container');
-            return container ? container.offsetHeight + 80 : document.body.scrollHeight;
-        });
-
-        await page.setViewport({
-            width: 1080,
-            height: contentHeight,
-            deviceScaleFactor: 2
-        });
-
-        const screenshot = await page.screenshot({
-            fullPage: false,
-            type: 'png',
-            encoding: 'binary'
-        });
-
-        await browser.close();
+        // Generate Image using Canvas instead of Puppeteer
+        const buffer = await renderAstrologyTable(
+            "Bhargava Panchangam",
+            city,
+            date,
+            ["Start-End 1", "Weekday", "Start-End 2", "S.No"],
+            table,
+            'bhargava'
+        );
 
         res.setHeader('Content-Type', 'image/png');
         res.setHeader('Content-Disposition', `attachment; filename=bhargava-${city}-${date}.png`);
-        res.send(screenshot);
+        res.send(buffer);
 
     } catch (error) {
         console.error("Error generating image:", error);
@@ -1555,203 +1110,22 @@ router.post("/getSwissTable-image", async (req, res) => {
     try {
         const table = await fetchmuhurat(city, date, lat, lng, timeZone);
 
-        const htmlContent = `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <style>
-                    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Outfit:wght@400;600;700;800&display=swap');
-                    body {
-                        font-family: 'Inter', system-ui, -apple-system, sans-serif;
-                        padding: 40px;
-                        background: #f1f5f9;
-                        margin: 0;
-                    }
-                    .container {
-                        max-width: 1000px;
-                        margin: 0 auto;
-                        background: #ffffff;
-                        border-radius: 24px;
-                        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
-                        overflow: hidden;
-                    }
-                    .branding {
-                        background: #1e293b;
-                        color: white;
-                        padding: 24px 32px;
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                    }
-                    .branding-title {
-                        font-family: 'Outfit', sans-serif;
-                        font-size: 22px;
-                        font-weight: 800;
-                        letter-spacing: 1px;
-                        text-transform: uppercase;
-                    }
-                    .branding-info {
-                        display: flex;
-                        align-items: center;
-                        gap: 16px;
-                    }
-                    .location-badge {
-                        background: rgba(255,255,255,0.15);
-                        padding: 6px 14px;
-                        border-radius: 100px;
-                        font-size: 14px;
-                        font-weight: 700;
-                    }
-                    .date-text {
-                        font-size: 14px;
-                        opacity: 0.8;
-                    }
-                    .table-content {
-                        padding: 32px;
-                    }
-                    table {
-                        width: 100%;
-                        border-collapse: collapse;
-                        font-size: 15px;
-                    }
-                    th {
-                        background: #f8fafc;
-                        color: #64748b;
-                        font-weight: 700;
-                        font-size: 12px;
-                        text-transform: uppercase;
-                        letter-spacing: 0.05em;
-                        padding: 16px 20px;
-                        text-align: left;
-                        border-bottom: 2px solid #e2e8f0;
-                    }
-                    td {
-                        padding: 18px 20px;
-                        border-bottom: 1px solid #f1f5f9;
-                        color: #1e293b;
-                        vertical-align: middle;
-                    }
-                    .muhurat-name {
-                        font-weight: 800;
-                        font-size: 16px;
-                        color: #1e293b;
-                        margin-bottom: 4px;
-                    }
-                    .time-text {
-                        font-weight: 600;
-                        color: #6366f1;
-                        font-family: 'Inter', sans-serif;
-                    }
-                    .badge {
-                        display: inline-block;
-                        padding: 4px 12px;
-                        border-radius: 100px;
-                        font-size: 11px;
-                        font-weight: 800;
-                        text-transform: uppercase;
-                    }
-                    .cat-good { background: #dcfce7; color: #166534; }
-                    .cat-danger { background: #fee2e2; color: #991b1b; }
-                    .cat-risk { background: #fff7ed; color: #9a3412; }
-                    .cat-bad { background: #fef2f2; color: #991b1b; }
-                    
-                    .watermark {
-                        text-align: center;
-                        padding: 16px;
-                        color: #94a3b8;
-                        font-size: 12px;
-                        font-weight: 600;
-                        background: #f8fafc;
-                        letter-spacing: 1px;
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <div class="branding">
-                        <div class="branding-title">Swiss Panchaka</div>
-                        <div class="branding-info">
-                            <span class="location-badge">${city}</span>
-                            <span class="date-text">${date}</span>
-                        </div>
-                    </div>
-                    <div class="table-content">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Muhurat & Category</th>
-                                    <th>Timing</th>
-                                    <th>Duration</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${table.map(item => {
-            const cat = item.category.toLowerCase();
-            const catClass = cat.includes('good') ? 'cat-good' :
-                cat.includes('danger') || cat.includes('bad') || cat.includes('disease') ? 'cat-danger' :
-                    cat.includes('risk') ? 'cat-risk' : '';
-
-            return `
-                                        <tr>
-                                            <td>
-                                                <div class="muhurat-name">${item.muhurat}</div>
-                                                <span class="badge ${catClass}">${item.category}</span>
-                                            </td>
-                                            <td class="time-text">${item.start} - ${item.end}</td>
-                                            <td style="color: #64748b; font-weight: 500;">${item.duration}</td>
-                                        </tr>
-                                    `;
-        }).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="watermark">GENERATED BY PANCHANGAM.AI</div>
-                </div>
-            </body>
-            </html>
-        `;
-
-        const browser = await puppeteer.launch({
-            headless: 'new',
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
-        });
-
-        const page = await browser.newPage();
-        await page.setContent(htmlContent);
-
-        const bodyHeight = await page.evaluate(() => document.body.scrollHeight);
-        await page.setViewport({
-            width: 1080,
-            height: bodyHeight,
-            deviceScaleFactor: 2
-        });
-
-        await page.evaluateHandle('document.fonts.ready');
-        await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 500)));
-
-        const contentHeight = await page.evaluate(() => {
-            const container = document.querySelector('.container');
-            return container ? container.offsetHeight + 80 : document.body.scrollHeight;
-        });
-
-        await page.setViewport({
-            width: 1080,
-            height: contentHeight,
-            deviceScaleFactor: 2
-        });
-
-        const screenshot = await page.screenshot({
-            fullPage: false,
-            type: 'png',
-            encoding: 'binary'
-        });
-
-        await browser.close();
+        // Generate Image using Canvas instead of Puppeteer
+        const buffer = await renderAstrologyTable(
+            "Swiss Panchaka Muhurats",
+            city,
+            date,
+            ["Muhurat & Category", "Timing", "Duration"],
+            table.map(item => ({
+                muhurat: item.muhurat,
+                time: `${item.start} - ${item.end}`,
+                category: item.category
+            }))
+        );
 
         res.setHeader('Content-Type', 'image/png');
         res.setHeader('Content-Disposition', `attachment; filename=swiss-${city}-${date}.png`);
-        res.send(screenshot);
+        res.send(buffer);
 
     } catch (error) {
         console.error("Error generating image:", error);
@@ -2229,194 +1603,18 @@ router.post("/getOldSwissTable-image", async (req, res) => {
     try {
         const table = await fetchmuhurat_old(city, date);
 
-        const htmlContent = `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <style>
-                    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Outfit:wght@400;600;700;800&display=swap');
-                    body {
-                        font-family: 'Inter', system-ui, -apple-system, sans-serif;
-                        padding: 40px;
-                        background: #f1f5f9;
-                        margin: 0;
-                    }
-                    .container {
-                        max-width: 1000px;
-                        margin: 0 auto;
-                        background: #ffffff;
-                        border-radius: 24px;
-                        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
-                        overflow: hidden;
-                    }
-                    .branding {
-                        background: #1e293b;
-                        color: white;
-                        padding: 24px 32px;
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                    }
-                    .branding-title {
-                        font-family: 'Outfit', sans-serif;
-                        font-size: 22px;
-                        font-weight: 800;
-                        letter-spacing: 1px;
-                        text-transform: uppercase;
-                    }
-                    .branding-info {
-                        display: flex;
-                        align-items: center;
-                        gap: 16px;
-                    }
-                    .location-badge {
-                        background: rgba(255,255,255,0.15);
-                        padding: 6px 14px;
-                        border-radius: 100px;
-                        font-size: 14px;
-                        font-weight: 700;
-                    }
-                    .date-text {
-                        font-size: 14px;
-                        opacity: 0.8;
-                    }
-                    .table-content {
-                        padding: 32px;
-                    }
-                    table {
-                        width: 100%;
-                        border-collapse: collapse;
-                        font-size: 15px;
-                    }
-                    th {
-                        background: #f8fafc;
-                        color: #64748b;
-                        font-weight: 700;
-                        font-size: 12px;
-                        text-transform: uppercase;
-                        letter-spacing: 0.05em;
-                        padding: 16px 20px;
-                        text-align: left;
-                        border-bottom: 2px solid #e2e8f0;
-                    }
-                    td {
-                        padding: 18px 20px;
-                        border-bottom: 1px solid #f1f5f9;
-                        color: #1e293b;
-                        vertical-align: middle;
-                    }
-                    .muhurat-name {
-                        font-weight: 800;
-                        font-size: 16px;
-                        color: #1e293b;
-                        margin-bottom: 4px;
-                    }
-                    .time-text {
-                        font-weight: 600;
-                        color: #6366f1;
-                        font-family: 'Inter', sans-serif;
-                    }
-                    .badge {
-                        display: inline-block;
-                        padding: 4px 12px;
-                        border-radius: 100px;
-                        font-size: 11px;
-                        font-weight: 800;
-                        text-transform: uppercase;
-                    }
-                    .cat-good { background: #dcfce7; color: #166534; }
-                    .cat-danger { background: #fee2e2; color: #991b1b; }
-                    .cat-risk { background: #fff7ed; color: #9a3412; }
-                    .cat-bad { background: #fef2f2; color: #991b1b; }
-                    
-                    .watermark {
-                        text-align: center;
-                        padding: 16px;
-                        color: #94a3b8;
-                        font-size: 12px;
-                        font-weight: 600;
-                        background: #f8fafc;
-                        letter-spacing: 1px;
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <div class="branding">
-                        <div class="branding-title">Panchaka Muhurth</div>
-                        <div class="branding-info">
-                            <span class="location-badge">${city}</span>
-                            <span class="date-text">${date}</span>
-                        </div>
-                    </div>
-                    <div class="table-content">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Muhurat & Category</th>
-                                    <th>Timing</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${table.map(item => {
-            const cat = item.category.toLowerCase();
-            const catClass = cat.includes('good') ? 'cat-good' :
-                cat.includes('danger') || cat.includes('bad') || cat.includes('disease') ? 'cat-danger' :
-                    cat.includes('risk') ? 'cat-risk' : '';
-
-            return `
-                                        <tr>
-                                            <td>
-                                                <div class="muhurat-name">${item.muhurat}</div>
-                                            </td>
-                                            <td class="time-text">${item.time}</td>
-                                            <td>
-                                                <span class="badge ${catClass}">${item.category}</span>
-                                            </td>
-                                        </tr>
-                                    `;
-        }).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="watermark">GENERATED BY PANCHANGAM.AI</div>
-                </div>
-            </body>
-            </html>
-        `;
-
-        const browser = await getBrowser();
-
-        const page = await browser.newPage();
-        await page.setContent(htmlContent);
-
-        await page.evaluateHandle('document.fonts.ready');
-        await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 500)));
-
-        const contentHeight = await page.evaluate(() => {
-            const container = document.querySelector('.container');
-            return container ? container.offsetHeight + 80 : document.body.scrollHeight;
-        });
-
-        await page.setViewport({
-            width: 1080,
-            height: contentHeight,
-            deviceScaleFactor: 2
-        });
-
-        const screenshot = await page.screenshot({
-            fullPage: false,
-            type: 'png',
-            encoding: 'binary'
-        });
-
-        await browser.close();
+        // Generate Image using Canvas instead of Puppeteer
+        const buffer = await renderAstrologyTable(
+            "Panchaka Muhurth",
+            city,
+            date,
+            ["Muhurat", "Timing", "Status"],
+            table
+        );
 
         res.setHeader('Content-Type', 'image/png');
-        res.setHeader('Content-Disposition', `attachment; filename=panchaka-${city}-${date}.png`);
-        res.send(screenshot);
+        res.setHeader('Content-Disposition', `attachment; filename=panchaka-old-${city}-${date}.png`);
+        res.send(buffer);
 
     } catch (error) {
         console.error("Error generating image:", error);
