@@ -14,10 +14,9 @@ const SubscriptionSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  imageType: {
-    type: String,
-    enum: ['Drik', 'Bhargava', 'Combined'],
-    default: 'Drik'
+  imageTypes: {
+    type: [String],
+    default: ['Drik']
   },
   createdAt: {
     type: Date,

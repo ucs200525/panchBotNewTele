@@ -9,7 +9,7 @@ const logger = require('../utils/logger');
  */
 router.post('/subscribe', async (req, res) => {
   try {
-    const { chatId, city, time, imageType } = req.body;
+    const { chatId, city, time, imageTypes } = req.body;
 
     if (!chatId || !city || !time) {
       return res.status(400).json({ 
@@ -21,7 +21,7 @@ router.post('/subscribe', async (req, res) => {
     // Upsert subscription (update if exists, create if not)
     const subscription = await Subscription.findOneAndUpdate(
       { chatId },
-      { city, time, imageType: imageType || 'Drik' },
+      { city, time, imageTypes: imageTypes || ['Drik'] },
       { new: true, upsert: true }
     );
 
@@ -30,13 +30,16 @@ router.post('/subscribe', async (req, res) => {
       chatId, 
       city, 
       time, 
-      imageType: subscription.imageType 
+      imageTypes: subscription.imageTypes 
     });
 
     res.json({
       success: true,
       message: 'Subscription successful',
-      data: subscription
+      chatId: subscription.chatId,
+      city: subscription.city,
+      time: subscription.time,
+      imageTypes: subscription.imageTypes
     });
 
   } catch (error) {
@@ -124,7 +127,10 @@ router.get('/status', async (req, res) => {
     res.json({
       success: true,
       isSubscribed: true,
-      data: subscription
+      chatId: subscription.chatId,
+      city: subscription.city,
+      time: subscription.time,
+      imageTypes: subscription.imageTypes || ['Drik']
     });
 
   } catch (error) {
@@ -172,7 +178,10 @@ router.post('/change-city', async (req, res) => {
     res.json({
       success: true,
       message: 'City updated successfully',
-      data: updated
+      chatId: updated.chatId,
+      city: updated.city,
+      time: updated.time,
+      imageTypes: updated.imageTypes
     });
 
   } catch (error) {
@@ -220,7 +229,10 @@ router.post('/change-time', async (req, res) => {
     res.json({
       success: true,
       message: 'Alert time updated successfully',
-      data: updated
+      chatId: updated.chatId,
+      city: updated.city,
+      time: updated.time,
+      imageTypes: updated.imageTypes
     });
 
   } catch (error) {
