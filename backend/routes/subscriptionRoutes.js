@@ -261,4 +261,43 @@ router.get('/subscriptions', async (req, res) => {
   }
 });
 
+/**
+ * @route   GET /api/getScheduledUsers
+ * @desc    Get all users scheduled for a specific time (used by the bot's cron)
+ */
+router.get('/getScheduledUsers', async (req, res) => {
+  try {
+    const { time } = req.query; // Expecting HH:MM format
+    
+    if (!time) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'time parameter is required' 
+      });
+    }
+
+    // Find users with matching time string
+    const users = await Subscription.find({ time }).lean();
+    
+    logger.info({ 
+      message: 'Fetching scheduled users', 
+      time, 
+      count: users.length 
+    });
+
+    // Return exact array (as expected by the cron script)
+    res.json(users);
+
+  } catch (error) {
+    logger.error({ 
+      message: 'GET /api/getScheduledUsers error', 
+      error: error.message 
+    });
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to fetch scheduled users' 
+    });
+  }
+});
+
 module.exports = router;

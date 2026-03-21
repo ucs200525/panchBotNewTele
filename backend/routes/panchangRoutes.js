@@ -1622,4 +1622,10 @@ router.post("/getOldSwissTable-image", async (req, res) => {
     }
 });
 
-module.exports = router;
+module.exports = { 
+    router, 
+    createDrikTable, 
+    createBharagvTable,
+    processMuhuratAndPanchangam,
+    convertToDDMMYYYY
+};

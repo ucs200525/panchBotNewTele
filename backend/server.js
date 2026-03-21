@@ -5,7 +5,7 @@ const express = require('express');
 const cors = require('cors');
 const logger = require('./utils/logger');
 const requestLogger = require('./utils/requestLogger');
-const panchangRoutes = require('./routes/panchangRoutes');
+const panchangRoutes = require('./routes/panchangRoutes').router;
 const planetaryRoutes = require('./routes/planetaryRoutes');
 const chartsRoutes = require('./routes/chartsRoutes');
 const dashaRoutes = require('./routes/dashaRoutes');
@@ -15,6 +15,7 @@ const newRoutes = require('./routes/newRoutes');
 const subscriptionRoutes = require('./routes/subscriptionRoutes'); // Import Subscription Routes
 const adminRoutes = require('./routes/adminRoutes'); // Import Admin Routes
 const analyticsRoutes = require('./routes/analyticsRoutes'); // Import Analytics Routes
+const botCronRoutes = require('./routes/botCronRoutes'); // Import Bot Cron Routes
 const { excludeFromTracking } = require('./middleware/analytics'); // Import Analytics Middleware
 const connectDB = require('./utils/db'); // Import DB Connection Helper
 const path = require('path');
@@ -58,6 +59,7 @@ app.use('/api/lagna', lagnaRoutes);
 app.use('/admin', adminRoutes); // Mount Admin API
 app.use('/api/analytics', analyticsRoutes); // Mount Analytics API (admin-protected)
 app.use('/api', subscriptionRoutes); // Mount Subscription API (for bot preferences)
+app.use('/api', botCronRoutes); // Mount Bot Cron API
 
 
 // Error Handling Middleware
