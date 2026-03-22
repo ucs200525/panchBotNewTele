@@ -63,8 +63,8 @@ async function renderAstrologyTable(title, city, date, headers, rows, type = 'st
     const width = 1200;
     const padding = 60;
     const headerHeight = 100;
-    const tableHeaderHeight = 60; 
-    const baseRowHeight = 70;
+    const tableHeaderHeight = type === 'combined' ? 60 : 80; 
+    const baseRowHeight = type === 'combined' ? 70 : (type === 'bhargava' ? 90 : 100);
     const cardWidth = width - (padding * 2);
     
     // Initial measurement
@@ -73,11 +73,11 @@ async function renderAstrologyTable(title, city, date, headers, rows, type = 'st
     
     let colWidths;
     if (type === 'combined') {
-        colWidths = [50, 100, 200, 300, 400];
+        colWidths = [50, 100, 200, 300, 430]; // Sum = 1080
     } else if (type === 'bhargava') {
-        colWidths = [300, 200, 300, 100];
+        colWidths = [360, 200, 420, 100]; // Sum = 1080
     } else {
-        colWidths = [350, 350, 300];
+        colWidths = [600, 480]; // Two columns: Muhurat + Status, and Timing
     }
 
     const rowInfos = rows.map(row => {
@@ -129,8 +129,8 @@ async function renderAstrologyTable(title, city, date, headers, rows, type = 'st
     else ctx.rect(cardX, cardY, cardWidth, cardHeight);
     ctx.fill();
 
-    // Header Bar
-    ctx.fillStyle = '#1e293b';
+    // Header Bar (Emerald Green as per reference)
+    ctx.fillStyle = '#10b981';
     ctx.beginPath();
     if (ctx.roundRect) ctx.roundRect(cardX, cardY, cardWidth, headerHeight, [24, 24, 0, 0]);
     else ctx.fillRect(cardX, cardY, cardWidth, headerHeight);
@@ -138,7 +138,7 @@ async function renderAstrologyTable(title, city, date, headers, rows, type = 'st
 
     // Title
     ctx.fillStyle = '#ffffff';
-    ctx.font = `bold 32px ${headerFontFallbacks}`;
+    ctx.font = `bold 36px ${headerFontFallbacks}`;
     ctx.textBaseline = 'middle';
     ctx.fillText(title.toUpperCase(), cardX + 30, cardY + headerHeight/2);
 
@@ -156,54 +156,87 @@ async function renderAstrologyTable(title, city, date, headers, rows, type = 'st
     ctx.fillStyle = '#ffffff';
     ctx.fillText(locationText, cardX + cardWidth - badgeTextWidth - 45, cardY + headerHeight/2);
 
-    // Table Header
-    const tableHeaderY = cardY + headerHeight;
-    ctx.fillStyle = '#f8fafc'; ctx.fillRect(cardX, tableHeaderY, cardWidth, tableHeaderHeight);
-    ctx.fillStyle = '#64748b'; ctx.font = `bold 18px ${fontFallbacks}`;
-    let headX = cardX + 30;
-    headers.forEach((h, i) => {
-        ctx.fillText(h.toUpperCase(), headX, tableHeaderY + tableHeaderHeight/2);
-        headX += colWidths[i] || 200;
-    });
-
-    // Rows
-    let currentY = tableHeaderY + tableHeaderHeight;
+    // Table Body Start
+    let currentY = cardY + headerHeight;
     ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1;
     rowInfos.forEach((info, rowIndex) => {
         const { row, height } = info;
-        if (rowIndex % 2 === 1) { ctx.fillStyle = '#f8fafc'; ctx.fillRect(cardX, currentY, cardWidth, height); }
-        let rowX = cardX + 30; ctx.textBaseline = 'top'; const contentY = currentY + 15;
+        let rowX = cardX + 30; ctx.textBaseline = 'top';
+        const contentY = currentY + (type === 'combined' ? 15 : (height - 35) / 2);
+        ctx.lineWidth = 0.6; // Thickness for synthetic bolding
+
+        // Dynamic Backgrounds for Drik (Standard)
+        if (type === 'standard') {
+            const cat = (row.category || '').toLowerCase();
+            let bg = '#ffffff';
+            if (cat.includes('good') || cat.includes('rahita')) bg = '#dbeafe';
+            else if (cat.includes('danger') || cat.includes('mrityu')) bg = '#fed7aa';
+            else if (cat.includes('risk') || cat.includes('agni') || cat.includes('vayu')) bg = '#e0f2fe';
+            else if (cat.includes('bad') || cat.includes('raja') || cat.includes('roga')) bg = '#fee2e2';
+            else if (cat.includes('evil') || cat.includes('chora')) bg = '#f1f5f9';
+            ctx.fillStyle = bg; ctx.fillRect(cardX, currentY, cardWidth, height);
+        } else if (rowIndex % 2 === 1) { 
+            ctx.fillStyle = '#f8fafc'; ctx.fillRect(cardX, currentY, cardWidth, height); 
+        }
+
         if (type === 'combined') {
-            ctx.fillStyle = '#94a3b8'; ctx.font = `bold 20px ${fontFallbacks}`;
-            ctx.fillText(row.sno || (rowIndex + 1), rowX, contentY); rowX += colWidths[0];
-            ctx.fillStyle = '#64748b'; ctx.font = `bold 20px ${fontFallbacks}`;
-            ctx.fillText(row.type || '', rowX, contentY); rowX += colWidths[1];
-            ctx.fillStyle = '#1e293b'; ctx.font = `bold 20px ${fontFallbacks}`;
-            info.wrappedDesc.forEach((line, i) => ctx.fillText(line, rowX, contentY + (i * 30))); rowX += colWidths[2];
-            ctx.fillStyle = '#4f46e5'; ctx.font = `bold 20px ${fontFallbacks}`;
-            ctx.fillText(row.timeInterval || '', rowX, contentY); rowX += colWidths[3];
-            ctx.fillStyle = '#334155'; ctx.font = `bold 20px ${fontFallbacks}`;
-            info.wrappedWeekdays.forEach((line, i) => ctx.fillText(line, rowX, contentY + (i * 30)));
+            ctx.fillStyle = '#64748b'; ctx.font = `bold 20px ${fontFallbacks}`; ctx.strokeStyle = ctx.fillStyle;
+            ctx.fillText(row.sno || (rowIndex + 1), rowX, contentY); ctx.strokeText(row.sno || (rowIndex + 1), rowX, contentY); rowX += colWidths[0];
+            ctx.fillStyle = '#334155'; ctx.font = `bold 20px ${fontFallbacks}`; ctx.strokeStyle = ctx.fillStyle;
+            ctx.fillText(row.type || '', rowX, contentY); ctx.strokeText(row.type || '', rowX, contentY); rowX += colWidths[1];
+            ctx.fillStyle = '#0f172a'; ctx.font = `bold 20px ${fontFallbacks}`; ctx.strokeStyle = ctx.fillStyle;
+            info.wrappedDesc.forEach((line, i) => { ctx.fillText(line, rowX, contentY + (i * 30)); ctx.strokeText(line, rowX, contentY + (i * 30)); }); rowX += colWidths[2];
+            ctx.fillStyle = '#3730a3'; ctx.font = `bold 20px ${fontFallbacks}`; ctx.strokeStyle = ctx.fillStyle;
+            ctx.fillText(row.timeInterval || '', rowX, contentY); ctx.strokeText(row.timeInterval || '', rowX, contentY); rowX += colWidths[3];
+            ctx.fillStyle = '#1e293b'; ctx.font = `bold 20px ${fontFallbacks}`; ctx.strokeStyle = ctx.fillStyle;
+            info.wrappedWeekdays.forEach((line, i) => { ctx.fillText(line, rowX, contentY + (i * 30)); ctx.strokeText(line, rowX, contentY + (i * 30)); });
         } else if (type === 'bhargava') {
-            ctx.fillStyle = '#4f46e5'; ctx.font = `bold 20px ${fontFallbacks}`;
-            ctx.fillText(`${row.start1} - ${row.end1}`, rowX, contentY); rowX += colWidths[0];
-            const isSpecial = row.isWednesdayColored, isAshubh = row.isColored;
-            ctx.fillStyle = isSpecial ? '#f0fdf4' : (isAshubh ? '#fef2f2' : '#ffffff');
-            ctx.beginPath(); ctx.rect(rowX, contentY - 8, 140, 36); ctx.fill();
-            ctx.fillStyle = isSpecial ? '#166534' : (isAshubh ? '#991b1b' : '#64748b');
-            ctx.font = `bold 18px ${fontFallbacks}`; ctx.fillText((row.weekday || '').toUpperCase(), rowX + 15, contentY + 2); rowX += colWidths[1];
-            ctx.fillStyle = '#4f46e5'; ctx.fillText(`${row.start2} - ${row.end2}`, rowX, contentY); rowX += colWidths[2];
-            ctx.fillStyle = '#94a3b8'; ctx.fillText(row.sNo, rowX, contentY);
+            ctx.fillStyle = '#334155'; ctx.font = `bold 26px ${fontFallbacks}`; ctx.strokeStyle = ctx.fillStyle;
+            ctx.fillText(`${row.start1} - ${row.end1}`, rowX, contentY); ctx.strokeText(`${row.start1} - ${row.end1}`, rowX, contentY); rowX += colWidths[0];
+            
+            const isSpecial = row.isWednesdayColored || row.isColored;
+            if (isSpecial) {
+                ctx.fillStyle = '#1e293b'; 
+                ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(rowX - 10, currentY + 10, colWidths[1] + 10, height - 20, 8); else ctx.rect(rowX - 10, currentY + 10, colWidths[1] + 10, height - 20);
+                ctx.fill();
+                ctx.fillStyle = '#ffffff';
+            } else {
+                ctx.fillStyle = '#475569';
+            }
+            ctx.strokeStyle = ctx.fillStyle; ctx.font = `bold 22px ${fontFallbacks}`; 
+            ctx.fillText((row.weekday || '').toUpperCase(), rowX, contentY + 2); ctx.strokeText((row.weekday || '').toUpperCase(), rowX, contentY + 2); rowX += colWidths[1];
+            
+            ctx.fillStyle = '#334155'; ctx.font = `bold 26px ${fontFallbacks}`; ctx.strokeStyle = ctx.fillStyle;
+            ctx.fillText(`${row.start2} - ${row.end2}`, rowX, contentY); ctx.strokeText(`${row.start2} - ${row.end2}`, rowX, contentY); rowX += colWidths[2];
+            ctx.fillStyle = '#64748b'; ctx.strokeStyle = ctx.fillStyle;
+            ctx.fillText(row.sNo, rowX, contentY); ctx.strokeText(row.sNo, rowX, contentY);
         } else {
-            ctx.fillStyle = '#1e293b'; ctx.font = `bold 20px ${fontFallbacks}`;
-            ctx.fillText(row.muhurat || row.name || '', rowX, contentY); rowX += colWidths[0];
-            ctx.fillStyle = '#6366f1'; ctx.font = `bold 20px ${fontFallbacks}`;
-            ctx.fillText(row.time || '', rowX, contentY); rowX += colWidths[1];
-            const cat = (row.category || '').toLowerCase(), isGood = cat.includes('good') || cat.includes('rahita'), isRisk = cat.includes('risk');
-            ctx.fillStyle = isGood ? '#dcfce7' : (isRisk ? '#fff7ed' : '#fee2e2');
-            ctx.beginPath(); ctx.rect(rowX, contentY - 8, 120, 36); ctx.fill();
-            ctx.fillStyle = isGood ? '#166534' : (isRisk ? '#9a3412' : '#991b1b');
-            ctx.font = `bold 16px ${fontFallbacks}`; ctx.fillText((row.category || '').toUpperCase(), rowX + 15, contentY + 2);
+            // Drik (Standard) Style - Stacked Muhurat & Status
+            const cat = (row.category || '').toUpperCase();
+            let textCol = '#0f172a', tagBG = '#94a3b8';
+            if (cat.includes('GOOD') || cat.includes('RAHITA')) { textCol = '#1e40af'; tagBG = '#3b82f6'; }
+            else if (cat.includes('DANGER') || cat.includes('MRITYU')) { textCol = '#9a3412'; tagBG = '#f97316'; }
+            else if (cat.includes('RISK') || cat.includes('AGNI')) { textCol = '#075985'; tagBG = '#0ea5e9'; }
+            else if (cat.includes('BAD') || cat.includes('RAJA')) { textCol = '#991b1b'; tagBG = '#ef4444'; }
+            else if (cat.includes('EVIL') || cat.includes('CHORA')) { textCol = '#1e293b'; tagBG = '#334155'; }
+
+            ctx.fillStyle = textCol; ctx.font = `bold 30px ${fontFallbacks}`; ctx.strokeStyle = ctx.fillStyle;
+            ctx.fillText(row.muhurat || row.name || '', rowX, contentY - 15); 
+            ctx.strokeText(row.muhurat || row.name || '', rowX, contentY - 15);
+            
+            // Badge for Status
+            ctx.fillStyle = tagBG; ctx.beginPath();
+            const badgeLabel = cat || 'INFO';
+            const badgeW = ctx.measureText(badgeLabel).width + 20;
+            if (ctx.roundRect) ctx.roundRect(rowX, contentY + 18, badgeW, 30, 15); else ctx.rect(rowX, contentY + 18, badgeW, 30);
+            ctx.fill();
+            ctx.fillStyle = '#ffffff'; ctx.font = `bold 16px ${fontFallbacks}`; ctx.strokeStyle = ctx.fillStyle;
+            ctx.fillText(badgeLabel, rowX + 10, contentY + 23); ctx.strokeText(badgeLabel, rowX + 10, contentY + 23);
+            
+            rowX += colWidths[0];
+            
+            ctx.fillStyle = '#334155'; ctx.font = `bold 28px ${fontFallbacks}`; ctx.strokeStyle = ctx.fillStyle;
+            ctx.fillText(row.time || '', rowX, contentY); ctx.strokeText(row.time || '', rowX, contentY);
         }
         ctx.beginPath(); ctx.moveTo(cardX, currentY + height); ctx.lineTo(cardX + cardWidth, currentY + height); ctx.stroke();
         currentY += height;

@@ -1115,7 +1115,7 @@ router.post("/getSwissTable-image", async (req, res) => {
             "Swiss Panchaka Muhurats",
             city,
             date,
-            ["Muhurat & Category", "Timing", "Duration"],
+            ["Muhurat & Status", "Timing"],
             table.map(item => ({
                 muhurat: item.muhurat,
                 time: `${item.start} - ${item.end}`,
@@ -1608,7 +1608,7 @@ router.post("/getOldSwissTable-image", async (req, res) => {
             "Panchaka Muhurth",
             city,
             date,
-            ["Muhurat", "Timing", "Status"],
+            ["Muhurat & Status", "Timing"],
             table
         );
 
