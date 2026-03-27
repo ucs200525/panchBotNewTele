@@ -41,8 +41,3 @@ Report based on Drik Panchang scraped data.
   - `goodTimingsOnly` (boolean, Optional)
 
 ---
-
-## ✅ Recent Updates
-- **Geographic Precision**: All image routes now support `lat`, `lng`, and `timeZone` parameters. If provided, the backend skips geocoding and uses these coordinates for pinpoint mathematical accuracy.
-- **Enhanced Templating**: Reports use a high-resolution 2x scale (1080p effective width) with full Google Font support (Inter & Outfit).
-- **Duration Logic**: The `createDrikTable` helper now automatically calculates durations for time intervals, even those crossing midnight.
