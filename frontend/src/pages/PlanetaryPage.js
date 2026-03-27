@@ -18,11 +18,20 @@ const PlanetaryPage = () => {
   const [planetaryData, setPlanetaryData] = useState(null);
   const [birthDetails, setBirthDetails] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isManualLoading, setIsManualLoading] = useState(false);
   const [error, setError] = useState(null);
   const [savedProfiles, setSavedProfiles] = useState([]);
 
   useEffect(() => {
     setSavedProfiles(getAllProfiles());
+  }, []);
+
+  // Initial auto-fetch on mount
+  useEffect(() => {
+    if (selectedCity && date && time && !planetaryData) {
+      handleSubmit({ preventDefault: () => {} }, false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Sync when context updates (e.g. from another tab/page)
@@ -61,13 +70,14 @@ const PlanetaryPage = () => {
     setTime(profile.birthTime);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (e, isManual = true) => {
+    if (e) e.preventDefault();
     if (!selectedCity) {
       setError('Please select a city');
       return;
     }
 
+    if (isManual) setIsManualLoading(true);
     setIsLoading(true);
     setError(null);
 
@@ -134,6 +144,7 @@ const PlanetaryPage = () => {
       setError(err.message);
     } finally {
       setIsLoading(false);
+      setIsManualLoading(false);
     }
   };
 
@@ -227,7 +238,7 @@ const PlanetaryPage = () => {
             </div>
 
             <button type="submit" className="get-panchang-btn-hero" disabled={isLoading}>
-              {isLoading ? 'Calculating...' : 'Get Planetary Positions'}
+              {isManualLoading ? 'Calculating...' : 'Get Planetary Positions'}
             </button>
           </form>
         </div>

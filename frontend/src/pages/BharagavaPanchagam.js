@@ -97,8 +97,9 @@ const TimeConverterApp = () => {
   const [showNonBlue, setShowNonBlue] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
+  const [manualLoading, setManualLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [hasData, setHasData] = useState(false);
+  const [hasData, setHasData] = useState(() => sessionStorage.getItem('hasData') === 'true');
 
   // Sync with AuthContext changes (e.g. if loaded from localStorage)
   useEffect(() => {
@@ -117,9 +118,11 @@ const TimeConverterApp = () => {
     sessionStorage.setItem('selectedLat', selectedLat);
     sessionStorage.setItem('selectedLng', selectedLng);
     sessionStorage.setItem('weekday', weekday);
-  }, [data, sunriseToday, sunsetToday, sunriseTmrw, moonrise, moonset, selectedLat, selectedLng, weekday]);
+    sessionStorage.setItem('hasData', hasData);
+  }, [data, sunriseToday, sunsetToday, sunriseTmrw, moonrise, moonset, selectedLat, selectedLng, weekday, hasData]);
 
-  const Getpanchangam = async () => {
+  const Getpanchangam = async (isManual = true) => {
+    if (isManual) setManualLoading(true);
     setIsLoading(true);
     setError(null);
     try {
@@ -167,6 +170,7 @@ const TimeConverterApp = () => {
       setError(error.message || 'Failed to fetch Panchangam');
     } finally {
       setIsLoading(false);
+      setManualLoading(false);
     }
   };
 
@@ -209,7 +213,7 @@ const TimeConverterApp = () => {
     if (cityName && currentDate) {
       // Update global date
       setCityAndDate(cityName, currentDate);
-      await Getpanchangam();
+      await Getpanchangam(true);
     }
   };
 
@@ -223,10 +227,15 @@ const TimeConverterApp = () => {
     }
   }, [showNonBlue, is12HourFormat, hasData, sunriseToday, sunsetToday, sunriseTmrw, weekday, fetchTableData]);
 
+  // Initial load: Fetch data automatically if we have city and date but no results yet
+  useEffect(() => {
+    if (cityName && currentDate && !hasData) {
+      Getpanchangam(false);
+    }
+  }, []);
+
   return (
     <div className={styles.content}>
-      {/* Hero Section */}
-      {/* Hero Section */}
       <div className="hero-section">
         <div className="hero-content">
           <h1 className="hero-title">Bhargava Panchangam</h1>
@@ -260,8 +269,8 @@ const TimeConverterApp = () => {
                 </div>
               </div>
 
-              <button type="submit" className="get-panchang-btn-hero" disabled={!cityName}>
-                Calculate Timings
+              <button type="submit" className="get-panchang-btn-hero" disabled={isLoading || !cityName}>
+                {manualLoading ? 'Calculating...' : 'Calculate Timings'}
               </button>
             </form>
           </div>
@@ -274,13 +283,14 @@ const TimeConverterApp = () => {
         </div>
       </div>
 
-      {isLoading && <LoadingSpinner />}
+      {manualLoading && <LoadingSpinner />}
 
       {/* Results Section */}
-      {hasData && data.length > 0 && (
-        <div className={`results-section ${styles.resultsSection}`}>
-          <div className="floating-section">
-            <div className="summary-bar">
+      <div className={`results-section ${styles.resultsSection}`}>
+        {hasData && data.length > 0 && (
+          <>
+            <div className="floating-section">
+              <div className="summary-bar">
               <div className="summary-item">
                 <span className="summary-label">Location</span>
                 <span className="summary-value">{cityName}</span>
@@ -307,7 +317,7 @@ const TimeConverterApp = () => {
               </div>
             </div>
           </div>
-
+          
           {/* Live Period Tracker */}
           <LivePeriodTracker data={data} selectedDate={currentDate} />
 
@@ -363,10 +373,10 @@ const TimeConverterApp = () => {
               />
             </div>
           </div>
-        </div>
+        </>
       )}
     </div>
-  );
+  </div>
+);
 };
-
 export default TimeConverterApp;

@@ -503,12 +503,18 @@ const findClosestDay = (input) => {
     return closestDay;
 }
 
-const generateTableData = (sunriseToday, sunsetToday, sunriseTmrw, weekday, is12HourFormat, currentDate, showNonBlue) => {
+const generateTableData = (sunriseToday, sunsetToday, sunriseTmrw, weekday, is12HourFormat, currentDate, showNonBlue, _sunriseEpoch) => {
     const totalSec = timeToSeconds('24:00:00');
 
     const sunriseTodaySec = timeToSeconds(sunriseToday);
     const sunsetTodaySec = timeToSeconds(sunsetToday);
     const sunriseTmrwSec = timeToSeconds(sunriseTmrw);
+
+    // Calculate the accurate base epoch (local midnight)
+    // If we have the absolute sunrise epoch, we can find the exact local midnight
+    const baseEpoch = _sunriseEpoch 
+        ? (_sunriseEpoch - (sunriseTodaySec * 1000)) 
+        : new Date(currentDate).getTime();
 
     const interval1 = (sunsetTodaySec - sunriseTodaySec) / 30;
     const interval2 = ((totalSec + sunriseTmrwSec) - sunsetTodaySec) / 30;
@@ -585,11 +591,21 @@ const generateTableData = (sunriseToday, sunsetToday, sunriseTmrw, weekday, is12
         const isColored = weekdayRows[closestDay]?.includes(i);
         const isWednesdayColored = closestDay === 'Wednesday' && i === 28;
 
+        // Calculate epoch timestamps for precise comparison (milliseconds since 1970)
+        const _epochStart1 = baseEpoch + (sunrise - interval1) * 1000;
+        const _epochEnd1 = baseEpoch + sunrise * 1000;
+        const _epochStart2 = baseEpoch + (sunset - interval2) * 1000;
+        const _epochEnd2 = baseEpoch + sunset * 1000;
+
         newTableData.push({
             start1,
             end1,
             start2,
             end2,
+            _epochStart1,
+            _epochEnd1,
+            _epochStart2,
+            _epochEnd2,
             sNo: i + 1,
             value1: i === 0 ? secondsToTime(interval1, currentDate, is12HourFormat)
                 : i === 1 ? secondsToTime(interval2, currentDate, is12HourFormat)
@@ -675,7 +691,8 @@ const createBharagvTable = async (city, date, showNonBlue, is12HourFormat, lat, 
         weekday,
         is12HourFormat,
         date,
-        showNonBlue
+        showNonBlue,
+        sun.sunTimes._sunriseEpoch
     );
 
     logger.info({ message: 'generateTableData result size', count: tableData.length });
@@ -694,6 +711,10 @@ const createBharagvTable = async (city, date, showNonBlue, is12HourFormat, lat, 
                 end1: row.end1 || "",
                 start2: row.start2 || "",
                 end2: row.end2 || "",
+                _epochStart1: row._epochStart1,
+                _epochEnd1: row._epochEnd1,
+                _epochStart2: row._epochStart2,
+                _epochEnd2: row._epochEnd2,
                 timeInterval1: row.start1 && row.end1 ? `${row.start1} to ${row.end1}` : "",
                 timeInterval2: row.start2 && row.end2 ? `${row.start2} to ${row.end2}` : "",
                 weekday: row.weekday || "-",
@@ -923,34 +944,51 @@ const processMuhuratAndPanchangam = (muhuratData, panchangamData, baseDate) => {
     };
 
     muhuratData.forEach((muhuratItem) => {
-        // Use normalized time from Muhurat item if available (start/end we created in createDrikTable)
-        const [muhuratStart, muhuratEnd] = splitInterval(muhuratItem.time, baseDate);
+        // Prefer precomputed timestamps (_start/_end) from swiss data over string parsing
+        let muhuratStart, muhuratEnd;
+        if (muhuratItem._start && muhuratItem._end) {
+            muhuratStart = new Date(muhuratItem._start);
+            muhuratEnd = new Date(muhuratItem._end);
+        } else {
+            [muhuratStart, muhuratEnd] = splitInterval(muhuratItem.time, baseDate);
+        }
+
         if (muhuratStart && muhuratEnd && validateInterval(muhuratStart, muhuratEnd)) {
             const weekdaysArray = [];
 
             panchangamData.forEach((panchangamItem) => {
-                // Check both timeInterval1 and timeInterval2
-                const intervals = [panchangamItem.timeInterval1, panchangamItem.timeInterval2].filter(t => t);
+                // Check both Daytime (1) and Nighttime (2) slots
+                const intervals = [
+                    { start: panchangamItem._epochStart1, end: panchangamItem._epochEnd1, raw: panchangamItem.timeInterval1 },
+                    { start: panchangamItem._epochStart2, end: panchangamItem._epochEnd2, raw: panchangamItem.timeInterval2 }
+                ].filter(t => t.raw && t.start && t.end);
                 
-                intervals.forEach(timeInterval => {
-                    const [start, end] = splitInterval(timeInterval, baseDate);
-                    if (start && end && validateInterval(start, end)) {
-                        if (start < muhuratEnd && end > muhuratStart) {
-                            if (!weekdaysArray.find((item) => item.weekday === panchangamItem.weekday && item.time === `${formatTimeForUI(start, baseDate)} - ${formatTimeForUI(end, baseDate)}`)) {
-                                weekdaysArray.push({
-                                    weekday: panchangamItem.weekday,
-                                    time: `${formatTimeForUI(start, baseDate)} - ${formatTimeForUI(end, baseDate)}`,
-                                });
-                            }
+                intervals.forEach(intrvl => {
+                    const start = new Date(intrvl.start);
+                    const end = new Date(intrvl.end);
+                    
+                    if (start < muhuratEnd && end > muhuratStart) {
+                        const timeStr = `${formatTimeForUI(start, baseDate)} - ${formatTimeForUI(end, baseDate)}`;
+                        if (!weekdaysArray.find((item) => item.weekday === panchangamItem.weekday && item.time === timeStr)) {
+                            weekdaysArray.push({
+                                weekday: panchangamItem.weekday,
+                                time: timeStr,
+                                _t: start.getTime() // store for sorting
+                            });
                         }
                     }
                 });
             });
 
+            // Sort Bhargava intervals by their actual start time
+            weekdaysArray.sort((a, b) => a._t - b._t);
+
             mergedData.push({
                 sno: i + 1,
                 type: "Muhurat",
-                description: `${muhuratItem.muhurat} (${muhuratItem.category})`,
+                description: muhuratItem.muhurat.includes(`(${muhuratItem.category})`)
+                    ? muhuratItem.muhurat
+                    : `${muhuratItem.muhurat} (${muhuratItem.category})`,
                 timeInterval: muhuratItem.time,
                 weekdays: weekdaysArray.length > 0 ? weekdaysArray : [{ weekday: "-", time: "-" }],
             });
@@ -1001,10 +1039,13 @@ router.post("/combine-image", async (req, res) => {
     try {
         const dateDDMMYYYY = convertToDDMMYYYY(date);
 
-        // 1. Fetch Drik Data (requires DD/MM/YYYY)
-        const fullMuhuratData = await createDrikTable(city, dateDDMMYYYY, lat, lng, timeZone);
-        // Filter Drik Data based on showNonBlue (equivalent to goodTimingsOnly)
-        const muhuratData = showNonBlue ? fullMuhuratData.filter(row => row.category === 'Good') : fullMuhuratData;
+        // 1. Fetch Swiss Panchaka Data (accurate, no scraping)
+        const rawSwiss = await fetchmuhurat(city, dateDDMMYYYY, lat, lng, timeZone);
+        // Normalize: add `time` field = "start to end" so processMuhuratAndPanchangam can use it
+        const fullMuhuratData = rawSwiss.map(r => ({ ...r, time: `${r.start} to ${r.end}` }));
+        const muhuratData = showNonBlue
+            ? fullMuhuratData.filter(r => r.category?.toLowerCase().includes('good') || r.category?.toLowerCase().includes('rahitam'))
+            : fullMuhuratData;
 
         // 2. Fetch Panchangam Data (requires YYYY-MM-DD)
         const panchangamData = await createBharagvTable(city, date, showNonBlue, is12HourFormat, lat, lng, timeZone);

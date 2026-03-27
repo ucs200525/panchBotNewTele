@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Section } from '../components/layout';
 import { CityAutocomplete } from '../components/forms';
 import { useAuth } from '../context/AuthContext';
@@ -6,13 +6,23 @@ import styles from './LagnaPage.module.css';
 
 const LagnaPage = () => {
     const { setCityAndDate } = useAuth();
-    const [cityName, setCityName] = useState(() => localStorage.getItem('selectedCity') || '');
+    const [cityName, setCityName] = useState(() => localStorage.getItem('selectedCity') || 'New Delhi');
     const [currentDate, setCurrentDate] = useState(new Date().toISOString().substring(0, 10));
     const [lagnaData, setLagnaData] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [manualLoading, setManualLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    const fetchLagnaData = async (city, date) => {
+    // Initial load: Fetch data automatically if we have city and date
+    useEffect(() => {
+        if (cityName && currentDate && !lagnaData) {
+            fetchLagnaData(cityName, currentDate, false);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const fetchLagnaData = async (city, date, isManual = true) => {
+        if (isManual) setManualLoading(true);
         setIsLoading(true);
         setError(null);
         try {
@@ -41,6 +51,7 @@ const LagnaPage = () => {
             setError(err.message);
         } finally {
             setIsLoading(false);
+            setManualLoading(false);
         }
     };
 
@@ -81,7 +92,7 @@ const LagnaPage = () => {
                     <form onSubmit={(e) => {
                         e.preventDefault();
                         if (cityName && currentDate) {
-                            fetchLagnaData(cityName, currentDate);
+                            fetchLagnaData(cityName, currentDate, true);
                         }
                     }}>
                         <div className="form-group-inline">
@@ -111,7 +122,7 @@ const LagnaPage = () => {
                             className="get-panchang-btn-hero"
                             disabled={isLoading}
                         >
-                            {isLoading ? (
+                            {manualLoading ? (
                                 <>
                                     <span className="spinner-small"></span>
                                     Calculating...

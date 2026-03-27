@@ -53,6 +53,7 @@ const HoraPage = () => {
     const [choghadiyaData, setChoghadiyaData] = useState(null);
     const [panchangSummary, setPanchangSummary] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [isManualLoading, setIsManualLoading] = useState(false);
     const [error, setError] = useState(null);
     const [savedProfiles, setSavedProfiles] = useState([]);
 
@@ -60,7 +61,17 @@ const HoraPage = () => {
         setSavedProfiles(getAllProfiles());
     }, []);
 
-    const fetchAllData = async (city, date) => {
+    // Initial load: Fetch data automatically if we have city and date
+    useEffect(() => {
+        if (cityName && currentDate && !horaData) {
+            fetchAllData(cityName, currentDate, false);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+
+    const fetchAllData = async (city, date, isManual = true) => {
+        if (isManual) setIsManualLoading(true);
         setIsLoading(true);
         setError(null);
         try {
@@ -106,6 +117,7 @@ const HoraPage = () => {
             setError(err.message);
         } finally {
             setIsLoading(false);
+            setIsManualLoading(false);
         }
     };
 
@@ -147,7 +159,7 @@ const HoraPage = () => {
                     <form onSubmit={(e) => {
                         e.preventDefault();
                         if (cityName && currentDate) {
-                            fetchAllData(cityName, currentDate);
+                            fetchAllData(cityName, currentDate, true);
                         }
                     }}>
                         <div className="form-group-inline">
@@ -172,7 +184,7 @@ const HoraPage = () => {
                         </div>
 
                         <button type="submit" className="get-panchang-btn-hero" disabled={isLoading || !cityName}>
-                            {isLoading ? 'Calculating...' : 'Generate Hora Report'}
+                            {isManualLoading ? 'Calculating...' : 'Generate Hora Report'}
                         </button>
                     </form>
                 </div>

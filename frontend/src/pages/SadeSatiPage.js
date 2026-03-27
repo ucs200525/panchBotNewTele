@@ -14,6 +14,7 @@ const SadeSatiPage = () => {
     const [birthTime, setBirthTime] = useState('12:00');
     const [sadeSatiData, setSadeSatiData] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [manualLoading, setManualLoading] = useState(false);
     const [error, setError] = useState(null);
     const [savedProfiles, setSavedProfiles] = useState([]);
 
@@ -21,7 +22,16 @@ const SadeSatiPage = () => {
         setSavedProfiles(getAllProfiles());
     }, []);
 
-    const fetchSadeSatiData = async (city, date) => {
+    // Initial load: Fetch data automatically if we have city and date
+    useEffect(() => {
+        if (cityName && birthDate && !sadeSatiData) {
+            fetchSadeSatiData(cityName, birthDate, false);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const fetchSadeSatiData = async (city, date, isManual = true) => {
+        if (isManual) setManualLoading(true);
         setIsLoading(true);
         setError(null);
         try {
@@ -52,6 +62,7 @@ const SadeSatiPage = () => {
             setError(err.message);
         } finally {
             setIsLoading(false);
+            setManualLoading(false);
         }
     };
 
@@ -101,7 +112,7 @@ const SadeSatiPage = () => {
                     <form onSubmit={(e) => {
                         e.preventDefault();
                         if (cityName && birthDate) {
-                            fetchSadeSatiData(cityName, birthDate);
+                            fetchSadeSatiData(cityName, birthDate, true);
                         }
                     }}>
                         <div className="form-group-inline">
@@ -159,7 +170,7 @@ const SadeSatiPage = () => {
                             className="get-panchang-btn-hero"
                             disabled={isLoading}
                         >
-                            {isLoading ? "Running Analysis..." : "Calculate Cycles"}
+                            {manualLoading ? "Running Analysis..." : "Calculate Cycles"}
                         </button>
                     </form>
                 </div>

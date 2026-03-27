@@ -39,6 +39,11 @@ async function getSunMoonTimesSwiss(lat, lng, date, timeZone) {
             moonsetToday: format24h(moonSet?.date),
             sunriseTmrw: format24h(sunRiseTmrw?.date),
             
+            // Absolute timestamps for precise calculations
+            _sunriseEpoch: sunRise?.date?.getTime(),
+            _sunsetEpoch: sunSet?.date?.getTime(),
+            _sunriseTmrwEpoch: sunRiseTmrw?.date?.getTime(),
+            
             // Also include human readable version
             formatted: {
                 sunrise: sunRise?.time,

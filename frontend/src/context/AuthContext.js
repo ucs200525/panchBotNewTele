@@ -6,23 +6,41 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
     // Initialize states from localStorage (for persistence across sessions)
     // or provide default values
-  const [localCity, setLocalCity] = useState(() => localStorage.getItem('selectedCity') || 'Vijayawada');
+      const [localCity, setLocalCity] = useState(() => localStorage.getItem('selectedCity') || 'New Delhi');
     const [localDate, setLocalDate] = useState(() => {
         // Use today's date if not in sessionStorage
         return sessionStorage.getItem('date') || new Date().toISOString().substring(0, 10);
     });
 
     // Additional general info
-    const [selectedLat, setSelectedLat] = useState(() => localStorage.getItem('selectedLat') || '16.5062');
-    const [selectedLng, setSelectedLng] = useState(() => localStorage.getItem('selectedLng') || '80.6480');
+    const [selectedLat, setSelectedLat] = useState(() => localStorage.getItem('selectedLat') || '28.6139');
+    const [selectedLng, setSelectedLng] = useState(() => localStorage.getItem('selectedLng') || '77.2090');
     const [timeZone, setTimeZone] = useState(() => localStorage.getItem('selectedTimeZone') || 'Asia/Kolkata');
     const [is12HourFormat, setIs12HourFormat] = useState(() => {
         const saved = localStorage.getItem('is12HourFormat');
         return saved !== null ? JSON.parse(saved) : true;
     });
 
+    // Keys used by individual pages to cache their computed results
+    const PAGE_CACHE_KEYS = [
+        'data', 'sunriseToday', 'sunsetToday', 'sunriseTmrw', 'moonrise', 'moonset',
+        'weekday', 'selectedLat', 'selectedLng', 'hasData',
+        'combinedData', 'filteredData', 'swissFilteredData',
+        'horaData', 'planetaryData', 'muhuratData', 'dashaData', 'lagnaData', 'goodTimingsData',
+    ];
+
+    // Clears all per-page session caches when the city changes
+    const clearPageCaches = () => {
+        PAGE_CACHE_KEYS.forEach(key => sessionStorage.removeItem(key));
+        sessionStorage.removeItem('hasData');
+    };
+
     // Function to update city and date globally
     const setCityAndDate = (newCity, newDate) => {
+        if (newCity && newCity !== localCity) {
+            // City changed → invalidate all page caches
+            clearPageCaches();
+        }
         setLocalCity(newCity);
         setLocalDate(newDate);
         sessionStorage.setItem('date', newDate);
@@ -31,6 +49,10 @@ export const AuthProvider = ({ children }) => {
 
     // Function to update location details specifically
     const setLocationDetails = (details) => {
+        if (details.name && details.name !== localCity) {
+            // City changed → invalidate all page caches
+            clearPageCaches();
+        }
         if (details.name) {
             setLocalCity(details.name);
             localStorage.setItem('selectedCity', details.name);

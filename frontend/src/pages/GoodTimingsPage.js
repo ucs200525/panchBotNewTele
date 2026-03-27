@@ -1,18 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../pages/hero-styles.css';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { CityAutocomplete } from '../components/forms';
 import styles from './GoodTimings.module.css';
 
 const GoodTimingsPage = () => {
-    const [cityName, setCityName] = useState(localStorage.getItem('selectedCity') || '');
+    const [cityName, setCityName] = useState(localStorage.getItem('selectedCity') || 'New Delhi');
     const [currentDate, setCurrentDate] = useState(new Date().toISOString().substring(0, 10));
     const [timingsData, setTimingsData] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [isManualLoading, setIsManualLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    const fetchTimings = async () => {
+    // Initial load: Fetch data automatically
+    useEffect(() => {
+        if (cityName && currentDate && !timingsData) {
+            fetchTimings(false);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const fetchTimings = async (isManual = true) => {
         if (!cityName) return;
+        if (isManual) setIsManualLoading(true);
         setIsLoading(true);
         setError(null);
         try {
@@ -25,12 +35,13 @@ const GoodTimingsPage = () => {
             setError(err.message);
         } finally {
             setIsLoading(false);
+            setIsManualLoading(false);
         }
     };
 
     const handleGetTimings = (e) => {
         e.preventDefault();
-        fetchTimings();
+        fetchTimings(true);
     };
 
     const handleCitySelect = (city) => {
@@ -82,7 +93,7 @@ const GoodTimingsPage = () => {
                             </div>
                         </div>
                         <button type="submit" className="get-panchang-btn-hero" disabled={!cityName || isLoading}>
-                            {isLoading ? 'Calculating...' : 'Find Good Timings'}
+                            {isManualLoading ? 'Calculating...' : 'Find Good Timings'}
                         </button>
                     </form>
                 </div>

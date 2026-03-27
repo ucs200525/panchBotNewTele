@@ -18,6 +18,7 @@ const PanchakaMuhurth = () => {
 
   const [showAll, setShowAll] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [manualLoading, setManualLoading] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -27,14 +28,15 @@ const PanchakaMuhurth = () => {
   // Handle initial auto-fetch
   useEffect(() => {
     if (city && date && filteredData.length === 0) {
-      getMuhuratData(city, date);
+      getMuhuratData(city, date, false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const getMuhuratData = async (cityName, dateValue) => {
+  const getMuhuratData = async (cityName, dateValue, isManual = true) => {
     if (!cityName || !dateValue) return;
 
+    if (isManual) setManualLoading(true);
     setLoading(true);
     setError(null);
     try {
@@ -55,6 +57,7 @@ const PanchakaMuhurth = () => {
       setError(err.message);
     } finally {
       setLoading(false);
+      setManualLoading(false);
     }
   };
 
@@ -88,7 +91,7 @@ const PanchakaMuhurth = () => {
         <div className="hero-form">
           <form onSubmit={(e) => {
             e.preventDefault();
-            getMuhuratData(city, date);
+            getMuhuratData(city, date, true);
           }}>
             <div className="form-group-inline">
               <div className="input-wrapper">
@@ -117,7 +120,7 @@ const PanchakaMuhurth = () => {
                 className="get-panchang-btn-hero"
                 disabled={loading}
               >
-                {loading ? (
+                {manualLoading ? (
                   <>
                     <span className="spinner-small"></span>
                     Calculating...

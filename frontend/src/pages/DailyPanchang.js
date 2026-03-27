@@ -12,6 +12,7 @@ const DailyPanchang = () => {
     const [panchangData, setPanchangData] = useState(null);
 
     const [isLoading, setIsLoading] = useState(false);
+    const [isManualLoading, setIsManualLoading] = useState(false);
     const [error, setError] = useState(null);
 
     // Sync local state with context when context changes
@@ -19,9 +20,10 @@ const DailyPanchang = () => {
         if (localCity) setCityName(localCity);
     }, [localCity]);
 
-    const fetchPanchang = useCallback(async () => {
+    const fetchPanchang = useCallback(async (isManual = true) => {
         if (!cityName || !currentDate) return;
 
+        if (isManual) setIsManualLoading(true);
         setIsLoading(true);
         setError(null);
 
@@ -45,13 +47,14 @@ const DailyPanchang = () => {
             console.error(err);
         } finally {
             setIsLoading(false);
+            setIsManualLoading(false);
         }
     }, [cityName, currentDate, selectedLat, selectedLng]);
 
     // Handle initial fetch on mount
     useEffect(() => {
         if (cityName && currentDate && !panchangData) {
-            fetchPanchang();
+            fetchPanchang(false);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -96,7 +99,7 @@ const DailyPanchang = () => {
     const handleGetPanchang = (e) => {
         e.preventDefault();
         setCityAndDate(cityName, currentDate);
-        fetchPanchang();
+        fetchPanchang(true);
     };
 
     const renderTableSection = (title, subtitle, headers, rows) => (
@@ -164,8 +167,8 @@ const DailyPanchang = () => {
                         </div>
 
 
-                        <button type="submit" className="get-panchang-btn-hero" disabled={!cityName}>
-                            Calculate Panchang
+                        <button type="submit" className="get-panchang-btn-hero" disabled={!cityName || isLoading}>
+                            {isManualLoading ? 'Calculating...' : 'Calculate Panchang'}
                         </button>
                     </form>
                 </div>

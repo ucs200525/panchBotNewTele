@@ -11,30 +11,32 @@ const SwissPanchaka = () => {
   const [date, setDate] = useState(localDate || new Date().toISOString().substring(0, 10));
   const [allMuhuratData, setAllMuhuratData] = useState([]);
   const [filteredData, setFilteredData] = useState(() => {
-    const storedData = sessionStorage.getItem('filteredData');
+    const storedData = sessionStorage.getItem('swissFilteredData');
     return storedData ? JSON.parse(storedData) : [];
   });
 
   const [showAll, setShowAll] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [manualLoading, setManualLoading] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    sessionStorage.setItem('filteredData', JSON.stringify(filteredData));
+    sessionStorage.setItem('swissFilteredData', JSON.stringify(filteredData));
   }, [filteredData]);
 
   // Initial load: Fetch data automatically if we have city and date but no results yet
   useEffect(() => {
     if (city && date && filteredData.length === 0) {
-      getMuhuratData(city, date);
+      getMuhuratData(city, date, false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
 
-  const getMuhuratData = async (cityName, dateValue) => {
+  const getMuhuratData = async (cityName, dateValue, isManual = true) => {
     if (!cityName || !dateValue) return;
 
+    if (isManual) setManualLoading(true);
     setLoading(true);
     setError(null);
     try {
@@ -55,6 +57,7 @@ const SwissPanchaka = () => {
       setError(err.message);
     } finally {
       setLoading(false);
+      setManualLoading(false);
     }
   };
 
@@ -99,7 +102,7 @@ const SwissPanchaka = () => {
         <div className="hero-form">
           <form onSubmit={(e) => {
             e.preventDefault();
-            getMuhuratData(city, date);
+            getMuhuratData(city, date, true);
           }}>
             <div className="form-group-inline">
               <div className="input-wrapper">
@@ -128,7 +131,7 @@ const SwissPanchaka = () => {
                 className="get-panchang-btn-hero"
                 disabled={loading}
               >
-                {loading ? (
+                {manualLoading ? (
                   <>
                     <span className="spinner-small"></span>
                     Calculating...

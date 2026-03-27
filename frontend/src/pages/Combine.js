@@ -18,6 +18,7 @@ const CombinePage = () => {
 
   const [bharagvData, setBharagvData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [manualLoading, setManualLoading] = useState(false);
   const [error, setError] = useState(null);
   const [weekday, setWeekday] = useState(() => sessionStorage.getItem('weekday') || '');
   const [showNonBlue, setShowNonBlue] = useState(true);
@@ -33,6 +34,14 @@ const CombinePage = () => {
     sessionStorage.setItem('weekday', weekday);
   }, [combinedData, weekday]);
 
+  // Initial load: Fetch data automatically if we have city and date but no results yet
+  useEffect(() => {
+    if (city && date && !combinedData) {
+      fetchMuhuratData(city, date, false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleCitySelect = (cityObj) => {
     setCity(cityObj.name);
     setLocationDetails({
@@ -42,44 +51,58 @@ const CombinePage = () => {
     });
   };
 
-  const convertToDDMMYYYY = (date) => {
-    const [year, month, day] = date.split("-");
-    return `${day}/${month}/${year}`;
-  };
 
-  const fetchMuhuratData = async (cityName, dateValue) => {
+  const fetchMuhuratData = async (cityName, dateValue, isManual = true) => {
     if (!cityName) {
       setError("Please select a city first.");
       return;
     }
+    if (isManual) setManualLoading(true);
     setLoading(true);
     setError(null);
     try {
-      let drikUrl = `${process.env.REACT_APP_API_URL}/api/getDrikTable?city=${cityName}&date=${convertToDDMMYYYY(dateValue)}&goodTimingsOnly=${showNonBlue}`;
+      // Convert YYYY-MM-DD → DD/MM/YYYY for swiss endpoint
+      const ddmmyyyy = dateValue.split("-").reverse().join("/");
+
+      // Swiss panchaka endpoint (new, accurate)
+      let swissUrl = `${process.env.REACT_APP_API_URL}/api/fetch_muhurat`;
       let bharagvUrl = `${process.env.REACT_APP_API_URL}/api/getBharagvTable?city=${cityName}&date=${dateValue}&showNonBlue=${showNonBlue}&is12HourFormat=${is12HourFormat}`;
 
+      const swissBody = { city: cityName, date: ddmmyyyy };
       if (selectedLat && selectedLng && cityName === localCity) {
+        swissBody.lat = selectedLat;
+        swissBody.lng = selectedLng;
+        if (timeZone) swissBody.timeZone = timeZone;
+
         const coordParams = `&lat=${selectedLat}&lng=${selectedLng}`;
-        drikUrl += coordParams;
         bharagvUrl += coordParams;
-        if (timeZone) {
-          drikUrl += `&timeZone=${timeZone}`;
-          bharagvUrl += `&timeZone=${timeZone}`;
-        }
+        if (timeZone) bharagvUrl += `&timeZone=${timeZone}`;
       }
 
-      const [muhurthaResponse, bharagvResponse] = await Promise.all([
-        fetch(drikUrl),
+      const [swissResponse, bharagvResponse] = await Promise.all([
+        fetch(swissUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(swissBody),
+        }),
         fetch(bharagvUrl),
       ]);
 
-      if (!muhurthaResponse.ok || !bharagvResponse.ok) {
+      if (!swissResponse.ok || !bharagvResponse.ok) {
         throw new Error('Failed to fetch data from server');
       }
 
-      const mData = await muhurthaResponse.json();
-      const bData = await bharagvResponse.json();
+      // Swiss data: [{ muhurat, category, start, end, ... }]
+      // Normalize: add `time` field = "start to end" so /api/combine backend can use it
+      const rawSwiss = await swissResponse.json();
+      const mData = rawSwiss
+        .filter(r => showNonBlue ? r.category?.toLowerCase().includes('good') || r.category?.toLowerCase().includes('rahitam') : true)
+        .map(r => ({
+          ...r,
+          time: `${r.start} to ${r.end}`,
+        }));
 
+      const bData = await bharagvResponse.json();
       setBharagvData(bData);
 
       const combinedResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/combine`, {
@@ -106,6 +129,7 @@ const CombinePage = () => {
       console.error("Error fetching data", error);
     } finally {
       setLoading(false);
+      setManualLoading(false);
     }
   };
 
@@ -126,7 +150,7 @@ const CombinePage = () => {
         <div className="hero-form">
           <form onSubmit={(e) => {
             e.preventDefault();
-            fetchMuhuratData(city, date);
+            fetchMuhuratData(city, date, true);
           }}>
             <div className="form-row">
               <div className="input-wrapper">
@@ -165,7 +189,7 @@ const CombinePage = () => {
               className="get-panchang-btn-hero"
               disabled={loading}
             >
-              {loading ? 'Gathering Insights...' : 'Generate Combined View'}
+              {manualLoading ? 'Gathering Insights...' : 'Generate Combined View'}
             </button>
           </form>
         </div>

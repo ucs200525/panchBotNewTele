@@ -13,6 +13,7 @@ const DashaPage = () => {
     const [currentDate, setCurrentDate] = useState(new Date().toISOString().substring(0, 10));
     const [dashaData, setDashaData] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [manualLoading, setManualLoading] = useState(false);
     const [error, setError] = useState(null);
     const [birthTime, setBirthTime] = useState('12:00');
     const [expandedDasha, setExpandedDasha] = useState(null);
@@ -22,11 +23,20 @@ const DashaPage = () => {
         setSavedProfiles(getAllProfiles());
     }, []);
 
+    // Initial load: Fetch data automatically if we have city and date
+    useEffect(() => {
+        if (cityName && currentDate && !dashaData) {
+            fetchDashaData(cityName, currentDate, false);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     const toggleDasha = (idx) => {
         setExpandedDasha(expandedDasha === idx ? null : idx);
     };
 
-    const fetchDashaData = async (city, date) => {
+    const fetchDashaData = async (city, date, isManual = true) => {
+        if (isManual) setManualLoading(true);
         setIsLoading(true);
         setError(null);
         try {
@@ -57,6 +67,7 @@ const DashaPage = () => {
             setError(err.message);
         } finally {
             setIsLoading(false);
+            setManualLoading(false);
         }
     };
 
@@ -111,7 +122,7 @@ const DashaPage = () => {
                     <form onSubmit={(e) => {
                         e.preventDefault();
                         if (cityName && currentDate) {
-                            fetchDashaData(cityName, currentDate);
+                            fetchDashaData(cityName, currentDate, true);
                         }
                     }}>
                         <div className="form-group-inline">
@@ -169,7 +180,7 @@ const DashaPage = () => {
                             className="get-panchang-btn-hero"
                             disabled={isLoading}
                         >
-                            {isLoading ? "Calculating..." : "Generate Timeline"}
+                            {manualLoading ? "Calculating..." : "Generate Timeline"}
                         </button>
                     </form>
                 </div>

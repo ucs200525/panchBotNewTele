@@ -20,6 +20,7 @@ const ChartsPage = () => {
     const [birthTime, setBirthTime] = useState('12:00');
     const [chartData, setChartData] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [manualLoading, setManualLoading] = useState(false);
     const [error, setError] = useState(null);
     const [savedProfiles, setSavedProfiles] = useState([]);
     const [activeTab, setActiveTab] = useState('Basic');
@@ -28,7 +29,16 @@ const ChartsPage = () => {
         setSavedProfiles(getAllProfiles());
     }, []);
 
-    const fetchChartData = async (city, date) => {
+    // Initial load: Fetch data automatically if we have city and date
+    useEffect(() => {
+        if (cityName && currentDate && !chartData) {
+            fetchChartData(cityName, currentDate, false);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const fetchChartData = async (city, date, isManual = true) => {
+        if (isManual) setManualLoading(true);
         setIsLoading(true);
         setError(null);
         try {
@@ -59,6 +69,7 @@ const ChartsPage = () => {
             setError(err.message);
         } finally {
             setIsLoading(false);
+            setManualLoading(false);
         }
     };
 
@@ -99,7 +110,7 @@ const ChartsPage = () => {
                     <form onSubmit={(e) => {
                         e.preventDefault();
                         if (cityName && currentDate) {
-                            fetchChartData(cityName, currentDate);
+                            fetchChartData(cityName, currentDate, true);
                         }
                     }}>
                         <div className="form-group-inline">
@@ -157,7 +168,7 @@ const ChartsPage = () => {
                             className="get-panchang-btn-hero"
                             disabled={isLoading}
                         >
-                            {isLoading ? "Calculating Shodashvarga..." : "Generate Shodashvarga"}
+                            {manualLoading ? "Calculating..." : "Generate Shodashvarga"}
                         </button>
                     </form>
                 </div>
