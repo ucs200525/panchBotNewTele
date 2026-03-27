@@ -133,7 +133,7 @@ class BaseCalculator {
      * @returns {Date} Exact crossing time
      */
     binarySearch(startTime, endTime, valueGetter, boundary, maxIterations = 30) {
-        const threshold = 5 * 1000; // 🎯 Improve precision to 5 seconds
+        const threshold = 1 * 1000; // 🎯 Improve precision to 1 second
         let iterations = 0;
 
         while ((endTime - startTime) > threshold && iterations < maxIterations) {

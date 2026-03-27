@@ -767,7 +767,7 @@ function calculateSwissPanchakaRahita(dateObj, lat, lng, timezone, sunriseStr, s
             const lagna = lagnaCalc.getLagnaAtTime(mid, lat, lng);
 
             // Calculation: (Tithi(1-15) + Vara(1-7) + Nakshatra(1-27) + Lagna(1-12)) % 9
-            const tIndex = (tithi.number) + 1;
+            const tIndex = (tithi.number % 15) + 1;
             const vIndex = varaIndex ;
             const nIndex = naks.number + 1;
             const lIndex = lagna.index + 1;
@@ -779,12 +779,12 @@ function calculateSwissPanchakaRahita(dateObj, lat, lng, timezone, sunriseStr, s
             let category = "Good";
 
             switch (remainder) {
-                case 1: muhuratName = "Mrityu"; category = "Danger"; break;
-                case 2: muhuratName = "Agni"; category = "Risk"; break;
-                case 4: muhuratName = "Raja"; category = "Bad"; break;
-                case 6: muhuratName = "Chora"; category = "Evil"; break;
-                case 8: muhuratName = "Roga"; category = "Disease"; break;
-                default: muhuratName = "Rahitam"; category = "Good"; break;
+                case 1: muhuratName = "Mrityu (Danger)"; category = "Danger"; break;
+                case 2: muhuratName = "Agni (Risk)"; category = "Risk"; break;
+                case 4: muhuratName = "Raja (Bad)"; category = "Bad"; break;
+                case 6: muhuratName = "Chora (Evil)"; category = "Evil"; break;
+                case 8: muhuratName = "Roga (Disease)"; category = "Disease"; break;
+                default: muhuratName = "Shubha (Good)"; category = "Good"; break;
             }
 
             results.push({
@@ -800,25 +800,8 @@ function calculateSwissPanchakaRahita(dateObj, lat, lng, timezone, sunriseStr, s
             });
         }
 
-        // 5. Merge continuous identical segments
-        const merged = [];
-        if (results.length > 0) {
-            let current = { ...results[0] };
-            for (let i = 1; i < results.length; i++) {
-                if (results[i].muhurat === current.muhurat) {
-                    // Update current end time
-                    current.end = results[i].end;
-                    current._end = results[i]._end;
-                    current.duration = Math.round((current._end - current._start) / 60000) + ' mins';
-                } else {
-                    merged.push(current);
-                    current = { ...results[i] };
-                }
-            }
-            merged.push(current);
-        }
-
-        return merged;
+        // 5. Preserving individual segments to show all transitions
+        return results;
 
     } catch (error) {
         console.error('Error in calculateSwissPanchakaRahita:', error);

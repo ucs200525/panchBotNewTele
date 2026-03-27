@@ -123,8 +123,8 @@ class NakshatraCalculator extends BaseCalculator {
         let start = startTime.getTime();
         let end = endTime.getTime();
 
-        // Binary search with 1-minute precision
-        while (end - start > 60000) {
+        // Binary search with 1-second precision
+        while (end - start > 1000) {
             const mid = Math.floor((start + end) / 2);
             const midDate = new Date(mid);
             const nakshatra = this.getNakshatraAtTime(midDate);
@@ -136,7 +136,7 @@ class NakshatraCalculator extends BaseCalculator {
             }
         }
 
-        return new Date(end);
+        return new Date(start);
     }
 }
 

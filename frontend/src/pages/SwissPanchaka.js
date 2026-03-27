@@ -23,6 +23,14 @@ const SwissPanchaka = () => {
     sessionStorage.setItem('filteredData', JSON.stringify(filteredData));
   }, [filteredData]);
 
+  // Initial load: Fetch data automatically if we have city and date but no results yet
+  useEffect(() => {
+    if (city && date && filteredData.length === 0) {
+      getMuhuratData(city, date);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
 
   const getMuhuratData = async (cityName, dateValue) => {
     if (!cityName || !dateValue) return;

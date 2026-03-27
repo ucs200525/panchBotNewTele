@@ -48,14 +48,13 @@ const DailyPanchang = () => {
         }
     }, [cityName, currentDate, selectedLat, selectedLng]);
 
-    // Removed automatic fetch on mount to allow user to click Calculate manually
-    /*
+    // Handle initial fetch on mount
     useEffect(() => {
-        if (cityName) {
+        if (cityName && currentDate && !panchangData) {
             fetchPanchang();
         }
-    }, [fetchPanchang]);
-    */
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const formatDisplayTime = (timeStr, fallback = '', showDate = false) => {
         if (!timeStr || timeStr === 'N/A') return fallback;

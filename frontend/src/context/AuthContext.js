@@ -6,16 +6,16 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
     // Initialize states from localStorage (for persistence across sessions)
     // or provide default values
-    const [localCity, setLocalCity] = useState(() => localStorage.getItem('selectedCity') || '');
+  const [localCity, setLocalCity] = useState(() => localStorage.getItem('selectedCity') || 'Vijayawada');
     const [localDate, setLocalDate] = useState(() => {
         // Use today's date if not in sessionStorage
         return sessionStorage.getItem('date') || new Date().toISOString().substring(0, 10);
     });
 
     // Additional general info
-    const [selectedLat, setSelectedLat] = useState(() => localStorage.getItem('selectedLat') || null);
-    const [selectedLng, setSelectedLng] = useState(() => localStorage.getItem('selectedLng') || null);
-    const [timeZone, setTimeZone] = useState(() => localStorage.getItem('selectedTimeZone') || '');
+    const [selectedLat, setSelectedLat] = useState(() => localStorage.getItem('selectedLat') || '16.5062');
+    const [selectedLng, setSelectedLng] = useState(() => localStorage.getItem('selectedLng') || '80.6480');
+    const [timeZone, setTimeZone] = useState(() => localStorage.getItem('selectedTimeZone') || 'Asia/Kolkata');
     const [is12HourFormat, setIs12HourFormat] = useState(() => {
         const saved = localStorage.getItem('is12HourFormat');
         return saved !== null ? JSON.parse(saved) : true;
