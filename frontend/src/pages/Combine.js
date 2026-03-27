@@ -228,12 +228,9 @@ const CombinePage = () => {
                           {/* <td>{row.type}</td> */}
                           <td>{row.description}</td>
                           <td className={styles.timeCell}>
-                            {row.timeInterval.split(' to ').map((part, i, arr) => (
-                              <React.Fragment key={i}>
-                                <div className={styles.timeRange}>{part}</div>
-                                {i < arr.length - 1 && <div className={styles.toText}>to</div>}
-                              </React.Fragment>
-                            ))}
+                            <span className={styles.timeRange}>{row.timeInterval.split(' to ')[0]}</span>
+                            <span className={styles.toText}>to</span>
+                            <span className={styles.timeRange}>{row.timeInterval.split(' to ')[1]}</span>
                             {row.duration && <div className={styles.durationSmall}>({row.duration})</div>}
                           </td>
                           <td>

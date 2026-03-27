@@ -56,11 +56,11 @@
 }
 
 .panchangTable td {
-    padding: 16px;
+    padding: 10px 12px;
     border: 1px solid #e2e8f0;
     color: #1e293b;
     vertical-align: middle;
-    font-size: 0.95rem;
+    font-size: 0.85rem;
 }
 
 .panchangTable tr:hover {
@@ -73,22 +73,34 @@
 }
 .panchangTable table {
     width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 8px;
-    margin: -8px 0;
+    border-collapse: collapse; /* Essential for flat look */
+    margin: 0;
+    border: none;
+}
+.panchangTable table tr {
+  border-bottom: 1px solid #e2e8f0;
+}
+.panchangTable table tr:last-child {
+  border-bottom: none;
 }
 .panchangTable table td {
-    background: white;
-    border: 1px solid #cbd5e1 !important;
-    border-radius: 6px;
-    padding: 10px 14px !important;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    background: transparent;
+    border: none !important;
+    border-radius: 0;
+    padding: 6px 10px !important;
+    box-shadow: none;
+    font-size: 0.8rem;
+    color: #334155;
+    line-height: 1.3;
+    white-space: nowrap; /* Prevent wrapping for label + time */
 }
 
 .sno {
     color: #94a3b8;
     font-weight: 600;
-    width: 40px;
+    border-right: 1px solid #e2e8f0;
+    width: 50px;
+    text-align: center !important;
 }
 
 .typeCell {
@@ -106,34 +118,33 @@
     font-weight: 700;
     color: #1e293b;
     background: #f8fafc;
-    white-space: normal;
+    white-space: nowrap; /* Prevent wrap as requested */
     text-align: center;
-    min-width: 180px;
-    line-height: 1.4;
-    padding: 12px 10px !important;
+    min-width: 170px;
+    padding: 10px 8px !important;
 }
 
 .timeRange {
     color: #1aae75;
-    font-size: 1rem;
-    white-space: nowrap;
+    font-size: 0.85rem;
+    display: inline; /* Keep on same line */
 }
 
 .toText {
-    display: block;
-    font-size: 0.8rem;
+    display: inline; /* Keep on same line */
+    font-size: 0.85rem;
     color: #64748b;
     font-weight: 600;
-    margin: 4px 0;
+    margin: 0 6px;
     text-transform: lowercase;
 }
 
 .durationSmall {
     display: block;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: #64748b;
     font-weight: 500;
-    margin-top: 6px;
+    margin-top: 4px;
 }
 
 .weekdaysContainer {
