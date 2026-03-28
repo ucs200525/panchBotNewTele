@@ -112,9 +112,9 @@ const Navbar = () => {
         </div>
 
         {/* Telegram Bot Promo Icon */}
-        <div className="navbar-actions">
+        {/* <div className="navbar-actions">
           <BotPromotion />
-        </div>
+        </div> */}
 
         {/* Settings button - Optional */}
         {/* <div className="navbar-actions">
