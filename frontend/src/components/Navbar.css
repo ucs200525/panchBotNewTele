@@ -218,7 +218,8 @@
     }
 
     .navbar-actions {
-        display: none;
+        display: flex; /* Show bot icon on mobile */
+        gap: 0.25rem;
     }
 }
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import './Navbar.css';
+import BotPromotion from './BotPromotion';
 
 const Navbar = () => {
   const location = useLocation();
@@ -108,6 +109,11 @@ const Navbar = () => {
             </div>
           </div>
           */}
+        </div>
+
+        {/* Telegram Bot Promo Icon */}
+        <div className="navbar-actions">
+          <BotPromotion />
         </div>
 
         {/* Settings button - Optional */}
