@@ -3,7 +3,25 @@
  * Global settings for all calculations
  */
 
-const swisseph = require('sweph');
+// Create a proxy to handle legacy swe_ prefixes
+const path = require('path');
+const swissephRaw = require('sweph');
+if (swissephRaw.constants) {
+    Object.assign(swissephRaw, swissephRaw.constants);
+}
+
+const swisseph = new Proxy(swissephRaw, {
+    get(target, prop) {
+        if (typeof prop === 'string' && prop.startsWith('swe_')) {
+            const newProp = prop.replace('swe_', '');
+            return target[newProp] || target[prop];
+        }
+        return target[prop];
+    }
+});
+
+const EPHE_PATH = path.join(__dirname, '..', '..', 'data', 'ephe');
+swissephRaw.set_ephe_path(EPHE_PATH);
 
 // Set default ayanamsa (Lahiri)
 const AYANAMSA_LAHIRI = swisseph.SE_SIDM_LAHIRI;

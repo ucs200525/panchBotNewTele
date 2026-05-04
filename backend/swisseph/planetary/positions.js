@@ -27,7 +27,13 @@ class PlanetaryPositions extends BaseCalculator {
         ];
 
         return bodies.map(body => {
-            const result = this.swisseph.swe_calc_ut(jd, body.id, this.swisseph.SEFLG_SWIEPH);
+            const resultRaw = this.swisseph.swe_calc_ut(jd, body.id, this.swisseph.SEFLG_SWIEPH);
+            const result = resultRaw.data ? {
+                longitude: resultRaw.data[0],
+                latitude: resultRaw.data[1],
+                distance: resultRaw.data[2],
+                longitudeSpeed: resultRaw.data[3]
+            } : resultRaw;
 
             // Handle Rahu/Ketu special sidereal logic if needed, but for now standard ayanamsa
             let siderealLong = (result.longitude - ayanamsa + 360) % 360;

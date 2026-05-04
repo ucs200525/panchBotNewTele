@@ -3,7 +3,7 @@
  * Calculates Yoga transitions during a day
  */
 
-const swisseph = require('swisseph');
+const { swisseph } = require('../core/config');
 const BaseCalculator = require('../core/baseCalculator');
 const julianDay = require('../core/julianDay');
 
@@ -44,8 +44,11 @@ class YogaCalculator extends BaseCalculator {
         const moonResult = swisseph.swe_calc_ut(jd, swisseph.SE_MOON, swisseph.SEFLG_SWIEPH);
         const sunResult = swisseph.swe_calc_ut(jd, swisseph.SE_SUN, swisseph.SEFLG_SWIEPH);
         
-        const moonSidereal = (moonResult.longitude - ayanamsa + 360) % 360;
-        const sunSidereal = (sunResult.longitude - ayanamsa + 360) % 360;
+        const moonLong = moonResult.data ? moonResult.data[0] : moonResult.longitude;
+        const sunLong = sunResult.data ? sunResult.data[0] : sunResult.longitude;
+        
+        const moonSidereal = (moonLong - ayanamsa + 360) % 360;
+        const sunSidereal = (sunLong - ayanamsa + 360) % 360;
         
         return this.calculateYoga(moonSidereal, sunSidereal);
     }

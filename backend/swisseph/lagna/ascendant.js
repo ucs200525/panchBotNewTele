@@ -22,7 +22,8 @@ class LagnaCalculator extends BaseCalculator {
             throw new Error(`Lagna calculation error: ${result.error}`);
         }
 
-        const tropicalAsc = result.ascendant || result.ascmc[0];
+        const data = result.data || result;
+        const tropicalAsc = data.ascendant || (data.points ? data.points[0] : (data.ascmc ? data.ascmc[0] : 0));
         const ayanamsa = this.getAyanamsa(jd);
         const siderealAsc = this.tropicalToSidereal(tropicalAsc, ayanamsa);
         const lagnaIndex = Math.floor(siderealAsc / 30) % 12;

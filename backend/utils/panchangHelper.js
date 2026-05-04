@@ -29,17 +29,6 @@ async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr
         
         console.log(`Calculating Panchanga for: ${city} on ${date}`);
         
-        // Format time helper
-        const formatTime = (dateInput) => {
-            if (!dateInput) return 'N/A';
-            if (typeof dateInput === 'string') return dateInput;
-            const d = new Date(dateInput);
-            const fullString = d.toLocaleString('en-US', { timeZone: timezone });
-            const timePart = fullString.split(', ')[1]; 
-            const [time, period] = timePart.split(' ');
-            const [hours, minutes] = time.split(':');
-            return `${hours}:${minutes} ${period}`;
-        };
         
 
         
@@ -293,7 +282,7 @@ async function calculatePanchangData(city, date, lat, lng, sunriseStr, sunsetStr
             })),
             
             // Abhijit Muhurat
-            abhijitMuhurat: calculateAbhijitMuhurat(sunriseStr, sunsetStr),
+            abhijitMuhurat: calculateAbhijitMuhurat(sunriseStr, sunsetStr, timezone),
             
             // Hindu calendar years and cycles
             shakaYear: dayElements?.samvatsara?.shakaYear || 'N/A',
@@ -423,12 +412,37 @@ function calculateDuration(start, end) {
     return `${minutes} minutes`;
 }
 
+const formatTime = (date, timezone = 'Asia/Kolkata', baseDate = null) => {
+    if (!date) return 'N/A';
+    
+    const options = {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+        timeZone: timezone
+    };
+    
+    let timeStr = date.toLocaleTimeString('en-IN', options).toUpperCase();
+    
+    if (baseDate) {
+        const d1Str = new Date(baseDate).toLocaleDateString('en-CA', { timeZone: timezone });
+        const d2Str = new Date(date).toLocaleDateString('en-CA', { timeZone: timezone });
+        
+        if (d2Str > d1Str) {
+            const datePart = date.toLocaleDateString('en-US', { day: '2-digit', month: 'short', timeZone: timezone });
+            return `${timeStr}, ${datePart}`;
+        }
+    }
+    
+    return timeStr;
+};
+
 /**
  * Calculate Abhijit Muhurat (auspicious time around noon)
  * @param {string} sunriseStr - Sunrise time as "HH:MM:SS" string
  * @param {string} sunsetStr - Sunset time as "HH:MM:SS" string  
  */
-function calculateAbhijitMuhurat(sunriseStr, sunsetStr) {
+function calculateAbhijitMuhurat(sunriseStr, sunsetStr, timezone = 'Asia/Kolkata') {
     try {
         // Parse sunrise and sunset times
         const [sunriseHour, sunriseMin, sunriseSec = 0] = sunriseStr.split(':').map(Number);
@@ -448,18 +462,10 @@ function calculateAbhijitMuhurat(sunriseStr, sunsetStr) {
         const abhijitStart = new Date(noonTime.getTime() - 12 * 60 * 1000);
         const abhijitEnd = new Date(noonTime.getTime() + 12 * 60 * 1000);
         
-        const formatTime = (date) => {
-            return date.toLocaleTimeString('en-IN', {
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: true
-            });
-        };
-        
         return {
-            start: formatTime(abhijitStart),
-            end: formatTime(abhijitEnd),
-            duration: '24 minutes'
+            start: formatTime(abhijitStart, timezone),
+            end: formatTime(abhijitEnd, timezone),
+            duration: '48 minutes' // Standard Abhijit duration
         };
     } catch (error) {
         console.error('Error calculating Abhijit Muhurat:', error);
@@ -471,4 +477,135 @@ function calculateAbhijitMuhurat(sunriseStr, sunsetStr) {
     }
 }
 
-module.exports = { calculatePanchangData, getTimezoneFromCoordinates };
+function calculateSwissPanchakaRahita(dateObj, lat, lng, timezone, sunriseStr, sunsetStr, nextSunriseStr, existingLagnas) {
+    try {
+        const { panchanga, lagna: lagnaModule } = require('../swisseph');
+        const tithiCalc = new panchanga.TithiCalculator();
+        const naksCalc = new panchanga.NakshatraCalculator();
+        const lagnaCalc = new lagnaModule.LagnaCalculator();
+
+        const parseTime = (date, str) => {
+            const clean = str.toLowerCase().replace(/[ap]m/, '').trim();
+            const parts = clean.split(':').map(Number);
+            let h = parts[0];
+            const m = parts[1] || 0;
+            const s = parts[2] || 0;
+            if (str.toLowerCase().includes('pm') && h < 12) h += 12;
+            if (str.toLowerCase().includes('am') && h === 12) h = 0;
+            const d = new Date(date);
+            d.setHours(h, m, s, 0);
+            return d;
+        };
+
+        const dayStart = parseTime(dateObj, sunriseStr);
+        const dayEnd = parseTime(new Date(dateObj.getTime() + 24 * 60 * 60 * 1000), nextSunriseStr);
+
+        const transitions = new Set();
+        transitions.add(dayStart.getTime());
+        transitions.add(dayEnd.getTime());
+
+        const addInRange = (list) => {
+            list.forEach(item => {
+                const e = item.endTime ? new Date(item.endTime).getTime() : null;
+                if (e && e > dayStart.getTime() && e < dayEnd.getTime()) transitions.add(e);
+            });
+        };
+
+        const tomorrow = new Date(dateObj.getTime() + 24 * 60 * 60 * 1000);
+        addInRange(tithiCalc.calculateDayTithis(dateObj, timezone));
+        addInRange(tithiCalc.calculateDayTithis(tomorrow, timezone));
+        addInRange(naksCalc.calculateDayNakshatras(dateObj, timezone));
+        addInRange(naksCalc.calculateDayNakshatras(tomorrow, timezone));
+        addInRange(existingLagnas || lagnaCalc.calculateDayLagnas(dateObj, lat, lng, timezone, sunriseStr));
+
+        const sortedTimes = Array.from(transitions).sort((a, b) => a - b);
+        const results = [];
+        const varaIndex = dateObj.getDay() + 1; // 1=Sun, 7=Sat
+
+
+        for (let i = 0; i < sortedTimes.length - 1; i++) {
+            const start = new Date(sortedTimes[i]);
+            const end = new Date(sortedTimes[i + 1]);
+            if (end.getTime() - start.getTime() < 120000) continue;
+            const mid = new Date(start.getTime() + (end.getTime() - start.getTime()) / 2);
+
+            const tithi = tithiCalc.getTithiAtTime(mid);
+            const naks = naksCalc.getNakshatraAtTime(mid);
+            const lagna = lagnaCalc.getLagnaAtTime(mid, lat, lng);
+
+            const tIndex = tithi.number + 1; // 1-30
+            const vIndex = varaIndex;
+            const nIndex = naks.number + 1;
+            const lIndex = lagna.index + 1;
+
+            const sum = tIndex + vIndex + nIndex + lIndex;
+            const remainder = sum % 9;
+
+            let muhuratName = "";
+            let category = "Good";
+
+            switch (remainder) {
+                case 1: muhuratName = "Mrityu (Danger)"; category = "Danger"; break;
+                case 2: muhuratName = "Agni (Risk)"; category = "Risk"; break;
+                case 4: muhuratName = "Raja (Bad)"; category = "Bad"; break;
+                case 6: muhuratName = "Chora (Evil)"; category = "Evil"; break;
+                case 8: muhuratName = "Roga (Disease)"; category = "Disease"; break;
+                default: muhuratName = "Shubha (Good)"; category = "Good"; break;
+            }
+
+            results.push({
+                muhurat: muhuratName,
+                category: category,
+                start: formatTime(start, timezone, dateObj),
+                end: formatTime(end, timezone, dateObj),
+                duration: Math.round((end.getTime() - start.getTime()) / 60000) + ' mins',
+                _start: start.getTime(),
+                _end: end.getTime(),
+                _sum: sum,
+                _remainder: remainder
+            });
+        }
+        return results;
+    } catch (error) {
+        console.error('Error in calculateSwissPanchakaRahita:', error);
+        return [];
+    }
+}
+
+function calculateKaalRatri(dateObj, sunsetStr, nextSunriseStr) {
+    try {
+        const [suh, sum, sus = 0] = sunsetStr.split(':').map(Number);
+        let [nsh, nsm, nss = 0] = (nextSunriseStr || '').split(':').map(Number);
+        if (isNaN(nsh)) {
+            nsh = (suh + 12) % 24;
+            nsm = sum;
+        }
+
+        const sunsetDate = new Date(dateObj);
+        sunsetDate.setHours(suh, sum, sus || 0, 0);
+
+        const nextSunriseDate = new Date(dateObj);
+        nextSunriseDate.setDate(nextSunriseDate.getDate() + 1);
+        nextSunriseDate.setHours(nsh, nsm, nss || 0, 0);
+
+        const nightDuration = (nextSunriseDate - sunsetDate) / (8 * 60 * 1000); 
+
+        const weekday = dateObj.getDay();
+        const kaalRatriParts = [4, 2, 7, 5, 3, 1, 6];
+        const partIdx = kaalRatriParts[weekday] - 1; 
+
+        const kaalRatriStart = new Date(sunsetDate.getTime() + partIdx * nightDuration * 60 * 1000);
+        const kaalRatriEnd = new Date(sunsetDate.getTime() + (partIdx + 1) * nightDuration * 60 * 1000);
+
+        return {
+            start: formatTime(kaalRatriStart),
+            end: formatTime(kaalRatriEnd),
+            duration: Math.round(nightDuration) + ' mins'
+        };
+    } catch (error) {
+        console.error('Error calculating Kaal Ratri:', error);
+        return { start: 'N/A', end: 'N/A' };
+    }
+}
+
+module.exports = { calculatePanchangData, getTimezoneFromCoordinates, calculateSwissPanchakaRahita, calculateKaalRatri };

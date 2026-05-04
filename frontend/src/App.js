@@ -8,6 +8,9 @@ import Combine from './pages/Combine';
 import Navbar from './components/Navbar';
 import AdminLogs from './pages/AdminLogs';
 
+import PanchakaSwiss from './pages/PanchakaSwiss';
+import CombineSwiss from './pages/CombineSwiss';
+
 function App() {
   return (
     <BrowserRouter>
@@ -15,14 +18,10 @@ function App() {
       <Routes>
         <Route path="/" element={<PachangamForm />} />
         <Route path="/panchaka" element={<PanchakaMuhurth />} />
-        {/* <Route path="/panchang" element={<PanchangPage />} />
-        <Route path="/planetary" element={<PlanetaryPage />} />
-        <Route path="/charts" element={<ChartsPage />} />
-        <Route path="/dasha" element={<DashaPage />} />
-        <Route path="/astronomical" element={<AstronomicalPage />} />
-        <Route path="/lagna" element={<LagnaPage />} />
-        <Route path="/hora" element={<HoraPage />} /> */}
+        <Route path="/panchaka-swiss" element={<PanchakaSwiss />} />
         <Route path="/combine" element={<Combine />} />
+        <Route path="/combine-swiss" element={<CombineSwiss />} />
+
         {/* <Route path="/DownloadImage" element={<DownloadImage />} />
         <Route path="/drik-table-image" element={<DrikTableImage />} />
         <Route path="/bhargav-table-image" element={<BhargavTableImage />} /> */}

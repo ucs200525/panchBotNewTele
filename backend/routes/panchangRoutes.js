@@ -691,9 +691,10 @@ router.post('/update-table', (req, res) => {
 
 //     return tableData;
 // };
-const createBharagvTable = async (city, date, showNonBlue, is12HourFormat) => {
-    logger.info({ message: 'createBharagvTable called', city, date, showNonBlue, is12HourFormat });
-    const sun = await getSunTimesForCity(city, date);
+const createBharagvTable = async (city, date, showNonBlue, is12HourFormat, lat, lng, timeZone) => {
+    logger.info({ message: 'createBharagvTable called', city, date, showNonBlue, is12HourFormat, lat, lng, timeZone });
+    const sun = await getSunTimesForCity(city, date, lat, lng);
+
     if (!sun) {
         logger.warn({ message: 'Sun times not available', city, date });
         return [];
@@ -783,8 +784,10 @@ router.get('/getBharagvTable', async (req, res) => {
     }
 
     try {
-        const table = await createBharagvTable(city, date, showNonBlue === 'true', is12HourFormat === 'true');
+        const { lat, lng, timeZone } = req.query;
+        const table = await createBharagvTable(city, date, showNonBlue === 'true', is12HourFormat === 'true', lat, lng, timeZone);
         res.json(table); // Send the table data as a JSON response
+
     } catch (error) {
         logger.error({ message: 'Route /getBharagvTable error', error: error.message });
         console.error(error);
@@ -793,12 +796,12 @@ router.get('/getBharagvTable', async (req, res) => {
 });
 ////////////////////////////////////////////////END----BHARGAV--PANCHAGAM//////////////////////////////////
 
-// Function to create the dummy table with formatted time intervals
-// Function to create the dummy table with formatted time intervals
-const createDrikTable = async (city, date) => {
-    logger.info({ message: 'createDrikTable called', city, date });
+const createDrikTableSwiss = async (city, date, lat, lng, timeZone) => {
+    logger.info({ message: 'createDrikTableSwiss called', city, date, lat, lng });
     // Fetch the muhurat data using the city and date
-    const filteredData = await fetchmuhurat(city, date); // Assuming fetchmuhurat is an async function
+    const filteredData = await fetchmuhuratSwiss(city, date, lat, lng, timeZone); // Assuming fetchmuhuratSwiss is an async function
+
+
 
     // Create the drikTable by mapping over filteredData
     const drikTable = filteredData.map((row) => {
@@ -834,40 +837,76 @@ const createDrikTable = async (city, date) => {
             time: timeIntervalFormatted,
         };
     });
-
-    // Return the formatted table
-    logger.info({ message: 'createDrikTable completed', rows: drikTable.length });
     return drikTable;
 };
+const createDrikTableScraping = async (city, date) => {
+    logger.info({ message: 'createDrikTableScraping called', city, date });
+    const filteredData = await fetchmuhuratScraping(city, date);
+    const drikTable = filteredData.map((row) => {
+        const [startTime, endTime] = row.time.split(" to ");
+        let endTimeWithoutDate, endDatePart;
+        if (endTime.includes(", ")) {
+            [endTimeWithoutDate, endDatePart] = endTime.split(", ");
+        } else {
+            endTimeWithoutDate = endTime;
+            endDatePart = null;
+        }
+        let adjustedStartTime = startTime.includes("PM")
+            ? `${startTime}`
+            : startTime.includes("AM") && endTime.includes(",")
+                ? `${endDatePart} , ${startTime}`
+                : startTime;
+        let adjustedEndTime = endTime.includes("AM") && endTime.includes(",")
+            ? `${endDatePart} , ${endTimeWithoutDate}`
+            : endTime.includes("PM")
+                ? `${endTimeWithoutDate}`
+                : endTime;
+        const timeIntervalFormatted = `${adjustedStartTime} to ${adjustedEndTime}`;
+        return {
+            category: row.category,
+            muhurat: row.muhurat,
+            time: timeIntervalFormatted,
+        };
+    });
+    return drikTable;
+};
+
 router.get('/getDrikTable', async (req, res) => {
     const { city, date, goodTimingsOnly } = req.query;
     logger.info({ message: 'Route /getDrikTable called', query: req.query });
-
-    // If goodTimingsOnly is not provided, set it to true by default
-    const isGoodTimingsOnly = goodTimingsOnly !== 'false'; // Defaults to true unless 'false' is explicitly passed
-
-    if (!city || !date) {
-        return res.status(400).send('City and date are required');
-    }
-
+    const isGoodTimingsOnly = goodTimingsOnly !== 'false';
+    if (!city || !date) return res.status(400).send('City and date are required');
     try {
-        // Fetch the complete table
-        const table = await createDrikTable(city, date);
-
-        // If goodTimingsOnly is true, filter the table to include only "Good" category
+        const table = await createDrikTableScraping(city, date);
         if (isGoodTimingsOnly) {
             const filteredTable = table.filter(row => row.category === 'Good');
-            return res.json(filteredTable); // Send the filtered table
+            return res.json(filteredTable);
         }
-
-        // If goodTimingsOnly is false, return the full table
-        res.json(table); // Send the complete table as a JSON response
+        res.json(table);
     } catch (error) {
         logger.error({ message: 'Route /getDrikTable error', error: error.message });
-        console.error(error);
         res.status(500).send('Error generating table');
     }
 });
+
+router.get('/getDrikTableSwiss', async (req, res) => {
+    const { city, date, goodTimingsOnly, lat, lng, timeZone } = req.query;
+    logger.info({ message: 'Route /getDrikTableSwiss called', query: req.query });
+    const isGoodTimingsOnly = goodTimingsOnly !== 'false';
+    if (!city || !date) return res.status(400).send('City and date are required');
+    try {
+        const table = await createDrikTableSwiss(city, date, lat, lng, timeZone);
+        if (isGoodTimingsOnly) {
+            const filteredTable = table.filter(row => row.category === 'Good');
+            return res.json(filteredTable);
+        }
+        res.json(table);
+    } catch (error) {
+        logger.error({ message: 'Route /getDrikTableSwiss error', error: error.message });
+        res.status(500).send('Error generating table');
+    }
+});
+
 
 
 
@@ -962,6 +1001,114 @@ const processMuhuratAndPanchangam = (muhuratData, panchangamData, baseDate) => {
     logger.info({ message: 'processMuhuratAndPanchangam completed', mergedRows: mergedData.length });
     return mergedData;
 };
+
+async function fetchmuhuratSwiss(city, date, lat, lng, timeZone) {
+    logger.info({ message: 'fetchmuhurat Swiss called', city, date, lat, lng });
+    try {
+        let year, month, day;
+        if (date.includes('/')) {
+            [day, month, year] = date.split('/').map(Number);
+        } else if (date.includes('-')) {
+            [year, month, day] = date.split('-').map(Number);
+        } else {
+            throw new Error('Invalid date format');
+        }
+        
+        const isoDate = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+
+        let coords;
+        if (lat && lng) {
+            coords = {
+                lat: parseFloat(lat),
+                lng: parseFloat(lng),
+                timeZone: timeZone || getTimezoneFromCoordinates(parseFloat(lat), parseFloat(lng))
+            };
+        } else {
+            coords = await fetchCoordinates(city);
+        }
+
+        if (!coords) throw new Error('City not found');
+
+        const sunTimesData = await fetchSunTimes(coords.lat, coords.lng, isoDate, coords.timeZone);
+        if (!sunTimesData) throw new Error('Could not calculate sun times');
+
+        const { calculateSwissPanchakaRahita } = require('../utils/panchangHelper');
+        const dateObj = new Date(year, month - 1, day, 12, 0, 0);
+
+        const muhuratData = await calculateSwissPanchakaRahita(
+            dateObj,
+            coords.lat,
+            coords.lng,
+            coords.timeZone,
+            sunTimesData.sunriseToday,
+            sunTimesData.sunsetToday,
+            sunTimesData.sunriseTmrw
+        );
+
+        logger.info({ message: 'fetchmuhurat Swiss completed', count: muhuratData.length });
+        
+        // Format to match legacy scraper structure for frontend compatibility
+        return muhuratData.map(item => ({
+            muhurat: item.muhurat.split(' (')[0],
+            category: item.category,
+            time: `${item.start} to ${item.end}`
+        }));
+
+    } catch (error) {
+        logger.error({ message: "Error in Swiss fetchmuhurat", error: error.message, city, date });
+        return [];
+    }
+}
+
+// New endpoint for comprehensive Panchang data
+router.get('/getPanchangData', async (req, res) => {
+    logger.info({ message: 'Route /getPanchangData called', query: req.query });
+    const { city, date, lat, lng } = req.query;
+
+    if (!city || !date) {
+        return res.status(400).json({ error: 'City and date are required' });
+    }
+
+    try {
+        let coords;
+        if (lat && lng && lat !== 'null' && lng !== 'null') {
+            coords = {
+                lat: parseFloat(lat),
+                lng: parseFloat(lng),
+                timeZone: getTimezoneFromCoordinates(parseFloat(lat), parseFloat(lng))
+            };
+        } else {
+            coords = await fetchCoordinates(city);
+        }
+
+        if (!coords) {
+            return res.status(404).json({ error: 'City not found' });
+        }
+
+        const sunTimesData = await fetchSunTimes(coords.lat, coords.lng, date, coords.timeZone);
+        if (!sunTimesData) {
+            return res.status(500).json({ error: 'Failed to fetch sun times' });
+        }
+
+        const { calculatePanchangData } = require('../utils/panchangHelper');
+        const panchangData = await calculatePanchangData(
+            city,
+            date,
+            coords.lat,
+            coords.lng,
+            sunTimesData.sunriseToday,
+            sunTimesData.sunsetToday,
+            true  // includeTransitions
+        );
+
+        res.json(panchangData);
+    } catch (error) {
+        logger.error({ message: 'Route /getPanchangData error', error: error.message });
+        res.status(500).json({ error: 'Failed to calculate Panchang data' });
+    }
+});
+
+
 
 // API endpoint to fetch combined data
 // API endpoint to fetch combined data
@@ -1546,8 +1693,8 @@ router.get('/', (req, res) => {
 
 // Function to fetch Muhurat data for a given city and date
 // Function to fetch Muhurat data for a given city and date
-const fetchmuhurat = async (city, date) => {
-    logger.info({ message: 'fetchmuhurat called', city, date });
+const fetchmuhuratScraping = async (city, date) => {
+    logger.info({ message: 'fetchmuhuratScraping called', city, date });
     try {
         // Get the GeoName ID for the provided city
         const geoNameId = await getGeoNameId(city);
@@ -1578,36 +1725,15 @@ const fetchmuhurat = async (city, date) => {
             });
         });
 
-        logger.info({ message: 'fetchmuhurat completed', count: muhuratData.length });
+        logger.info({ message: 'fetchmuhuratScraping completed', count: muhuratData.length });
         return muhuratData; // Return the muhurat data
 
     } catch (error) {
-        logger.error({ message: "Error fetching Muhurat data", error: error.message, city, date });
+        logger.error({ message: "Error fetching Muhurat data (scraping)", error: error.message, city, date });
         throw new Error('Error fetching data');
     }
 };
 
-
-
-
-
-// Route to fetch Muhurat data with dynamic city and date input
-router.post('/fetch_muhurat', async (req, res) => {
-    const { city, date } = req.body;  // Get city and date from the request body
-    logger.info({ message: 'Route /fetch_muhurat called', city, date });
-
-    try {
-        // Call the fetchmuhurat function with city and date
-        const muhuratData = await fetchmuhurat(city, date);
-
-        // Return the data as JSON response
-        res.json(muhuratData);
-    } catch (error) {
-        logger.error({ message: "Error in route fetching Muhurat data", error: error.message });
-        console.error("Error in route fetching Muhurat data:", error);
-        res.status(500).send('Error fetching data');
-    }
-});
 
 
 router.post('/fetch_muhurat_table', async (req, res) => {
@@ -1615,7 +1741,7 @@ router.post('/fetch_muhurat_table', async (req, res) => {
     const { city, date } = req.body;
 
     try {
-        const muhuratData = await fetchmuhurat(city, date);
+        const muhuratData = await fetchmuhuratScraping(city, date);
 
         let htmlContent = `
             <html>
@@ -1827,5 +1953,30 @@ router.post('/panchang', async (req, res) => {
         res.status(500).json({ error: 'Failed to calculate Panchang data', details: error.message });
     }
 });
+
+router.post('/fetch_muhurat', async (req, res) => {
+    const { city, date } = req.body;
+    logger.info({ message: 'Route /fetch_muhurat called', city, date });
+    try {
+        const muhuratData = await fetchmuhuratScraping(city, date);
+        res.json(muhuratData);
+    } catch (error) {
+        logger.error({ message: "Error in route fetching Muhurat data", error: error.message });
+        res.status(500).send('Error fetching data');
+    }
+});
+
+router.post('/fetch_muhurat_swiss', async (req, res) => {
+    const { city, date, lat, lng, timeZone } = req.body;
+    logger.info({ message: 'Route /fetch_muhurat_swiss called', city, date });
+    try {
+        const muhuratData = await fetchmuhuratSwiss(city, date, lat, lng, timeZone);
+        res.json(muhuratData);
+    } catch (error) {
+        logger.error({ message: "Error in route fetching Swiss Muhurat data", error: error.message });
+        res.status(500).send('Error fetching data');
+    }
+});
+
 
 module.exports = router;

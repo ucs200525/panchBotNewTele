@@ -32,61 +32,39 @@ const Navbar = () => {
             <span className="nav-text">Home</span>
           </Link>
 
-          <Link
+          {/* <Link
             to="/panchaka"
             className={`nav-link ${isActive('/panchaka') ? 'active' : ''}`}
           >
             <span className="nav-icon">⏰</span>
             <span className="nav-text">Panchaka Rahita</span>
-          </Link>
-
-          {/* <Link
-            to="/panchang"
-            className={`nav-link ${isActive('/panchang') ? 'active' : ''}`}
-          >
-            <span className="nav-icon">📅</span>
-            <span className="nav-text">Panchang</span>
-          </Link>
-
-          <Link 
-            to="/charts" 
-            className={`nav-link ${isActive('/charts') ? 'active' : ''}`}
-          >
-            <span className="nav-icon">📊</span>
-            <span className="nav-text">Charts</span>
-          </Link>
-
-          <Link 
-            to="/dasha" 
-            className={`nav-link ${isActive('/dasha') ? 'active' : ''}`}
-          >
-            <span className="nav-icon">⏳</span>
-            <span className="nav-text">Dasha</span>
-          </Link>
-
-          <Link 
-            to="/lagna" 
-            className={`nav-link ${isActive('/lagna') ? 'active' : ''}`}
-          >
-            <span className="nav-icon">🌅</span>
-            <span className="nav-text">Lagna</span>
-          </Link>
-
-          <Link 
-            to="/hora" 
-            className={`nav-link ${isActive('/hora') ? 'active' : ''}`}
-          >
-            <span className="nav-icon">⌛</span>
-            <span className="nav-text">Hora</span>
           </Link> */}
 
-          <Link 
+          <Link
+            to="/panchaka-swiss"
+            className={`nav-link ${isActive('/panchaka-swiss') ? 'active' : ''}`}
+          >
+            <span className="nav-icon">🔬</span>
+            <span className="nav-text">Panchaka </span>
+          </Link>
+
+          {/* <Link 
             to="/combine" 
             className={`nav-link ${isActive('/combine') ? 'active' : ''}`}
           >
             <span className="nav-icon">⭐</span>
             <span className="nav-text">Good Timings</span>
+          </Link> */}
+
+          <Link 
+            to="/combine-swiss" 
+            className={`nav-link ${isActive('/combine-swiss') ? 'active' : ''}`}
+          >
+            <span className="nav-icon">✨</span>
+            <span className="nav-text">Good Timings </span>
           </Link>
+
+
 
           {/* Removed More dropdown - uncomment if needed */}
           {/* 

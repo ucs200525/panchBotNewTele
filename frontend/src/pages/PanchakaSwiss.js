@@ -6,7 +6,7 @@ import CityAndDateInput from '../components/CityAndDateInput';
 import LivePeriodTracker from '../components/LivePeriodTracker';
 
 
-const PanchakaMuhurth = () => {
+const PanchakaSwiss = () => {
     
     const { localCity, localDate, localLat, localLng, setCityAndDate } = useAuth();
     const [city, setCity] = useState(localCity);
@@ -135,7 +135,7 @@ const PanchakaMuhurth = () => {
         }
 
         setLoading(true); // Set loading to true before fetching data
-        fetch(`${process.env.REACT_APP_API_URL}/api/fetch_muhurat`, {
+        fetch(`${process.env.REACT_APP_API_URL}/api/fetch_muhurat_swiss`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -335,4 +335,4 @@ const PanchakaMuhurth = () => {
     );
 };
 
-export default PanchakaMuhurth;
+export default PanchakaSwiss;

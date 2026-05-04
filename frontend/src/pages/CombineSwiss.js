@@ -4,7 +4,7 @@ import LivePeriodTracker from '../components/LivePeriodTracker';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useAuth } from '../context/AuthContext';
 
-const CombinePage = () => {
+const CombineSwiss = () => {
   const { localCity, localDate, localLat, localLng, setCityAndDate } = useAuth();
   const [city, setCity] = useState(localCity);
   const [date, setDate] = useState(localDate);
@@ -156,7 +156,7 @@ const CombinePage = () => {
       // Fetch both Muhurat and Bharagv Data with updated parameters
       const [muhurthaResponse, bharagvResponse] = await Promise.all([
         fetch(
-            `${process.env.REACT_APP_API_URL}/api/getDrikTable?city=${city}&date=${convertToDDMMYYYY(date)}&goodTimingsOnly=${showNonBlue}&lat=${lat}&lng=${lng}`
+            `${process.env.REACT_APP_API_URL}/api/getDrikTableSwiss?city=${city}&date=${convertToDDMMYYYY(date)}&goodTimingsOnly=${showNonBlue}&lat=${lat}&lng=${lng}`
           ),
           
         fetch(
@@ -343,4 +343,4 @@ const CombinePage = () => {
   );
 };
 
-export default CombinePage;
+export default CombineSwiss;
