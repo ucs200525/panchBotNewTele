@@ -798,43 +798,34 @@ router.get('/getBharagvTable', async (req, res) => {
 
 const createDrikTableSwiss = async (city, date, lat, lng, timeZone) => {
     logger.info({ message: 'createDrikTableSwiss called', city, date, lat, lng });
-    // Fetch the muhurat data using the city and date
-    const filteredData = await fetchmuhuratSwiss(city, date, lat, lng, timeZone); // Assuming fetchmuhuratSwiss is an async function
+    const filteredData = await fetchmuhuratSwiss(city, date, lat, lng, timeZone); 
 
-
-
-    // Create the drikTable by mapping over filteredData
     const drikTable = filteredData.map((row) => {
         const [startTime, endTime] = row.time.split(" to ");
 
-        let endTimeWithoutDate, endDatePart;
+        const extractParts = (str) => {
+            if (str && str.includes(', ')) {
+                const parts = str.split(', ');
+                return { time: parts[0], date: parts[1] };
+            }
+            return { time: str, date: null };
+        };
 
-        if (endTime.includes(", ")) {
-            [endTimeWithoutDate, endDatePart] = endTime.split(", ");
-        } else {
-            endTimeWithoutDate = endTime; // If no comma, the entire string is the time
-            endDatePart = null;          // No date part available
-        }
+        const startParts = extractParts(startTime);
+        const endParts = extractParts(endTime);
 
-        // Use the provided date
-        let adjustedStartTime = startTime.includes("PM")
-            ? `${startTime}`
-            : startTime.includes("AM") && endTime.includes(",")
-                ? `${endDatePart} , ${startTime}`
-                : startTime;
+        let adjustedStartTime = startParts.date 
+            ? `${startParts.date} , ${startParts.time}` 
+            : startParts.time;
 
-        let adjustedEndTime = endTime.includes("AM") && endTime.includes(",")
-            ? `${endDatePart} , ${endTimeWithoutDate}`
-            : endTime.includes("PM")
-                ? `${endTimeWithoutDate}`
-                : endTime;
-
-        const timeIntervalFormatted = `${adjustedStartTime} to ${adjustedEndTime}`;
+        let adjustedEndTime = endParts.date 
+            ? `${endParts.date} , ${endParts.time}` 
+            : endParts.time;
 
         return {
             category: row.category,
             muhurat: row.muhurat,
-            time: timeIntervalFormatted,
+            time: `${adjustedStartTime} to ${adjustedEndTime}`,
         };
     });
     return drikTable;

@@ -13,6 +13,9 @@ const astronomicalRoutes = require('../routes/astronomicalRoutes');
 const lagnaRoutes = require('../routes/lagnaRoutes');
 const newRoutes = require('../routes/newRoutes');
 const adminRoutes = require('../routes/adminRoutes'); // Import Admin Routes
+const analyticsRoutes = require('../routes/analyticsRoutes'); // Import Analytics Routes
+const { excludeFromTracking } = require('../middleware/analytics'); // Import Analytics Middleware
+const path = require('path');
 const connectDB = require('../utils/db'); // Import DB Connection Helper
 
 // Connect to Database
@@ -43,6 +46,12 @@ app.use(cors(corsOption)); // apply CORS middleware
 // Request Logger Middleware - logs all routes with structured JSON format
 app.use(requestLogger);
 
+// Analytics Tracking Middleware - track API usage (exclude admin/analytics endpoints)
+app.use(excludeFromTracking(['/api/analytics', '/admin', '/analytics-dashboard.html']));
+
+// Serve static files (for analytics dashboard)
+app.use(express.static(path.join(__dirname, '../public')));
+
 // Routes
 app.use('/api', panchangRoutes);
 // app.use('/api/planetary', planetaryRoutes);
@@ -51,7 +60,7 @@ app.use('/api', panchangRoutes);
 // app.use('/api/astronomical', astronomicalRoutes);
 // app.use('/api/lagna', lagnaRoutes);
 app.use('/admin', adminRoutes); // Mount Admin API
-
+app.use('/api/analytics', analyticsRoutes); // Mount Analytics API (admin-protected)
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {
