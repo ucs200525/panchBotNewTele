@@ -35,9 +35,9 @@ const allowedOrigins = [
 ];
 
 const corsOption = {
-  origin: allowedOrigins, // allowed origins
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], // allowed methods
-  credentials: true, // allow credentials (cookies, authorization headers, etc.)
+  origin: true, // Allow all origins temporarily to debug, or you can use a function to check .vercel.app
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: true,
 };
 
 app.use(cors(corsOption)); // apply CORS middleware
