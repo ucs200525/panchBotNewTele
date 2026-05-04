@@ -492,9 +492,25 @@ function calculateSwissPanchakaRahita(dateObj, lat, lng, timezone, sunriseStr, s
             const s = parts[2] || 0;
             if (str.toLowerCase().includes('pm') && h < 12) h += 12;
             if (str.toLowerCase().includes('am') && h === 12) h = 0;
-            const d = new Date(date);
-            d.setHours(h, m, s, 0);
-            return d;
+
+            // Build the date string in the target timezone (e.g. IST) and parse as UTC
+            // This ensures it works regardless of the server's local timezone (UTC on Vercel)
+            const baseDate = new Date(date);
+            const year = baseDate.getFullYear();
+            const mo = String(baseDate.getMonth() + 1).padStart(2, '0');
+            const dy = String(baseDate.getDate()).padStart(2, '0');
+            const hh = String(h).padStart(2, '0');
+            const mm = String(m).padStart(2, '0');
+            const ss = String(s).padStart(2, '0');
+
+            // Use Temporal-style trick: format a known UTC time in the target timezone
+            // to find the UTC offset, then apply it when constructing the target time
+            const testUtc = new Date(`${year}-${mo}-${dy}T${hh}:${mm}:${ss}Z`);
+            const localStr = testUtc.toLocaleString('en-CA', { timeZone: timezone, hour12: false });
+            // localStr is like "2026-05-04, 10:40:00" (UTC interpreted in target TZ)
+            const localDate = new Date(localStr.replace(', ', 'T') + 'Z');
+            const offsetMs = testUtc.getTime() - localDate.getTime();
+            return new Date(testUtc.getTime() + offsetMs);
         };
 
         const dayStart = parseTime(dateObj, sunriseStr);
