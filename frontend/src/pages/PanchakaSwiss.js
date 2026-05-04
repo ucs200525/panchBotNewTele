@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from '../context/AuthContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 import TableScreenshot from '../components/TableScreenshot';
-import CityAndDateInput from '../components/CityAndDateInput';
 import LivePeriodTracker from '../components/LivePeriodTracker';
 
 
