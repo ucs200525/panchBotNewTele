@@ -128,7 +128,7 @@ router.get('/testPanchanga', (req, res) => {
         const { panchanga } = require('../swisseph');
         const tithiCalc = new panchanga.TithiCalculator();
         const dateObj = new Date('2026-05-04T12:00:00Z');
-        const jd = require('../swisseph/core/julianDay').getJulianDay(dateObj);
+        const jd = require('../swisseph/core/julianDay').dateToJulianDay(dateObj);
         
         // Let's directly calculate moon and sun
         const swissephRaw = require('sweph');
