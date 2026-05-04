@@ -480,6 +480,12 @@ function calculateAbhijitMuhurat(sunriseStr, sunsetStr, timezone = 'Asia/Kolkata
 function calculateSwissPanchakaRahita(dateObj, lat, lng, timezone, sunriseStr, sunsetStr, nextSunriseStr, existingLagnas) {
     try {
         const { panchanga, lagna: lagnaModule } = require('../swisseph');
+        const fs = require('fs');
+        const path = require('path');
+        const epheLocal = path.join(__dirname, '..', 'data', 'ephe');
+        const epheVercel = path.join(process.cwd(), 'data', 'ephe');
+        logger.info({ message: 'Ephemeris check', epheLocal: fs.existsSync(epheLocal), epheVercel: fs.existsSync(epheVercel) });
+
         const tithiCalc = new panchanga.TithiCalculator();
         const naksCalc = new panchanga.NakshatraCalculator();
         const lagnaCalc = new lagnaModule.LagnaCalculator();
