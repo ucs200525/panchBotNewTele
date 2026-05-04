@@ -112,6 +112,21 @@ async function fetchCityName(lat, lng) {
     }
 }
 
+router.get('/checkEphemeris', (req, res) => {
+    const fs = require('fs');
+    const path = require('path');
+    const epheLocal = path.join(__dirname, '..', 'data', 'ephe');
+    const epheVercel = path.join(process.cwd(), 'data', 'ephe');
+    res.json({
+        epheLocal: fs.existsSync(epheLocal),
+        epheVercel: fs.existsSync(epheVercel),
+        cwd: process.cwd(),
+        dirname: __dirname,
+        filesInCwd: fs.readdirSync(process.cwd()),
+        filesInBackend: fs.existsSync(path.join(process.cwd(), 'backend')) ? fs.readdirSync(path.join(process.cwd(), 'backend')) : []
+    });
+});
+
 router.get('/fetchCityName/:lat/:lng', async (req, res) => {
     try {
         const { lat, lng } = req.params;
