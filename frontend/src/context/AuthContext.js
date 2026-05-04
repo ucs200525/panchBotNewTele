@@ -63,27 +63,52 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    // Initialize states from sessionStorage or provide default values
-    const [localCity, setLocalCity] = useState(() => sessionStorage.getItem('city') || '');
-    const [localDate, setLocalDate] = useState(() => sessionStorage.getItem('date') || '');
+    // Initialize states from localStorage or provide default values
+    const [localCity, setLocalCity] = useState(() => localStorage.getItem('city') || '');
+    const [localDate, setLocalDate] = useState(() => localStorage.getItem('date') || new Date().toISOString().substring(0, 10));
+    const [localLat, setLocalLat] = useState(() => {
+        const savedLat = localStorage.getItem('lat');
+        return savedLat ? parseFloat(savedLat) : null;
+    });
+    const [localLng, setLocalLng] = useState(() => {
+        const savedLng = localStorage.getItem('lng');
+        return savedLng ? parseFloat(savedLng) : null;
+    });
 
-    // Function to update city and date globally and in sessionStorage
-    const setCityAndDate = (newCity, newDate) => {
+    // Function to update city, date, lat, and lng globally and in localStorage
+    const setCityAndDate = (newCity, newDate, newLat = null, newLng = null) => {
         setLocalCity(newCity);
         setLocalDate(newDate);
-        sessionStorage.setItem('city', newCity);
-        sessionStorage.setItem('date', newDate);
+        setLocalLat(newLat);
+        setLocalLng(newLng);
+        
+        localStorage.setItem('city', newCity);
+        localStorage.setItem('date', newDate);
+        if (newLat !== null) localStorage.setItem('lat', newLat.toString());
+        else localStorage.removeItem('lat');
+        if (newLng !== null) localStorage.setItem('lng', newLng.toString());
+        else localStorage.removeItem('lng');
     };
 
-    // Keep sessionStorage updated if `localCity` or `localDate` changes
+    // Keep localStorage updated if values change
     useEffect(() => {
-        sessionStorage.setItem('city', localCity);
-        sessionStorage.setItem('date', localDate);
-    }, [localCity, localDate]);
+        localStorage.setItem('city', localCity);
+        localStorage.setItem('date', localDate);
+        if (localLat !== null) localStorage.setItem('lat', localLat.toString());
+        else localStorage.removeItem('lat');
+        if (localLng !== null) localStorage.setItem('lng', localLng.toString());
+        else localStorage.removeItem('lng');
+    }, [localCity, localDate, localLat, localLng]);
 
     // Provide values to components consuming AuthContext
     return (
-        <AuthContext.Provider value={{ localCity, localDate, setCityAndDate }}>
+        <AuthContext.Provider value={{ 
+            localCity, 
+            localDate, 
+            localLat, 
+            localLng, 
+            setCityAndDate 
+        }}>
             {children}
         </AuthContext.Provider>
     );

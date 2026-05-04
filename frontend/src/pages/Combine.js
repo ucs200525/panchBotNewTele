@@ -2,12 +2,16 @@ import React, { useState, useEffect } from 'react';
 import TableScreenshot from '../components/TableScreenshot';
 import LivePeriodTracker from '../components/LivePeriodTracker';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { useAuth } from '../context/AuthContext';
 
 const CombinePage = () => {
-  const [city, setCity] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().substring(0, 10));
+  const { localCity, localDate, localLat, localLng, setCityAndDate } = useAuth();
+  const [city, setCity] = useState(localCity);
+  const [date, setDate] = useState(localDate);
+  const [lat, setLat] = useState(localLat);
+  const [lng, setLng] = useState(localLng);
   const [combinedData, setCombinedData] = useState(() => {
-    const storedData = sessionStorage.getItem('combinedData');
+    const storedData = localStorage.getItem('combinedData');
     return storedData ? JSON.parse(storedData) : null;
   });
   
@@ -17,17 +21,26 @@ const CombinePage = () => {
   const [bharagvData, setBharagvData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [weekday, setWeekday] = useState(() => sessionStorage.getItem('weekday') || '');
+  const [weekday, setWeekday] = useState(() => localStorage.getItem('weekday') || '');
   const [showNonBlue, setShowNonBlue] = useState(true);  // default to true
   const [is12HourFormat, setIs12HourFormat] = useState(true); // default to true
 
 
   useEffect(() => {
-    sessionStorage.setItem('city', city);
-    sessionStorage.setItem('date', date);
-    sessionStorage.setItem('combinedData', JSON.stringify(combinedData));
-    sessionStorage.setItem('weekday', weekday);
-  }, [city, date, combinedData, weekday]);
+    localStorage.setItem('combinedData', JSON.stringify(combinedData));
+    localStorage.setItem('weekday', weekday);
+
+    // Sync with AuthContext and unified keys
+    if (city !== localCity || date !== localDate || lat !== localLat || lng !== localLng) {
+      setCityAndDate(city, date, lat, lng);
+    }
+
+    // Cleanup sessionStorage
+    sessionStorage.removeItem('city');
+    sessionStorage.removeItem('date');
+    sessionStorage.removeItem('combinedData');
+    sessionStorage.removeItem('weekday');
+  }, [city, date, combinedData, weekday, lat, lng]);
 
 
   const autoGeolocation = async () => {
@@ -50,6 +63,8 @@ const CombinePage = () => {
             const cityName = cityData.cityName;
             console.log('cityData', cityData);
             setCity(cityName);
+            setLat(lat);
+            setLng(lng);
             setFetchCity(true);
             setFetchData(true);
           } catch (error) {
@@ -87,6 +102,8 @@ const CombinePage = () => {
 
   const handleCityChange = (e) => {
     setCity(e.target.value);
+    setLat(null);
+    setLng(null);
     setFetchCity(false); // Reset fetchCity if user provides a manual input
   };
 

@@ -7,22 +7,22 @@ import PanchangInfo from '../components/PanchangInfo';
 import { findCurrentPeriod } from '../utils/periodHelpers';
 
 const TimeConverterApp = () => {
-  const { localCity, localDate, setCityAndDate } = useAuth();
+  const { localCity, localDate, localLat, localLng, setCityAndDate } = useAuth();
   const [tableHtml, setTableHtml] = useState('');
-  const [cityName, setCityName] = useState('');
-  const [currentDate, setCurrentDate] = useState(new Date().toISOString().substring(0, 10));
-  const [lat, setLat] = useState(null);
-  const [lng, setLng] = useState(null);
+  const [city, setCity] = useState(localCity);
+  const [date, setDate] = useState(localDate);
+  const [lat, setLat] = useState(localLat);
+  const [lng, setLng] = useState(localLng);
 
   const [data, setData] = useState(() => {
-    const storedData = sessionStorage.getItem('data');
+    const storedData = localStorage.getItem('data');
     return storedData ? JSON.parse(storedData) : [];
   });
-  const [sunriseToday, setSunriseToday] = useState(() => sessionStorage.getItem('sunriseToday') || '05:00:00');
-  const [sunsetToday, setSunsetToday] = useState(() => sessionStorage.getItem('sunsetToday') || '18:00:00');
-  const [sunriseTmrw, setSunriseTmrw] = useState(() => sessionStorage.getItem('sunriseTmrw') || '06:00:00');
+  const [sunriseToday, setSunriseToday] = useState(() => localStorage.getItem('sunriseToday') || '05:00:00');
+  const [sunsetToday, setSunsetToday] = useState(() => localStorage.getItem('sunsetToday') || '18:00:00');
+  const [sunriseTmrw, setSunriseTmrw] = useState(() => localStorage.getItem('sunriseTmrw') || '06:00:00');
 
-  const [weekday, setWeekday] = useState(() => sessionStorage.getItem('weekday') || '');
+  const [weekday, setWeekday] = useState(() => localStorage.getItem('weekday') || '');
   const [tableData, setTableData] = useState([]);
   const [is12HourFormat, setIs12HourFormat] = useState(true);
 
@@ -42,12 +42,21 @@ const TimeConverterApp = () => {
 
 
   useEffect(() => {
-    sessionStorage.setItem('data', JSON.stringify(data));
-    sessionStorage.setItem('sunriseToday', sunriseToday);
-    sessionStorage.setItem('sunsetToday', sunsetToday);
-    sessionStorage.setItem('sunriseTmrw', sunriseTmrw);
-    sessionStorage.setItem('weekday', weekday);
-  }, [data, sunriseToday, sunsetToday, sunriseTmrw, weekday]);
+    localStorage.setItem('data', JSON.stringify(data));
+    localStorage.setItem('sunriseToday', sunriseToday);
+    localStorage.setItem('sunsetToday', sunsetToday);
+    localStorage.setItem('sunriseTmrw', sunriseTmrw);
+    localStorage.setItem('weekday', weekday);
+    
+    // Sync with AuthContext and unified localStorage keys
+    if (city !== localCity || date !== localDate || lat !== localLat || lng !== localLng) {
+      setCityAndDate(city, date, lat, lng);
+    }
+
+    // Cleanup old keys if they exist
+    localStorage.removeItem('cityName');
+    localStorage.removeItem('currentDate');
+  }, [data, sunriseToday, sunsetToday, sunriseTmrw, weekday, city, date, lat, lng]);
 
   const autoGeolocation = async () => {
     setIsLoading(true);
@@ -69,10 +78,10 @@ const TimeConverterApp = () => {
               throw new Error('Failed to fetch city name');
             }
             const cityData = await cityResponse.json();
-            const cityName = cityData.cityName;
+            const fetchedCityName = cityData.cityName;
             console.log("cityData", cityData);
             console.log("cityResponse", cityResponse);
-            setCityName(cityName);
+            setCity(fetchedCityName);
             setfetchSuntimes(true);
 
           } catch (error) {
@@ -117,15 +126,15 @@ const TimeConverterApp = () => {
     setIsLoading(true);
     try {
       console.log("API URL:", process.env.REACT_APP_API_URL);
-      console.log("City:", cityName);
-      console.log(" Date:", currentDate);
+      console.log("City:", city);
+      console.log(" Date:", date);
       
       const queryParams = lat && lng ? `?lat=${lat}&lng=${lng}` : '';
-      const apiUrl = `${process.env.REACT_APP_API_URL}/api/getSunTimesForCity/${cityName}/${currentDate}${queryParams}`;
+      const apiUrl = `${process.env.REACT_APP_API_URL}/api/getSunTimesForCity/${city}/${date}${queryParams}`;
       console.log("Constructed API URL:", apiUrl);
 
       const response = await fetch(apiUrl);
-      const response1 = await fetch(`${process.env.REACT_APP_API_URL}/api/getWeekday/${currentDate}`);
+      const response1 = await fetch(`${process.env.REACT_APP_API_URL}/api/getWeekday/${date}`);
 
       if (!response.ok || !response1.ok) {
         throw new Error('Failed to fetch Panchangam data');
@@ -148,12 +157,10 @@ const TimeConverterApp = () => {
   };
 
   const checkAndFetchPanchangam = async () => {
-    if (cityName && currentDate) {
+    if (city && date) {
       await Getpanchangam();
-      // setCityAndDate(cityName,currentDate);
     } else {
       await autoGeolocation();
-      // setCityAndDate(cityName,currentDate);
     }
   };
 
@@ -169,12 +176,12 @@ const TimeConverterApp = () => {
       Getpanchangam();
       // Fetch Panchang data (Tithi, Nakshatra, Rahu Kaal, etc.)
       async function fetchPanchangData() {
-        if (!cityName || !currentDate) return;
+        if (!city || !date) return;
         
         try {
           const queryParams = lat && lng ? `&lat=${lat}&lng=${lng}` : '';
           const response = await fetch(
-            `${process.env.REACT_APP_API_URL}/api/getPanchangData?city=${encodeURIComponent(cityName)}&date=${currentDate}${queryParams}`
+            `${process.env.REACT_APP_API_URL}/api/getPanchangData?city=${encodeURIComponent(city)}&date=${date}${queryParams}`
           );
           const panchangResult = await response.json();
           setPanchangData(panchangResult);
@@ -208,7 +215,7 @@ const TimeConverterApp = () => {
         sunriseTmrw,
         weekday,
         is12HourFormat,
-        currentDate,
+        currentDate: date,
         showNonBlue,
       }),
     });
@@ -244,9 +251,9 @@ const TimeConverterApp = () => {
           <input
             className="city"
             type="text"
-            value={cityName}
+            value={city}
             onChange={(e) => {
-              setCityName(e.target.value);
+              setCity(e.target.value);
               setLat(null);
               setLng(null);
             }}
@@ -255,8 +262,8 @@ const TimeConverterApp = () => {
           <input
             className="enterdate"
             type="date"
-            value={currentDate}
-            onChange={(e) => setCurrentDate(e.target.value)}
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
           />
           <button className="get-panchangam-button" onClick={checkAndFetchPanchangam}>
             Get Panchangam
@@ -320,10 +327,10 @@ const TimeConverterApp = () => {
       <div id="tableToCapture">
         <div className="info-inline">
           <div className="info-inline-item">
-            <strong>City:</strong> {cityName}
+            <strong>City:</strong> {city}
           </div>
           <div className="info-inline-item">
-            <strong>Date:</strong> {currentDate}
+            <strong>Date:</strong> {date}
           </div>
           <div className="info-inline-item">
             <strong>Weekday:</strong> {weekday}
@@ -331,7 +338,7 @@ const TimeConverterApp = () => {
         </div>
 
         {/* Phase 2: Live Period Tracker - Only shows for TODAY */}
-        {data && data.length > 0 && <LivePeriodTracker data={data} selectedDate={currentDate} />}
+        {data && data.length > 0 && <LivePeriodTracker data={data} selectedDate={date} />}
         {/* Panchang data moved to dedicated /panchang page */}
 
         <div>
@@ -384,7 +391,7 @@ const TimeConverterApp = () => {
           </table>
         </div>
       </div>
-      <TableScreenshot tableId="tableToCapture" city={cityName} />
+      <TableScreenshot tableId="tableToCapture" city={city} />
 
     </div>
 

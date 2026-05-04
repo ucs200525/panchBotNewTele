@@ -8,20 +8,22 @@ import LivePeriodTracker from '../components/LivePeriodTracker';
 
 const PanchakaMuhurth = () => {
     
-    const [city, setCity] = useState(() => sessionStorage.getItem('panchaka_city') || '');
-    const [date, setDate] = useState(() => sessionStorage.getItem('panchaka_date') || new Date().toISOString().substring(0, 10));
-    const { localCity, localDate, setCityAndDate  } = useAuth();
+    const { localCity, localDate, localLat, localLng, setCityAndDate } = useAuth();
+    const [city, setCity] = useState(localCity);
+    const [date, setDate] = useState(localDate);
+    const [lat, setLat] = useState(localLat);
+    const [lng, setLng] = useState(localLng);
     const [allMuhuratData, setAllMuhuratData] = useState(() => {
-      const storedData = sessionStorage.getItem('panchaka_allMuhuratData');
+      const storedData = localStorage.getItem('panchaka_allMuhuratData');
       return storedData ? JSON.parse(storedData) : [];
     });
    const [filteredData, setFilteredData] = useState(() => {
-  const storedData = sessionStorage.getItem('panchaka_filteredData');
+  const storedData = localStorage.getItem('panchaka_filteredData');
   return storedData ? JSON.parse(storedData) : [];
 });
 
     const [showAll, setShowAll] = useState(() => {
-      const stored = sessionStorage.getItem('panchaka_showAll');
+      const stored = localStorage.getItem('panchaka_showAll');
       return stored !== null ? JSON.parse(stored) : true;
     }); // State to toggle between all rows and filtered rows
     const [loading, setLoading] = useState(false); // Add loading state
@@ -29,12 +31,19 @@ const PanchakaMuhurth = () => {
     const [fetchCity, setfetchCity] = useState(false);
 
     useEffect(() => {
-        sessionStorage.setItem('panchaka_filteredData', JSON.stringify(filteredData));
-        sessionStorage.setItem('panchaka_allMuhuratData', JSON.stringify(allMuhuratData));
-        sessionStorage.setItem('panchaka_city', city);
-        sessionStorage.setItem('panchaka_date', date);
-        sessionStorage.setItem('panchaka_showAll', JSON.stringify(showAll));
-      }, [filteredData, allMuhuratData, city, date, showAll]);
+        localStorage.setItem('panchaka_filteredData', JSON.stringify(filteredData));
+        localStorage.setItem('panchaka_allMuhuratData', JSON.stringify(allMuhuratData));
+        localStorage.setItem('panchaka_showAll', JSON.stringify(showAll));
+
+        // Sync with AuthContext and unified keys
+        if (city !== localCity || date !== localDate || lat !== localLat || lng !== localLng) {
+            setCityAndDate(city, date, lat, lng);
+        }
+
+        // Cleanup old keys
+        localStorage.removeItem('panchaka_city');
+        localStorage.removeItem('panchaka_date');
+      }, [filteredData, allMuhuratData, city, date, showAll, lat, lng]);
 
     const createDummyTable = useCallback(() => {
         const dummyTable = filteredData.map((row) => {
@@ -71,8 +80,8 @@ const PanchakaMuhurth = () => {
             };
         });
 
-        // Save the dummy table in sessionStorage
-        sessionStorage.setItem("muhurats", JSON.stringify(dummyTable));
+        // Save the dummy table in localStorage
+        localStorage.setItem("muhurats", JSON.stringify(dummyTable));
         console.log("Dummy Table Saved: ", dummyTable);
     }, [filteredData, date]); // Memoize with filteredData and date as dependencies
 
@@ -92,6 +101,8 @@ const PanchakaMuhurth = () => {
                 const cityName = cityData.cityName;
                 console.log("cityData",cityData);
                 setCity(cityName);
+                setLat(lat);
+                setLng(lng);
                 setfetchCity(true);
               } catch (error) {
                 setError(error.message || 'Error fetching city name');}

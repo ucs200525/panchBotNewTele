@@ -246,8 +246,23 @@ async function getSunTimesForCity(city, date, lat, lng) {
 // Function to get the weekday name from a date
 function getWeekday(dateString) {
     logger.debug({ message: 'getWeekday called', dateString });
-    const [day, month, year] = dateString.split('/');
-    const date = new Date(`${year}-${month}-${day}`);
+    let date;
+    if (dateString.includes('-')) {
+        // Handle YYYY-MM-DD
+        date = new Date(dateString);
+    } else if (dateString.includes('/')) {
+        // Handle DD/MM/YYYY
+        const [day, month, year] = dateString.split('/');
+        date = new Date(`${year}-${month}-${day}`);
+    } else {
+        date = new Date(dateString);
+    }
+    
+    if (isNaN(date.getTime())) {
+        logger.error({ message: 'Invalid Date in getWeekday', dateString });
+        return 'Unknown';
+    }
+
     const options = { weekday: 'long' };
     const weekday = date.toLocaleDateString('en-US', options);
     logger.debug({ message: 'Weekday calculated', weekday });
