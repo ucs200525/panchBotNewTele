@@ -6,11 +6,11 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/backend/server.js"
+      "destination": "/backend/api/index.js"
     },
     {
       "source": "/admin/(.*)",
-      "destination": "/backend/server.js"
+      "destination": "/backend/api/index.js"
     },
     {
       "source": "/(.*)",
