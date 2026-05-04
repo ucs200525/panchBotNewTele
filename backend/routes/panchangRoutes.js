@@ -118,8 +118,35 @@ router.get('/checkEphemeris', (req, res) => {
     const epheLocal = path.join(__dirname, '..', 'data', 'ephe');
     res.json({
         epheLocal: fs.existsSync(epheLocal),
+        epheVercelAlt: fs.existsSync(path.join(process.cwd(), 'data', 'ephe')),
         filesInEphe: fs.existsSync(epheLocal) ? fs.readdirSync(epheLocal) : []
     });
+});
+
+router.get('/testPanchanga', (req, res) => {
+    try {
+        const { panchanga } = require('../swisseph');
+        const tithiCalc = new panchanga.TithiCalculator();
+        const dateObj = new Date('2026-05-04T12:00:00Z');
+        const jd = require('../swisseph/core/julianDay').getJulianDay(dateObj);
+        
+        // Let's directly calculate moon and sun
+        const swissephRaw = require('sweph');
+        const SE_SUN = 0, SE_MOON = 1, SEFLG_SWIEPH = 2;
+        
+        const moonCalc = swissephRaw.swe_calc_ut(jd, SE_MOON, SEFLG_SWIEPH);
+        const sunCalc = swissephRaw.swe_calc_ut(jd, SE_SUN, SEFLG_SWIEPH);
+        
+        const tithis = tithiCalc.calculateDayTithis(dateObj, 'Asia/Kolkata');
+        
+        res.json({
+            moonCalc,
+            sunCalc,
+            tithis
+        });
+    } catch (e) {
+        res.json({ error: e.message, stack: e.stack });
+    }
 });
 
 router.get('/fetchCityName/:lat/:lng', async (req, res) => {
