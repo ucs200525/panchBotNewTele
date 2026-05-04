@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "installCommand": "python3 -m pip install --upgrade pip setuptools && npm install",
+  "installCommand": "python3 -m pip install --upgrade pip setuptools --break-system-packages && npm install",
   "functions": {
     "api/*.js": {
       "memory": 1024,
