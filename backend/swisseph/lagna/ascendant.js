@@ -53,10 +53,40 @@ class LagnaCalculator extends BaseCalculator {
         const lagnas = [];
 
         try {
-            // Parse sunrise time
-            const [hour, min, sec = 0] = sunriseStr.split(':').map(Number);
-            const sunriseDate = new Date(date);
-            sunriseDate.setHours(hour, min, sec || 0, 0);
+            // Parse sunrise time correctly with timezone offset
+            const isAMPM = sunriseStr.includes('AM') || sunriseStr.includes('PM');
+            let hourStr = sunriseStr, minStr = '00';
+            let hour = 0, min = 0;
+            
+            if (isAMPM) {
+                const match = sunriseStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+                if (match) {
+                    hour = parseInt(match[1]);
+                    min = parseInt(match[2]);
+                    const ampm = match[3].toUpperCase();
+                    if (ampm === 'PM' && hour < 12) hour += 12;
+                    if (ampm === 'AM' && hour === 12) hour = 0;
+                }
+            } else {
+                const parts = sunriseStr.split(':').map(Number);
+                hour = parts[0];
+                min = parts[1];
+            }
+
+            // Calculate timezone offset in minutes (e.g., IST = 330)
+            const targetDate = new Date(date.toLocaleString('en-US', { timeZone: timezone }));
+            const utcDate = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }));
+            const targetOffset = Math.round((targetDate - utcDate) / 60000);
+            
+            const sunriseDate = new Date(Date.UTC(
+                date.getFullYear(),
+                date.getMonth(),
+                date.getDate(),
+                hour,
+                min,
+                0
+            ) - targetOffset * 60 * 1000);
+            
             console.log(`  🌅 Sunrise: ${this.formatTime(sunriseDate, timezone)}`);
 
             const endTime = new Date(sunriseDate);
