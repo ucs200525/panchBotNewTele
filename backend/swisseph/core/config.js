@@ -20,7 +20,10 @@ const swisseph = new Proxy(swissephRaw, {
     }
 });
 
-const EPHE_PATH = path.join(__dirname, '..', '..', 'data', 'ephe');
+const fs = require('fs');
+const EPHE_PATH_LOCAL = path.join(__dirname, '..', '..', 'data', 'ephe');
+const EPHE_PATH_VERCEL = path.join(process.cwd(), 'data', 'ephe');
+const EPHE_PATH = fs.existsSync(EPHE_PATH_LOCAL) ? EPHE_PATH_LOCAL : EPHE_PATH_VERCEL;
 swissephRaw.set_ephe_path(EPHE_PATH);
 
 // Set default ayanamsa (Lahiri)
