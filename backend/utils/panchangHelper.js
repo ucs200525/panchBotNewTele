@@ -484,7 +484,7 @@ function calculateSwissPanchakaRahita(dateObj, lat, lng, timezone, sunriseStr, s
         const path = require('path');
         const epheLocal = path.join(__dirname, '..', 'data', 'ephe');
         const epheVercel = path.join(process.cwd(), 'data', 'ephe');
-        logger.info({ message: 'Ephemeris check', epheLocal: fs.existsSync(epheLocal), epheVercel: fs.existsSync(epheVercel) });
+        // Removed logger.info because logger is undefined
 
         const tithiCalc = new panchanga.TithiCalculator();
         const naksCalc = new panchanga.NakshatraCalculator();
