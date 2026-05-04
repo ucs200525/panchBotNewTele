@@ -137,13 +137,19 @@ router.get('/testPanchanga', (req, res) => {
         const moonCalc = swissephRaw.calc_ut(jd, SE_MOON, SEFLG_SWIEPH);
         const sunCalc = swissephRaw.calc_ut(jd, SE_SUN, SEFLG_SWIEPH);
         
+        const naksCalc = new panchanga.NakshatraCalculator();
+        const { lagna } = require('../swisseph');
+        const lagnaCalc = new lagna.LagnaCalculator();
+        
         const tithis = tithiCalc.calculateDayTithis(dateObj, 'Asia/Kolkata');
+        const nakshatras = naksCalc.calculateDayNakshatras(dateObj, 'Asia/Kolkata');
+        const lagnas = lagnaCalc.calculateDayLagnas(dateObj, 16.5061743, 80.6480153, 'Asia/Kolkata', "05:40");
         
         res.json({
             jd,
-            moonCalc,
-            sunCalc,
-            tithis
+            tithis,
+            nakshatras,
+            lagnas
         });
     } catch (e) {
         res.json({ error: e.message, stack: e.stack });
