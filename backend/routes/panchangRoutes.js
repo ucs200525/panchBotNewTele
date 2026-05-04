@@ -134,12 +134,13 @@ router.get('/testPanchanga', (req, res) => {
         const swissephRaw = require('sweph');
         const SE_SUN = 0, SE_MOON = 1, SEFLG_SWIEPH = 2;
         
-        const moonCalc = swissephRaw.swe_calc_ut(jd, SE_MOON, SEFLG_SWIEPH);
-        const sunCalc = swissephRaw.swe_calc_ut(jd, SE_SUN, SEFLG_SWIEPH);
+        const moonCalc = swissephRaw.calc_ut(jd, SE_MOON, SEFLG_SWIEPH);
+        const sunCalc = swissephRaw.calc_ut(jd, SE_SUN, SEFLG_SWIEPH);
         
         const tithis = tithiCalc.calculateDayTithis(dateObj, 'Asia/Kolkata');
         
         res.json({
+            jd,
             moonCalc,
             sunCalc,
             tithis
