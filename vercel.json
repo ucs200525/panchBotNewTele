@@ -5,8 +5,8 @@
   "installCommand": "python3 -m pip install --upgrade pip setuptools --break-system-packages && npm install --prefix backend && npm install --prefix frontend",
   "rewrites": [
     {
-      "source": "/api/:path*",
-      "destination": "https://panchbackend.vercel.app/api/:path*"
+      "source": "/api/(.*)",
+      "destination": "https://panchbackend.vercel.app/api/$1"
     },
     {
       "source": "/admin/(.*)",

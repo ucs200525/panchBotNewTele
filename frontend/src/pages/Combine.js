@@ -28,19 +28,26 @@ const CombinePage = () => {
 
   useEffect(() => {
     localStorage.setItem('combinedData', JSON.stringify(combinedData));
-    localStorage.setItem('weekday', weekday);
+  }, [combinedData]);
 
+  useEffect(() => {
+    localStorage.setItem('weekday', weekday);
+  }, [weekday]);
+
+  useEffect(() => {
     // Sync with AuthContext and unified keys
     if (city !== localCity || date !== localDate || lat !== localLat || lng !== localLng) {
       setCityAndDate(city, date, lat, lng);
     }
+  }, [city, date, lat, lng, localCity, localDate, localLat, localLng, setCityAndDate]);
 
+  useEffect(() => {
     // Cleanup sessionStorage
     sessionStorage.removeItem('city');
     sessionStorage.removeItem('date');
     sessionStorage.removeItem('combinedData');
     sessionStorage.removeItem('weekday');
-  }, [city, date, combinedData, weekday, lat, lng]);
+  }, []);
 
 
   const autoGeolocation = async () => {
@@ -153,14 +160,17 @@ const CombinePage = () => {
       // Set goodTimingsOnly to true by default
       const goodTimingsOnly = true;
 
+      const latParam = lat !== null && lat !== undefined ? `&lat=${lat}` : '';
+      const lngParam = lng !== null && lng !== undefined ? `&lng=${lng}` : '';
+
       // Fetch both Muhurat and Bharagv Data with updated parameters
       const [muhurthaResponse, bharagvResponse] = await Promise.all([
         fetch(
-            `${process.env.REACT_APP_API_URL}/api/getDrikTable?city=${city}&date=${convertToDDMMYYYY(date)}&goodTimingsOnly=${showNonBlue}&lat=${lat}&lng=${lng}`
+            `${process.env.REACT_APP_API_URL}/api/getDrikTable?city=${city}&date=${convertToDDMMYYYY(date)}&goodTimingsOnly=${showNonBlue}${latParam}${lngParam}`
           ),
           
         fetch(
-          `${process.env.REACT_APP_API_URL}/api/getBharagvTable?city=${city}&date=${date}&showNonBlue=${showNonBlue}&is12HourFormat=${is12HourFormat}&lat=${lat}&lng=${lng}`
+          `${process.env.REACT_APP_API_URL}/api/getBharagvTable?city=${city}&date=${date}&showNonBlue=${showNonBlue}&is12HourFormat=${is12HourFormat}${latParam}${lngParam}`
         ),
       ]);
 
