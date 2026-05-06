@@ -31,18 +31,28 @@ const PanchakaSwiss = () => {
 
     useEffect(() => {
         localStorage.setItem('panchaka_filteredData', JSON.stringify(filteredData));
-        localStorage.setItem('panchaka_allMuhuratData', JSON.stringify(allMuhuratData));
-        localStorage.setItem('panchaka_showAll', JSON.stringify(showAll));
+    }, [filteredData]);
 
+    useEffect(() => {
+        localStorage.setItem('panchaka_allMuhuratData', JSON.stringify(allMuhuratData));
+    }, [allMuhuratData]);
+
+    useEffect(() => {
+        localStorage.setItem('panchaka_showAll', JSON.stringify(showAll));
+    }, [showAll]);
+
+    useEffect(() => {
         // Sync with AuthContext and unified keys
         if (city !== localCity || date !== localDate || lat !== localLat || lng !== localLng) {
             setCityAndDate(city, date, lat, lng);
         }
+    }, [city, date, lat, lng, localCity, localDate, localLat, localLng, setCityAndDate]);
 
+    useEffect(() => {
         // Cleanup old keys
         localStorage.removeItem('panchaka_city');
         localStorage.removeItem('panchaka_date');
-      }, [filteredData, allMuhuratData, city, date, showAll, lat, lng]);
+    }, []);
 
     const createDummyTable = useCallback(() => {
         const dummyTable = filteredData.map((row) => {
@@ -217,12 +227,7 @@ const PanchakaSwiss = () => {
             </tr>
         ));
     };
-    useEffect(() => {
-        // Sync the state with AuthContext whenever city or date changes
-        if (city !== localCity || date !== localDate) {
-            setCityAndDate(city, date);
-        }
-    }, [city, date, localCity, localDate, setCityAndDate]);
+
 
     useEffect(() => {
         if (filteredData.length > 0) {

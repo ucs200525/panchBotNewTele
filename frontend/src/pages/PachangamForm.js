@@ -43,20 +43,36 @@ const TimeConverterApp = () => {
 
   useEffect(() => {
     localStorage.setItem('data', JSON.stringify(data));
+  }, [data]);
+
+  useEffect(() => {
     localStorage.setItem('sunriseToday', sunriseToday);
+  }, [sunriseToday]);
+
+  useEffect(() => {
     localStorage.setItem('sunsetToday', sunsetToday);
+  }, [sunsetToday]);
+
+  useEffect(() => {
     localStorage.setItem('sunriseTmrw', sunriseTmrw);
+  }, [sunriseTmrw]);
+
+  useEffect(() => {
     localStorage.setItem('weekday', weekday);
-    
+  }, [weekday]);
+
+  useEffect(() => {
     // Sync with AuthContext and unified localStorage keys
     if (city !== localCity || date !== localDate || lat !== localLat || lng !== localLng) {
       setCityAndDate(city, date, lat, lng);
     }
+  }, [city, date, lat, lng, localCity, localDate, localLat, localLng, setCityAndDate]);
 
+  useEffect(() => {
     // Cleanup old keys if they exist
     localStorage.removeItem('cityName');
     localStorage.removeItem('currentDate');
-  }, [data, sunriseToday, sunsetToday, sunriseTmrw, weekday, city, date, lat, lng]);
+  }, []);
 
   const autoGeolocation = async () => {
     setIsLoading(true);
