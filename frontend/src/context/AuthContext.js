@@ -63,9 +63,9 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    // Initialize states from localStorage or provide default values
+    // Initialize states from localStorage/sessionStorage or provide default values
     const [localCity, setLocalCity] = useState(() => localStorage.getItem('city') || '');
-    const [localDate, setLocalDate] = useState(() => localStorage.getItem('date') || new Date().toISOString().substring(0, 10));
+    const [localDate, setLocalDate] = useState(() => sessionStorage.getItem('date') || new Date().toISOString().substring(0, 10));
     const [localLat, setLocalLat] = useState(() => {
         const savedLat = localStorage.getItem('lat');
         return savedLat ? parseFloat(savedLat) : null;
@@ -75,7 +75,7 @@ export const AuthProvider = ({ children }) => {
         return savedLng ? parseFloat(savedLng) : null;
     });
 
-    // Function to update city, date, lat, and lng globally and in localStorage
+    // Function to update city, date, lat, and lng globally and in storage
     const setCityAndDate = (newCity, newDate, newLat = null, newLng = null) => {
         setLocalCity(newCity);
         setLocalDate(newDate);
@@ -83,17 +83,17 @@ export const AuthProvider = ({ children }) => {
         setLocalLng(newLng);
         
         localStorage.setItem('city', newCity);
-        localStorage.setItem('date', newDate);
+        sessionStorage.setItem('date', newDate);
         if (newLat !== null) localStorage.setItem('lat', newLat.toString());
         else localStorage.removeItem('lat');
         if (newLng !== null) localStorage.setItem('lng', newLng.toString());
         else localStorage.removeItem('lng');
     };
 
-    // Keep localStorage updated if values change
+    // Keep storage updated if values change
     useEffect(() => {
         localStorage.setItem('city', localCity);
-        localStorage.setItem('date', localDate);
+        sessionStorage.setItem('date', localDate);
         if (localLat !== null) localStorage.setItem('lat', localLat.toString());
         else localStorage.removeItem('lat');
         if (localLng !== null) localStorage.setItem('lng', localLng.toString());

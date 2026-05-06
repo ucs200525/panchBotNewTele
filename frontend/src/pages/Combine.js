@@ -41,13 +41,7 @@ const CombinePage = () => {
     }
   }, [city, date, lat, lng, localCity, localDate, localLat, localLng, setCityAndDate]);
 
-  useEffect(() => {
-    // Cleanup sessionStorage
-    sessionStorage.removeItem('city');
-    sessionStorage.removeItem('date');
-    sessionStorage.removeItem('combinedData');
-    sessionStorage.removeItem('weekday');
-  }, []);
+
 
 
   const autoGeolocation = async () => {
