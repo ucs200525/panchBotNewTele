@@ -259,17 +259,7 @@ const CityAutocomplete = ({
         {isLoading && (
           <div className="autocomplete-spinner">⏳</div>
         )}
-        {showGeolocation && (
-          <button
-            type="button"
-            className={`geolocation-icon-btn ${isGeolocating ? 'loading' : ''}`}
-            onClick={handleGeolocation}
-            disabled={isGeolocating}
-            title="Use My Location"
-          >
-            {isGeolocating ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-location-arrow"></i>}
-          </button>
-        )}
+
       </div>
 
       {isOpen && suggestions.length > 0 && (

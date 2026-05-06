@@ -3,6 +3,7 @@ import TableScreenshot from '../components/TableScreenshot';
 import LivePeriodTracker from '../components/LivePeriodTracker';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useAuth } from '../context/AuthContext';
+import { CityAutocomplete } from '../components/forms';
 
 const CombineSwiss = () => {
   const { localCity, localDate, localLat, localLng, setCityAndDate } = useAuth();
@@ -101,11 +102,18 @@ const CombineSwiss = () => {
     }
   };
 
-  const handleCityChange = (e) => {
-    setCity(e.target.value);
+  const handleCityChange = (value) => {
+    setCity(value);
     setLat(null);
     setLng(null);
     setFetchCity(false); // Reset fetchCity if user provides a manual input
+  };
+
+  const handleCitySelect = (selectedCity) => {
+    setCity(selectedCity.name);
+    setLat(selectedCity.lat);
+    setLng(selectedCity.lng);
+    setFetchCity(false);
   };
 
 
@@ -213,11 +221,10 @@ const CombineSwiss = () => {
       <div style={{ textAlign: 'center', margin: '20px' }}>
         <h1>Combined Muhurat and Bharagv Table</h1>
         <label className="entercity">Enter City Name:</label>
-        <input
-          className="city"
-          type="text"
+        <CityAutocomplete
           value={city}
           onChange={handleCityChange}
+          onSelect={handleCitySelect}
           placeholder="Enter city"
         />
       </div>

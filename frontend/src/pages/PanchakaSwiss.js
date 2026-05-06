@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 import TableScreenshot from '../components/TableScreenshot';
 import LivePeriodTracker from '../components/LivePeriodTracker';
+import { CityAutocomplete } from '../components/forms';
 
 
 const PanchakaSwiss = () => {
@@ -235,6 +236,18 @@ const PanchakaSwiss = () => {
         }
     }, [filteredData, createDummyTable]); // Now including createDummyTable in the dependency array
 
+    const handleCityChange = (value) => {
+        setCity(value);
+        setLat(null);
+        setLng(null);
+    };
+
+    const handleCitySelect = (selectedCity) => {
+        setCity(selectedCity.name);
+        setLat(selectedCity.lat);
+        setLng(selectedCity.lng);
+    };
+
     const handleDateChange = (e) => {
         // Keep date in yyyy-MM-dd format for HTML date input
         setDate(e.target.value);
@@ -248,11 +261,10 @@ const PanchakaSwiss = () => {
       <div style={{ textAlign: 'center', margin: '20px' }}>
       <h1>Panchaka Muhurat Table</h1>
         <label className="entercity">Enter City Name:</label>
-        <input
-          className="city"
-          type="text"
+        <CityAutocomplete
           value={city}
-          onChange={(e) => setCity(e.target.value)}
+          onChange={handleCityChange}
+          onSelect={handleCitySelect}
           placeholder="Enter city"
         />
       </div>

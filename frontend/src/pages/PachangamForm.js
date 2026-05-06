@@ -5,6 +5,7 @@ import TableScreenshot from '../components/TableScreenshot';
 import LivePeriodTracker from '../components/LivePeriodTracker';
 import PanchangInfo from '../components/PanchangInfo';
 import { findCurrentPeriod } from '../utils/periodHelpers';
+import { CityAutocomplete } from '../components/forms';
 
 const TimeConverterApp = () => {
   const { localCity, localDate, localLat, localLng, setCityAndDate } = useAuth();
@@ -252,6 +253,18 @@ const TimeConverterApp = () => {
     setShowNonBlue((prev) => !prev);
   };
 
+  const handleCityChange = (value) => {
+    setCity(value);
+    setLat(null);
+    setLng(null);
+  };
+
+  const handleCitySelect = (selectedCity) => {
+    setCity(selectedCity.name);
+    setLat(selectedCity.lat);
+    setLng(selectedCity.lng);
+  };
+
 
   if (isLoading) {
     return <LoadingSpinner />; // Show spinner when loading
@@ -264,15 +277,11 @@ const TimeConverterApp = () => {
       <div>
         <div style={{ textAlign: "center", margin: "20px" }}>
           <label className="entercity">Enter City Name:</label>
-          <input
-            className="city"
-            type="text"
+          <CityAutocomplete
             value={city}
-            onChange={(e) => {
-              setCity(e.target.value);
-              setLat(null);
-              setLng(null);
-            }}
+            onChange={handleCityChange}
+            onSelect={handleCitySelect}
+            placeholder="Enter city"
           />
           <label className="date">Enter Date:</label>
           <input
