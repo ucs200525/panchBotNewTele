@@ -332,7 +332,7 @@ function getCurrentDateInTimeZone(timeZone) {
 // Function to fetch GeoName ID based on city
 async function getGeoNameId(city) {
     logger.info({ message: 'getGeoNameId called', city });
-    const geoNamesUrl = `http://api.geonames.org/searchJSON?q=${city}&maxRows=1&username=ucs05`;
+    const geoNamesUrl = `https://secure.geonames.org/searchJSON?q=${city}&maxRows=1&username=ucs05`;
     try {
         const response = await axios.get(geoNamesUrl);
         // console.log("Total Results Count:", response.data.totalResultsCount);

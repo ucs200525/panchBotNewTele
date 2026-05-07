@@ -94,7 +94,7 @@ const CityAutocomplete = ({
       // Use cities1000 for faster and more comprehensive results
       // Shortened timeout and removed orderby to see if it speeds up
       const response = await fetch(
-        `http://api.geonames.org/searchJSON?name_startsWith=${encodeURIComponent(trimmedQuery)}&maxRows=15&username=ucs05&featureClass=P&cities=cities1000`
+        `https://secure.geonames.org/searchJSON?name_startsWith=${encodeURIComponent(trimmedQuery)}&maxRows=15&username=ucs05&featureClass=P&cities=cities1000`
       );
       const data = await response.json();
 

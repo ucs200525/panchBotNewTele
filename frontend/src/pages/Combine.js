@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import TableScreenshot from '../components/TableScreenshot';
-import LivePeriodTracker from '../components/LivePeriodTracker';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useAuth } from '../context/AuthContext';
 import { CityAutocomplete } from '../components/forms';
+// import { GanttTimeline } from '../components/GanttTimeline';
+import { parseTimeToMinutes } from '../utils/periodHelpers';
 
 const CombinePage = () => {
   const { localCity, localDate, localLat, localLng, setCityAndDate } = useAuth();
@@ -20,6 +21,7 @@ const CombinePage = () => {
   const [fetchCity, setFetchCity] = useState(false); // Track whether city was auto-fetched
   const [fetchData, setFetchData] = useState(false);
   const [bharagvData, setBharagvData] = useState(null);
+  const [allBharagvData, setAllBharagvData] = useState(null); // Unfiltered, for Gantt timeline
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [weekday, setWeekday] = useState(() => localStorage.getItem('weekday') || '');
@@ -165,27 +167,32 @@ const CombinePage = () => {
       const latParam = lat !== null && lat !== undefined ? `&lat=${lat}` : '';
       const lngParam = lng !== null && lng !== undefined ? `&lng=${lng}` : '';
 
-      // Fetch both Muhurat and Bharagv Data with updated parameters
-      const [muhurthaResponse, bharagvResponse] = await Promise.all([
+      // Fetch Muhurat, filtered Bharagv (for table), and unfiltered Bharagv (for Gantt timeline)
+      const [muhurthaResponse, bharagvResponse, allBharagvResponse] = await Promise.all([
         fetch(
             `${process.env.REACT_APP_API_URL}/api/getDrikTable?city=${city}&date=${convertToDDMMYYYY(date)}&goodTimingsOnly=${showNonBlue}${latParam}${lngParam}`
           ),
-          
         fetch(
           `${process.env.REACT_APP_API_URL}/api/getBharagvTable?city=${city}&date=${date}&showNonBlue=${showNonBlue}&is12HourFormat=${is12HourFormat}${latParam}${lngParam}`
         ),
+        // Always fetch ALL rows (showNonBlue=false) for the Gantt timeline so danger/good colors show correctly
+        fetch(
+          `${process.env.REACT_APP_API_URL}/api/getBharagvTable?city=${city}&date=${date}&showNonBlue=false&is12HourFormat=${is12HourFormat}${latParam}${lngParam}`
+        ),
       ]);
-
 
       // Parse the responses as JSON
       const muhurthaData = await muhurthaResponse.json();
       const bharagvData = await bharagvResponse.json();
+      const allBharagvData = await allBharagvResponse.json();
 
       console.log("DATA Muhurat", muhurthaData);
       console.log("DATA Bharagv", bharagvData);
+      console.log("DATA AllBharagv (for Gantt)", allBharagvData);
 
       setMuhurthaData(muhurthaData);
       setBharagvData(bharagvData);
+      setAllBharagvData(allBharagvData);
 
       // Combine the fetched data
       const combinedResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/combine`, {
@@ -302,51 +309,90 @@ const CombinePage = () => {
         </div>
       )}
 
-      {/* LivePeriodTracker - Only shows for TODAY with Bhargava Panchang data */}
-      {bharagvData && Array.isArray(bharagvData) && bharagvData.length > 0 && (
-        <LivePeriodTracker data={bharagvData} selectedDate={date} />
+      {/* Gantt Timeline — uses unfiltered allBharagvData so all colored/danger rows show
+      {allBharagvData && Array.isArray(allBharagvData) && allBharagvData.length > 0 && (
+        <GanttTimeline 
+          data={allBharagvData
+            .filter(item => item.timeInterval1 && item.timeInterval1.trim() !== '')
+            .map(item => ({
+              muhurat: item.weekday || '-',
+              category: item.isColored ? 'Danger Period' : item.isWednesdayColored ? 'Risk Period' : 'Good Timing',
+              time: item.timeInterval1
+            }))} 
+          selectedDate={date} 
+          showNonBlueOnly={showNonBlue}
+        />
       )}
+      */}
   
-      {combinedData && !loading && (
-        <table >
-          <thead>
-            <tr>
-              <th>SNO</th>
-              <th>TYPE</th>
-              <th>DESCRIPTION</th>
-              <th>TIME & INTERVAL</th>
-              <th>WEEKDAY</th>
-            </tr>
-          </thead>
-          <tbody>
-            {combinedData.map((row, index) => (
-              <React.Fragment key={index}>
-                <tr>
-                  <td>{row.sno}</td>
-                  <td>{row.type}</td>
-                  <td>{row.description}</td>
-                  <td>{row.timeInterval}</td>
-                  <td>
-                    {row.weekdays && row.weekdays.length > 0 ? (
-                      <table>
-                        <tbody>
-                          {row.weekdays.map((weekday, subIndex) => (
-                            <tr key={subIndex}>
-                              <td><strong>{weekday.weekday}</strong>: {weekday.time}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    ) : (
-                      "-"
-                    )}
-                  </td>
-                </tr>
-              </React.Fragment>
-            ))}
-          </tbody>
-        </table>
-      )}
+      {combinedData && !loading && (() => {
+        const isSelectedToday = () => {
+          if (!date) return false;
+          const todayStr = new Date().toISOString().substring(0, 10);
+          return date === todayStr;
+        };
+
+        const isRowCurrentPeriod = (timeInterval) => {
+          if (!timeInterval || !timeInterval.includes(' to ')) return false;
+          const [startStr, endStr] = timeInterval.split(' to ');
+          const now = new Date();
+          const currentMinutes = now.getHours() * 60 + now.getMinutes();
+          const startMinutes = parseTimeToMinutes(startStr);
+          const endMinutes = parseTimeToMinutes(endStr);
+          if (startMinutes === null || endMinutes === null) return false;
+          
+          if (endMinutes < startMinutes) {
+            return currentMinutes >= startMinutes || currentMinutes < endMinutes;
+          }
+          return currentMinutes >= startMinutes && currentMinutes < endMinutes;
+        };
+
+        const todayActive = isSelectedToday();
+
+        return (
+          <table >
+            <thead>
+              <tr>
+                <th>SNO</th>
+                <th>TYPE</th>
+                <th>DESCRIPTION</th>
+                <th>TIME & INTERVAL</th>
+                <th>WEEKDAY</th>
+              </tr>
+            </thead>
+            <tbody>
+              {combinedData.map((row, index) => {
+                const isCurrentPeriod = todayActive && isRowCurrentPeriod(row.timeInterval);
+                return (
+                  <React.Fragment key={index}>
+                    <tr style={isCurrentPeriod ? { backgroundColor: 'yellow', color: 'black' } : {}}>
+                      <td>{row.sno}</td>
+                      <td>{row.type}</td>
+                      <td>{row.description}</td>
+                      <td>{row.timeInterval}</td>
+                      <td>
+                        {row.weekdays && row.weekdays.length > 0 ? (
+                          <table>
+                            <tbody>
+                              {row.weekdays.map((weekday, subIndex) => (
+                                <tr key={subIndex}>
+                                  <td><strong>{weekday.weekday}</strong>: {weekday.time}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        ) : (
+                          "-"
+                        )}
+                      </td>
+                    </tr>
+                  </React.Fragment>
+                );
+              })}
+            </tbody>
+          </table>
+        );
+      })()}
   
       {combinedData && !loading && <TableScreenshot tableId="tableToCapture" city={city} date={date} weekday={weekday} />}
     </div>

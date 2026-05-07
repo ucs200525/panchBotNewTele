@@ -24,7 +24,7 @@ app.get('/', (req, res) => {
 
 // Function to fetch GeoName ID based on city
 async function getGeoNameId(city) {
-    const geoNamesUrl = `http://api.geonames.org/searchJSON?q=${city}&maxRows=1&username=ucs05`;
+    const geoNamesUrl = `https://secure.geonames.org/searchJSON?q=${city}&maxRows=1&username=ucs05`;
     try {
         const response = await axios.get(geoNamesUrl);
         if (response.data.geonames && response.data.geonames.length > 0) {

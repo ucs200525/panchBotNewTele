@@ -2,8 +2,9 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from '../context/AuthContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 import TableScreenshot from '../components/TableScreenshot';
-import LivePeriodTracker from '../components/LivePeriodTracker';
 import { CityAutocomplete } from '../components/forms';
+// import { GanttTimeline } from '../components/GanttTimeline';
+import { parseTimeToMinutes } from '../utils/periodHelpers';
 
 
 const PanchakaSwiss = () => {
@@ -217,16 +218,45 @@ const PanchakaSwiss = () => {
         return '';
     };
 
+    const isSelectedToday = () => {
+        if (!date) return false;
+        const todayStr = new Date().toISOString().substring(0, 10);
+        return date === todayStr;
+    };
+
+    const isRowCurrentPeriod = (timeInterval) => {
+        if (!timeInterval || !timeInterval.includes(' to ')) return false;
+        const [startStr, endStr] = timeInterval.split(' to ');
+        const now = new Date();
+        const currentMinutes = now.getHours() * 60 + now.getMinutes();
+        const startMinutes = parseTimeToMinutes(startStr);
+        const endMinutes = parseTimeToMinutes(endStr);
+        if (startMinutes === null || endMinutes === null) return false;
+        
+        if (endMinutes < startMinutes) {
+            return currentMinutes >= startMinutes || currentMinutes < endMinutes;
+        }
+        return currentMinutes >= startMinutes && currentMinutes < endMinutes;
+    };
+
     const generateRows = () => {
-        return (showAll ? allMuhuratData : filteredData).map((item, index) => (
-            <tr key={index} className={getCategoryClass(item.category)}>
-                <td className="muhurat-cell">
-                    <span className="muhurat-name">{item.muhurat}</span>
-                    <span className="category-badge">{item.category}</span>
-                </td>
-                <td>{item.time}</td>
-            </tr>
-        ));
+        const todayActive = isSelectedToday();
+        return (showAll ? allMuhuratData : filteredData).map((item, index) => {
+            const isCurrentPeriod = todayActive && isRowCurrentPeriod(item.time);
+            return (
+                <tr 
+                    key={index} 
+                    className={getCategoryClass(item.category)}
+                    style={isCurrentPeriod ? { backgroundColor: 'yellow', color: 'black' } : {}}
+                >
+                    <td className="muhurat-cell">
+                        <span className="muhurat-name">{item.muhurat}</span>
+                        <span className="category-badge">{item.category}</span>
+                    </td>
+                    <td>{item.time}</td>
+                </tr>
+            );
+        });
     };
 
 
@@ -320,8 +350,9 @@ const PanchakaSwiss = () => {
 
             <h2>Result</h2>
 
-            {/* Live Period Tracker - Only shows for TODAY */}
-            {filteredData && filteredData.length > 0 && <LivePeriodTracker data={filteredData} selectedDate={date} />}
+            {/* Gantt Timeline
+            {filteredData && filteredData.length > 0 && <GanttTimeline data={filteredData} selectedDate={date} />}
+            */}
 
         <div  id="muhurats-table" >
             <div className="info-inline">

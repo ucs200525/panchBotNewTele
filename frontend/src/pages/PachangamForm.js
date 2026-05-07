@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useAuth } from '../context/AuthContext';
 import TableScreenshot from '../components/TableScreenshot';
-import LivePeriodTracker from '../components/LivePeriodTracker';
 import PanchangInfo from '../components/PanchangInfo';
 import { findCurrentPeriod } from '../utils/periodHelpers';
 import { CityAutocomplete } from '../components/forms';
+// import { GanttTimeline } from '../components/GanttTimeline';
 
 const TimeConverterApp = () => {
   const { localCity, localDate, localLat, localLng, setCityAndDate } = useAuth();
@@ -362,8 +362,34 @@ const TimeConverterApp = () => {
           </div>
         </div>
 
-        {/* Phase 2: Live Period Tracker - Only shows for TODAY */}
-        {data && data.length > 0 && <LivePeriodTracker data={data} selectedDate={date} />}
+        {/* Gantt Timeline
+        {data && data.length > 0 && (
+          <GanttTimeline
+            data={(() => {
+              const timelineData = [];
+              data.forEach(item => {
+                const category = item.isColored ? 'Danger Period' : item.isWednesdayColored ? 'Risk Period' : 'Good Timing';
+                if (item.start1 && item.end1 && item.start1 !== '-' && item.end1 !== '-') {
+                  timelineData.push({
+                    muhurat: item.weekday,
+                    category: category,
+                    time: `${item.start1} to ${item.end1}`
+                  });
+                }
+                if (item.start2 && item.end2 && item.start2 !== '-' && item.end2 !== '-') {
+                  timelineData.push({
+                    muhurat: item.weekday,
+                    category: category,
+                    time: `${item.start2} to ${item.end2}`
+                  });
+                }
+              });
+              return timelineData;
+            })()}
+            selectedDate={date}
+          />
+        )}
+        */}
         {/* Panchang data moved to dedicated /panchang page */}
 
         <div>
@@ -377,18 +403,24 @@ const TimeConverterApp = () => {
                 <th>Start 2</th>
                 <th>End 2</th>
                 <th>S.No</th>
-                {/* <th>value 1</th>
-            <th>value2</th> */}
               </tr>
             </thead>
             <tbody>
               {data.map((item, index) => {
                 // Check if this row is the current period
+                const isSelectedToday = () => {
+                  if (!date) return false;
+                  const todayStr = new Date().toISOString().substring(0, 10);
+                  return date === todayStr;
+                };
                 const currentPeriod = findCurrentPeriod(data, new Date());
-                const isCurrentPeriod = currentPeriod?.index === index;
+                const isCurrentPeriod = isSelectedToday() && currentPeriod?.index === index;
                 
                 return (
-                <tr key={index} className={isCurrentPeriod ? 'current-period-row' : ''}>
+                <tr 
+                  key={index} 
+                  style={isCurrentPeriod ? { backgroundColor: 'yellow', color: 'black' } : {}}
+                >
                   <td>{item.start1}</td>
                   <td>{item.end1}</td>
                   <td
@@ -406,9 +438,6 @@ const TimeConverterApp = () => {
                   <td>{item.start2}</td>
                   <td>{item.end2}</td>
                   <td>{item.sNo}</td>
-                  {/* <td>{item.value1}</td>
-              <td>{item.value2}</td> */}
-
                 </tr>
                 );
               })}

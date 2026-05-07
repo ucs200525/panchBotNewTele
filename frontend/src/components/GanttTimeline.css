@@ -1,0 +1,389 @@
+/* ================================================
+   Gantt Timeline — Premium Visual Timeline Card
+   ================================================ */
+
+.gantt-timeline-card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 32px 36px 28px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.10), 0 2px 8px rgba(0,0,0,0.04);
+  margin: 36px auto;
+  max-width: 1100px;
+  border: 1px solid #e8eef6;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.gantt-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 6px;
+  text-align: center;
+  letter-spacing: -0.3px;
+}
+
+/* ================================================
+   Activity Filter Pills
+   ================================================ */
+
+.activity-filters {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.filter-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 2px;
+}
+
+.filter-pills {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.filter-pill {
+  background: #f1f5f9;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 24px;
+  padding: 10px 22px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+}
+
+.filter-pill:hover {
+  background: #dbeafe;
+  color: #1e40af;
+  border-color: #93c5fd;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.filter-pill.active {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: #ffffff;
+  border-color: #2563eb;
+  box-shadow: 0 6px 18px rgba(59, 130, 246, 0.35);
+  transform: translateY(-1px);
+}
+
+/* ================================================
+   Timeline Grid Viewport
+   ================================================ */
+
+.timeline-container {
+  position: relative;
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 14px;
+  height: 120px;
+  margin: 48px 0 20px 0;
+  border: 1.5px solid #e2e8f0;
+  overflow: visible;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.04);
+}
+
+.timeline-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.grid-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background-color: rgba(203, 213, 225, 0.6);
+}
+
+.grid-line:nth-child(6n + 1) {
+  background-color: rgba(148, 163, 184, 0.9);
+}
+
+.grid-hour {
+  position: absolute;
+  bottom: -28px;
+  transform: translateX(-50%);
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  white-space: nowrap;
+  letter-spacing: 0.2px;
+}
+
+.grid-hour.first-hour {
+  transform: translateX(0);
+}
+
+.grid-hour.last-hour {
+  transform: translateX(-100%);
+}
+
+/* ================================================
+   Timeline Track and Blocks
+   ================================================ */
+
+.timeline-track {
+  position: absolute;
+  top: 12px;
+  bottom: 12px;
+  left: 0;
+  right: 0;
+}
+
+.timeline-block {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.18s, box-shadow 0.18s, opacity 0.18s;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 1px 3px rgba(0,0,0,0.12);
+}
+
+.timeline-block:hover {
+  transform: scaleY(1.12);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+  z-index: 10;
+}
+
+/* ================================================
+   Tooltip
+   ================================================ */
+
+.timeline-tooltip {
+  position: absolute;
+  bottom: calc(100% + 14px);
+  left: 50%;
+  transform: translateX(-50%) translateY(8px);
+  background: rgba(15, 23, 42, 0.96);
+  backdrop-filter: blur(6px);
+  color: #ffffff;
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-size: 13px;
+  white-space: nowrap;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.30);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s, transform 0.15s, visibility 0.15s;
+  z-index: 100;
+  min-width: 160px;
+}
+
+.timeline-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 7px;
+  border-style: solid;
+  border-color: rgba(15, 23, 42, 0.96) transparent transparent transparent;
+}
+
+.timeline-block:hover .timeline-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+.tooltip-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 8px;
+}
+
+.tooltip-name {
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+.tooltip-badge {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 12px;
+  letter-spacing: 0.6px;
+  flex-shrink: 0;
+}
+
+.label-good {
+  background: rgba(16, 185, 129, 0.25);
+  color: #34d399;
+}
+
+.label-danger {
+  background: rgba(239, 68, 68, 0.25);
+  color: #f87171;
+}
+
+.label-risk {
+  background: rgba(245, 158, 11, 0.25);
+  color: #fbbf24;
+}
+
+.label-neutral {
+  background: rgba(148, 163, 184, 0.2);
+  color: #cbd5e1;
+}
+
+.tooltip-time {
+  font-size: 12px;
+  font-weight: 500;
+  color: #94a3b8;
+  display: block;
+  margin-top: 2px;
+}
+
+/* ================================================
+   Live Current-Time Indicator
+   ================================================ */
+
+.current-time-indicator {
+  position: absolute;
+  top: -18px;
+  bottom: -18px;
+  width: 2.5px;
+  background: linear-gradient(180deg, #3b82f6 0%, #6366f1 100%);
+  z-index: 20;
+  pointer-events: none;
+  border-radius: 2px;
+}
+
+.indicator-glow {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 12px;
+  background-color: #3b82f6;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3), 0 0 16px #3b82f6, 0 0 32px rgba(59, 130, 246, 0.5);
+  animation: timePulse 2s ease-in-out infinite;
+}
+
+@keyframes timePulse {
+  0%, 100% {
+    transform: translateX(-50%) scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: translateX(-50%) scale(1.5);
+    opacity: 0.7;
+  }
+}
+
+/* ================================================
+   Legend
+   ================================================ */
+
+.timeline-legend {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  margin-top: 40px;
+  flex-wrap: wrap;
+  padding: 14px 20px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #475569;
+}
+
+.legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  display: inline-block;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+/* ================================================
+   Responsive — Tablet
+   ================================================ */
+
+@media (max-width: 900px) {
+  .gantt-timeline-card {
+    padding: 24px 20px 20px;
+    max-width: 100%;
+  }
+
+  .gantt-title {
+    font-size: 20px;
+  }
+}
+
+/* ================================================
+   Responsive — Mobile
+   ================================================ */
+
+@media (max-width: 640px) {
+  .gantt-timeline-card {
+    padding: 18px 14px 16px;
+    border-radius: 14px;
+    margin: 20px 0;
+  }
+
+  .gantt-title {
+    font-size: 17px;
+  }
+
+  .filter-pill {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+
+  .grid-hour {
+    font-size: 10px;
+  }
+
+  .timeline-container {
+    height: 80px;
+    margin: 40px 0 16px 0;
+  }
+
+  .timeline-track {
+    top: 8px;
+    bottom: 8px;
+  }
+
+  .timeline-legend {
+    gap: 14px;
+    padding: 10px 14px;
+  }
+
+  .legend-item {
+    font-size: 12px;
+  }
+}
