@@ -29,6 +29,7 @@ const CombinePage = () => {
   const [is12HourFormat, setIs12HourFormat] = useState(true); // default to true
 
 
+
   useEffect(() => {
     localStorage.setItem('combinedData', JSON.stringify(combinedData));
   }, [combinedData]);
@@ -151,9 +152,9 @@ const CombinePage = () => {
         if (fetchData) {
           fetchMuhuratData();
           setFetchData(false); // Reset fetchData to prevent re-fetching immediately
-       
         }
       }, [fetchData]); // Runs when fetchData changes
+
     
   
   // Fetch Muhurat and Bharagv Data together
@@ -170,7 +171,7 @@ const CombinePage = () => {
       // Fetch Muhurat, filtered Bharagv (for table), and unfiltered Bharagv (for Gantt timeline)
       const [muhurthaResponse, bharagvResponse, allBharagvResponse] = await Promise.all([
         fetch(
-            `${process.env.REACT_APP_API_URL}/api/getDrikTable?city=${city}&date=${convertToDDMMYYYY(date)}&goodTimingsOnly=${showNonBlue}${latParam}${lngParam}`
+            `${process.env.REACT_APP_API_URL}/api/getDrikTable?city=${city}&date=${convertToDDMMYYYY(date)}&goodTimingsOnly=${showNonBlue}&is12HourFormat=${is12HourFormat}${latParam}${lngParam}`
           ),
         fetch(
           `${process.env.REACT_APP_API_URL}/api/getBharagvTable?city=${city}&date=${date}&showNonBlue=${showNonBlue}&is12HourFormat=${is12HourFormat}${latParam}${lngParam}`
@@ -205,6 +206,7 @@ const CombinePage = () => {
           panchangamData: bharagvData,
           city: city,
           date: date,
+          is12HourFormat: is12HourFormat,
         }),
       });
       const combinedData = await combinedResponse.json();
@@ -263,7 +265,7 @@ const CombinePage = () => {
           />
         </label>
         <label className="is12HourFormat">
-          12 Hour Format(NOT WORKING AT PRESENT):
+          12 Hour Format:
           <input
             type="checkbox"
             checked={is12HourFormat}

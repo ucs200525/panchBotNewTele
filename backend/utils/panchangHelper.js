@@ -412,13 +412,13 @@ function calculateDuration(start, end) {
     return `${minutes} minutes`;
 }
 
-const formatTime = (date, timezone = 'Asia/Kolkata', baseDate = null) => {
+const formatTime = (date, timezone = 'Asia/Kolkata', baseDate = null, is12HourFormat = true) => {
     if (!date) return 'N/A';
     
     const options = {
         hour: '2-digit',
         minute: '2-digit',
-        hour12: true,
+        hour12: is12HourFormat,
         timeZone: timezone
     };
     
@@ -477,7 +477,7 @@ function calculateAbhijitMuhurat(sunriseStr, sunsetStr, timezone = 'Asia/Kolkata
     }
 }
 
-function calculateSwissPanchakaRahita(dateObj, lat, lng, timezone, sunriseStr, sunsetStr, nextSunriseStr, existingLagnas) {
+function calculateSwissPanchakaRahita(dateObj, lat, lng, timezone, sunriseStr, sunsetStr, nextSunriseStr, existingLagnas, is12HourFormat = true) {
     try {
         const { panchanga, lagna: lagnaModule } = require('../swisseph');
         const fs = require('fs');
@@ -578,8 +578,8 @@ function calculateSwissPanchakaRahita(dateObj, lat, lng, timezone, sunriseStr, s
             results.push({
                 muhurat: muhuratName,
                 category: category,
-                start: formatTime(start, timezone, dateObj),
-                end: formatTime(end, timezone, dateObj),
+                start: formatTime(start, timezone, dateObj, is12HourFormat),
+                end: formatTime(end, timezone, dateObj, is12HourFormat),
                 duration: Math.round((end.getTime() - start.getTime()) / 60000) + ' mins',
                 _start: start.getTime(),
                 _end: end.getTime(),

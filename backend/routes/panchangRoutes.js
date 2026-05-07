@@ -840,9 +840,9 @@ router.get('/getBharagvTable', async (req, res) => {
 });
 ////////////////////////////////////////////////END----BHARGAV--PANCHAGAM//////////////////////////////////
 
-const createDrikTableSwiss = async (city, date, lat, lng, timeZone) => {
-    logger.info({ message: 'createDrikTableSwiss called', city, date, lat, lng });
-    const filteredData = await fetchmuhuratSwiss(city, date, lat, lng, timeZone); 
+const createDrikTableSwiss = async (city, date, lat, lng, timeZone, is12HourFormat = true) => {
+    logger.info({ message: 'createDrikTableSwiss called', city, date, lat, lng, is12HourFormat });
+    const filteredData = await fetchmuhuratSwiss(city, date, lat, lng, timeZone, is12HourFormat); 
 
     const drikTable = filteredData.map((row) => {
         const [startTime, endTime] = row.time.split(" to ");
@@ -874,9 +874,23 @@ const createDrikTableSwiss = async (city, date, lat, lng, timeZone) => {
     });
     return drikTable;
 };
-const createDrikTableScraping = async (city, date) => {
-    logger.info({ message: 'createDrikTableScraping called', city, date });
+const createDrikTableScraping = async (city, date, is12HourFormat = true) => {
+    logger.info({ message: 'createDrikTableScraping called', city, date, is12HourFormat });
     const filteredData = await fetchmuhuratScraping(city, date);
+    
+    const formatTimeStr = (timeStr, is12H) => {
+        if (!timeStr) return "";
+        if (is12H) return timeStr;
+        const ampmMatch = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+        if (!ampmMatch) return timeStr;
+        let [fullMatch, hours, minutes, period] = ampmMatch;
+        hours = parseInt(hours, 10);
+        if (period.toUpperCase() === "PM" && hours !== 12) hours += 12;
+        if (period.toUpperCase() === "AM" && hours === 12) hours = 0;
+        const formatted24 = `${hours.toString().padStart(2, '0')}:${minutes.padStart(2, '0')}`;
+        return timeStr.replace(fullMatch, formatted24).trim();
+    };
+
     const drikTable = filteredData.map((row) => {
         const [startTime, endTime] = row.time.split(" to ");
         let endTimeWithoutDate, endDatePart;
@@ -896,7 +910,7 @@ const createDrikTableScraping = async (city, date) => {
             : endTime.includes("PM")
                 ? `${endTimeWithoutDate}`
                 : endTime;
-        const timeIntervalFormatted = `${adjustedStartTime} to ${adjustedEndTime}`;
+        const timeIntervalFormatted = `${formatTimeStr(adjustedStartTime, is12HourFormat)} to ${formatTimeStr(adjustedEndTime, is12HourFormat)}`;
         return {
             category: row.category,
             muhurat: row.muhurat,
@@ -907,12 +921,12 @@ const createDrikTableScraping = async (city, date) => {
 };
 
 router.get('/getDrikTable', async (req, res) => {
-    const { city, date, goodTimingsOnly } = req.query;
+    const { city, date, goodTimingsOnly, is12HourFormat } = req.query;
     logger.info({ message: 'Route /getDrikTable called', query: req.query });
     const isGoodTimingsOnly = goodTimingsOnly !== 'false';
     if (!city || !date) return res.status(400).send('City and date are required');
     try {
-        const table = await createDrikTableScraping(city, date);
+        const table = await createDrikTableScraping(city, date, is12HourFormat !== 'false');
         if (isGoodTimingsOnly) {
             const filteredTable = table.filter(row => row.category === 'Good');
             return res.json(filteredTable);
@@ -925,12 +939,12 @@ router.get('/getDrikTable', async (req, res) => {
 });
 
 router.get('/getDrikTableSwiss', async (req, res) => {
-    const { city, date, goodTimingsOnly, lat, lng, timeZone } = req.query;
+    const { city, date, goodTimingsOnly, lat, lng, timeZone, is12HourFormat } = req.query;
     logger.info({ message: 'Route /getDrikTableSwiss called', query: req.query });
     const isGoodTimingsOnly = goodTimingsOnly !== 'false';
     if (!city || !date) return res.status(400).send('City and date are required');
     try {
-        const table = await createDrikTableSwiss(city, date, lat, lng, timeZone);
+        const table = await createDrikTableSwiss(city, date, lat, lng, timeZone, is12HourFormat !== 'false');
         if (isGoodTimingsOnly) {
             const filteredTable = table.filter(row => row.category === 'Good');
             return res.json(filteredTable);
@@ -997,10 +1011,37 @@ const validateInterval = (start, end) => {
 };
 
 // Function to process Muhurat and Panchangam data
-const processMuhuratAndPanchangam = (muhuratData, panchangamData, baseDate) => {
-    logger.info({ message: 'processMuhuratAndPanchangam called', muhuratRows: muhuratData.length, panchangamRows: panchangamData.length });
+const processMuhuratAndPanchangam = (muhuratData, panchangamData, baseDate, is12HourFormat = true) => {
+    logger.info({ message: 'processMuhuratAndPanchangam called', muhuratRows: muhuratData.length, panchangamRows: panchangamData.length, is12HourFormat });
     const mergedData = [];
     let i = 0;
+
+    const formatTimeForMerge = (date, is12H) => {
+        const options = {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: is12H
+        };
+        return date.toLocaleTimeString('en-US', options);
+    };
+
+    const formatTimeStr = (timeStr, is12H) => {
+        if (!timeStr) return "";
+        if (is12H) return timeStr;
+        
+        // Convert 12-hour AM/PM string to 24-hour format
+        // Handled formats: "06:14 AM", "Nov 29, 06:14 AM", "Nov 29 , 06:14 AM"
+        const ampmMatch = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+        if (!ampmMatch) return timeStr;
+        
+        let [fullMatch, hours, minutes, period] = ampmMatch;
+        hours = parseInt(hours, 10);
+        if (period.toUpperCase() === "PM" && hours !== 12) hours += 12;
+        if (period.toUpperCase() === "AM" && hours === 12) hours = 0;
+        
+        const formatted24 = `${hours.toString().padStart(2, '0')}:${minutes.padStart(2, '0')}`;
+        return timeStr.replace(fullMatch, formatted24).trim();
+    };
 
     muhuratData.forEach((muhuratItem) => {
         const [muhuratStart, muhuratEnd] = splitInterval(muhuratItem.time, baseDate);
@@ -1015,18 +1056,22 @@ const processMuhuratAndPanchangam = (muhuratData, panchangamData, baseDate) => {
                         if (!weekdaysArray.find((item) => item.weekday === panchangamItem.weekday)) {
                             weekdaysArray.push({
                                 weekday: panchangamItem.weekday,
-                                time: `${start.toLocaleTimeString()} - ${end.toLocaleTimeString()}`,
+                                time: `${formatTimeForMerge(start, is12HourFormat)} - ${formatTimeForMerge(end, is12HourFormat)}`,
                             });
                         }
                     }
                 }
             });
 
+            // Convert intervals to match choice
+            const rawTime = muhuratItem.time;
+            const formattedTimeInterval = rawTime.split(" to ").map(t => formatTimeStr(t, is12HourFormat)).join(" to ");
+
             mergedData.push({
                 sno: i + 1,
                 type: "Muhurat",
                 description: `${muhuratItem.muhurat} - ${muhuratItem.category}`,
-                timeInterval: muhuratItem.time,
+                timeInterval: formattedTimeInterval,
                 weekdays: weekdaysArray.length > 0 ? weekdaysArray : [{ weekday: "-", time: "-" }],
             });
             i++;
@@ -1037,8 +1082,8 @@ const processMuhuratAndPanchangam = (muhuratData, panchangamData, baseDate) => {
     return mergedData;
 };
 
-async function fetchmuhuratSwiss(city, date, lat, lng, timeZone) {
-    logger.info({ message: 'fetchmuhurat Swiss called', city, date, lat, lng });
+async function fetchmuhuratSwiss(city, date, lat, lng, timeZone, is12HourFormat = true) {
+    logger.info({ message: 'fetchmuhurat Swiss called', city, date, lat, lng, is12HourFormat });
     try {
         let year, month, day;
         if (date.includes('/')) {
@@ -1077,7 +1122,9 @@ async function fetchmuhuratSwiss(city, date, lat, lng, timeZone) {
             coords.timeZone,
             sunTimesData.sunriseToday,
             sunTimesData.sunsetToday,
-            sunTimesData.sunriseTmrw
+            sunTimesData.sunriseTmrw,
+            undefined,
+            is12HourFormat
         );
 
         logger.info({ message: 'fetchmuhurat Swiss completed', count: muhuratData.length });
@@ -1148,8 +1195,8 @@ router.get('/getPanchangData', async (req, res) => {
 // API endpoint to fetch combined data
 // API endpoint to fetch combined data
 router.post("/combine", (req, res) => {
-    logger.info({ message: 'Route /combine called', city: req.body.city, date: req.body.date });
-    const { muhuratData, panchangamData, city, date } = req.body;
+    logger.info({ message: 'Route /combine called', city: req.body.city, date: req.body.date, is12HourFormat: req.body.is12HourFormat });
+    const { muhuratData, panchangamData, city, date, is12HourFormat } = req.body;
 
     if (!muhuratData || !panchangamData || !city || !date) {
         logger.warn('Route /combine missing data');
@@ -1157,7 +1204,7 @@ router.post("/combine", (req, res) => {
     }
 
     const baseDate = new Date(date);
-    const finalData = processMuhuratAndPanchangam(muhuratData, panchangamData, baseDate);
+    const finalData = processMuhuratAndPanchangam(muhuratData, panchangamData, baseDate, is12HourFormat !== false);
 
     res.json(finalData);
 });
