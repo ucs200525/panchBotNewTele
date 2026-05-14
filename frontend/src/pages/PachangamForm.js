@@ -80,53 +80,89 @@ const TimeConverterApp = () => {
     alert("Please select a City and Date manually.");
   };
 
-  const Getpanchangam = async () => {
+  const GetpanchangamParams = async (fetchCity, fetchDate, fetchLat, fetchLng) => {
     setIsLoading(true);
     try {
-      console.log("API URL:", process.env.REACT_APP_API_URL);
-      console.log("City:", city);
-      console.log(" Date:", date);
+      const queryParams = fetchLat && fetchLng ? `?lat=${fetchLat}&lng=${fetchLng}` : '';
+      const apiUrl = `${process.env.REACT_APP_API_URL}/api/getSunTimesForCity/${fetchCity}/${fetchDate}${queryParams}`;
       
-      const queryParams = lat && lng ? `?lat=${lat}&lng=${lng}` : '';
-      const apiUrl = `${process.env.REACT_APP_API_URL}/api/getSunTimesForCity/${city}/${date}${queryParams}`;
-      console.log("Constructed API URL:", apiUrl);
-
       const response = await fetch(apiUrl);
-      const response1 = await fetch(`${process.env.REACT_APP_API_URL}/api/getWeekday/${date}`);
+      const response1 = await fetch(`${process.env.REACT_APP_API_URL}/api/getWeekday/${fetchDate}`);
 
       if (!response.ok || !response1.ok) {
         throw new Error('Failed to fetch Panchangam data');
       }
 
-      const sunTimes = await response.json();
-      const week = await response1.json();
-      console.log("sunTime", sunTimes);
-      setWeekday(week.weekday);
-      setSunriseToday(sunTimes.sunTimes.sunriseToday);
-      setSunsetToday(sunTimes.sunTimes.sunsetToday);
-      setSunriseTmrw(sunTimes.sunTimes.sunriseTmrw);
+      const data = await response.json();
+      const data1 = await response1.json();
+      
+      setSunriseToday(data.sunTimes.sunriseToday);
+      setSunsetToday(data.sunTimes.sunsetToday);
+      setSunriseTmrw(data.sunTimes.sunriseTmrw);
+      setWeekday(data1.weekday);
       setFetchData(true);
     } catch (error) {
+      console.error("Error details:", error);
       setError(error.message || 'Failed to fetch Panchangam');
-    }
-    finally {
+    } finally {
       setIsLoading(false);
     }
   };
 
-  const checkAndFetchPanchangam = async () => {
-    if (city && date) {
-      setCityError(false);
-      await Getpanchangam();
-    } else if (!city) {
-      setCityError(true);
-    } else if (!date) {
-      alert("Please select a Date manually.");
+  const Getpanchangam = async () => {
+    if (!date) {
+        alert("Please select a Date manually.");
+        return;
     }
+
+    if (!city) {
+        if (navigator.geolocation) {
+            setIsLoading(true);
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    const newLat = position.coords.latitude;
+                    const newLng = position.coords.longitude;
+                    try {
+                        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/fetchCityName/${newLat}/${newLng}`);
+                        if (!response.ok) throw new Error('Failed to fetch city name');
+                        const data = await response.json();
+                        
+                        setCity(data.cityName);
+                        setLat(newLat);
+                        setLng(newLng);
+                        setCityAndDate(data.cityName, date, newLat, newLng);
+                        
+                        await GetpanchangamParams(data.cityName, date, newLat, newLng);
+                    } catch (error) {
+                        console.error("Error fetching city from geolocation:", error);
+                        alert("Could not determine city from your location. Please enter manually.");
+                        setIsLoading(false);
+                    }
+                },
+                (error) => {
+                    console.error("Geolocation error:", error);
+                    alert("Geolocation failed or permission denied. Please enter city manually.");
+                    setIsLoading(false);
+                }
+            );
+            return;
+        } else {
+            alert("Geolocation is not supported by your browser. Please enter City Manually.");
+            return;
+        }
+    }
+
+    await GetpanchangamParams(city, date, lat, lng);
   };
 
-
-
+  const checkAndFetchPanchangam = async () => {
+    if (!date) {
+      alert("Please select a Date manually.");
+      return;
+    }
+    setCityError(false);
+    await Getpanchangam();
+  };
 
   useEffect(() => {
     if (fetchData) {

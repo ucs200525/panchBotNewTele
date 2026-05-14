@@ -88,14 +88,12 @@ const CombineSwiss = () => {
   };
 
   const checkAndFetchPanchangam = async () => {
-    if (city && date) {
-      setCityError(false);
-      await fetchMuhuratData();
-    } else if (!city) {
-      setCityError(true);
-    } else if (!date) {
+    if (!date) {
       alert("Please select a Date manually.");
+      return;
     }
+    setCityError(false);
+    await fetchMuhuratData();
   };
 
     
@@ -108,45 +106,34 @@ const CombineSwiss = () => {
 
     
   
-  // Fetch Muhurat and Bharagv Data together
-  const fetchMuhuratData = async () => {
+  const fetchCombineFromAPI = async (fetchCity, fetchDate, fetchLat, fetchLng) => {
     setLoading(true);
     setError(null);
     try {
-      // Set goodTimingsOnly to true by default
       const goodTimingsOnly = true;
+      const latParam = fetchLat !== null && fetchLat !== undefined ? `&lat=${fetchLat}` : '';
+      const lngParam = fetchLng !== null && fetchLng !== undefined ? `&lng=${fetchLng}` : '';
 
-      const latParam = lat !== null && lat !== undefined ? `&lat=${lat}` : '';
-      const lngParam = lng !== null && lng !== undefined ? `&lng=${lng}` : '';
-
-      // Fetch Muhurat, filtered Bharagv (for table), and unfiltered Bharagv (for Gantt timeline)
       const [muhurthaResponse, bharagvResponse, allBharagvResponse] = await Promise.all([
         fetch(
-            `${process.env.REACT_APP_API_URL}/api/getDrikTableSwiss?city=${city}&date=${convertToDDMMYYYY(date)}&goodTimingsOnly=${showNonBlue}&is12HourFormat=${is12HourFormat}${latParam}${lngParam}`
+            `${process.env.REACT_APP_API_URL}/api/getDrikTableSwiss?city=${fetchCity}&date=${convertToDDMMYYYY(fetchDate)}&goodTimingsOnly=${showNonBlue}&is12HourFormat=${is12HourFormat}${latParam}${lngParam}`
           ),
         fetch(
-          `${process.env.REACT_APP_API_URL}/api/getBharagvTable?city=${city}&date=${date}&showNonBlue=${showNonBlue}&is12HourFormat=${is12HourFormat}${latParam}${lngParam}`
+          `${process.env.REACT_APP_API_URL}/api/getBharagvTable?city=${fetchCity}&date=${fetchDate}&showNonBlue=${showNonBlue}&is12HourFormat=${is12HourFormat}${latParam}${lngParam}`
         ),
-        // Always fetch ALL rows (showNonBlue=false) for the Gantt timeline so danger/good colors show correctly
         fetch(
-          `${process.env.REACT_APP_API_URL}/api/getBharagvTable?city=${city}&date=${date}&showNonBlue=false&is12HourFormat=${is12HourFormat}${latParam}${lngParam}`
+          `${process.env.REACT_APP_API_URL}/api/getBharagvTable?city=${fetchCity}&date=${fetchDate}&showNonBlue=false&is12HourFormat=${is12HourFormat}${latParam}${lngParam}`
         ),
       ]);
 
-      // Parse the responses as JSON
       const muhurthaData = await muhurthaResponse.json();
       const bharagvData = await bharagvResponse.json();
       const allBharagvData = await allBharagvResponse.json();
-
-      console.log("DATA Muhurat", muhurthaData);
-      console.log("DATA Bharagv", bharagvData);
-      console.log("DATA AllBharagv (for Gantt)", allBharagvData);
 
       setMuhurthaData(muhurthaData);
       setBharagvData(bharagvData);
       setAllBharagvData(allBharagvData);
 
-      // Combine the fetched data
       const combinedResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/combine`, {
         method: 'POST',
         headers: {
@@ -155,17 +142,15 @@ const CombineSwiss = () => {
         body: JSON.stringify({
           muhuratData: muhurthaData,
           panchangamData: bharagvData,
-          city: city,
-          date: date,
+          city: fetchCity,
+          date: fetchDate,
           is12HourFormat: is12HourFormat,
         }),
       });
       const combinedData = await combinedResponse.json();
-      console.log("DATA combinedData", combinedData);
       setCombinedData(combinedData);
 
-      // Calculate weekday
-      const weekday = new Date(date).toLocaleString('en-US', { weekday: 'long' });
+      const weekday = new Date(fetchDate).toLocaleString('en-US', { weekday: 'long' });
       setWeekday(weekday);
     } catch (error) {
       setError("Error fetching data. Please try again.");
@@ -173,6 +158,52 @@ const CombineSwiss = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchMuhuratData = async () => {
+    if (!date) {
+        alert("Please select a Date manually.");
+        return;
+    }
+
+    if (!city) {
+        if (navigator.geolocation) {
+            setLoading(true);
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    const newLat = position.coords.latitude;
+                    const newLng = position.coords.longitude;
+                    try {
+                        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/fetchCityName/${newLat}/${newLng}`);
+                        if (!response.ok) throw new Error('Failed to fetch city name');
+                        const data = await response.json();
+                        
+                        setCity(data.cityName);
+                        setLat(newLat);
+                        setLng(newLng);
+                        setCityAndDate(data.cityName, date, newLat, newLng);
+                        
+                        fetchCombineFromAPI(data.cityName, date, newLat, newLng);
+                    } catch (error) {
+                        console.error("Error fetching city from geolocation:", error);
+                        alert("Could not determine city from your location. Please enter manually.");
+                        setLoading(false);
+                    }
+                },
+                (error) => {
+                    console.error("Geolocation error:", error);
+                    alert("Geolocation failed or permission denied. Please enter city manually.");
+                    setLoading(false);
+                }
+            );
+            return;
+        } else {
+            alert("Geolocation is not supported by your browser. Please enter City Manually.");
+            return;
+        }
+    }
+
+    fetchCombineFromAPI(city, date, lat, lng);
   };
   return (
     <div className="content">

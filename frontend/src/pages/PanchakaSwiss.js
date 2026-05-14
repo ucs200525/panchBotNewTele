@@ -101,38 +101,72 @@ const PanchakaSwiss = () => {
         alert("Please select a City and Date manually.");
     };
     
-    const getMuhuratData = async () => {
-        if (!city || !date) {
-            alert("Please select a City and Date manually.");
-            return;
-        }
-
-        if (!city ) {
-            alert("City value is not correct,Please Enter Manually.")
-            return;
-        }
-
-        setLoading(true); // Set loading to true before fetching data
+    const fetchMuhuratFromAPI = (fetchCity, fetchDate, fetchLat, fetchLng) => {
+        setLoading(true);
         fetch(`${process.env.REACT_APP_API_URL}/api/fetch_muhurat_swiss`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ city, date: convertToDDMMYYYY(date), lat, lng })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ city: fetchCity, date: convertToDDMMYYYY(fetchDate), lat: fetchLat, lng: fetchLng })
         })
             .then(response => response.json())
             .then(data => {
-                setAllMuhuratData(data);  // Store all the muhurat data
+                setAllMuhuratData(data);
                 console.log("Complete data", data);
-                setFilteredData(data);  // Initially display all data
-                setShowAll(true);       // Reset to showing all rows
-                createDummyTable(); // Create the dummy table and save to localStorage
-                setLoading(false);  // Set loading to false after data is fetched
+                setFilteredData(data);
+                setShowAll(true);
+                createDummyTable();
+                setLoading(false);
             })
             .catch(error => {
                 console.error("Error fetching data:", error);
-                setLoading(false);  // Set loading to false in case of an error
+                setLoading(false);
             });
+    };
+
+    const getMuhuratData = async () => {
+        if (!date) {
+            alert("Please select a Date manually.");
+            return;
+        }
+
+        if (!city) {
+            if (navigator.geolocation) {
+                setLoading(true);
+                navigator.geolocation.getCurrentPosition(
+                    async (position) => {
+                        const newLat = position.coords.latitude;
+                        const newLng = position.coords.longitude;
+                        try {
+                            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/fetchCityName/${newLat}/${newLng}`);
+                            if (!response.ok) throw new Error('Failed to fetch city name');
+                            const data = await response.json();
+                            
+                            setCity(data.cityName);
+                            setLat(newLat);
+                            setLng(newLng);
+                            setCityAndDate(data.cityName, date, newLat, newLng);
+                            
+                            fetchMuhuratFromAPI(data.cityName, date, newLat, newLng);
+                        } catch (error) {
+                            console.error("Error fetching city from geolocation:", error);
+                            alert("Could not determine city from your location. Please enter manually.");
+                            setLoading(false);
+                        }
+                    },
+                    (error) => {
+                        console.error("Geolocation error:", error);
+                        alert("Geolocation failed or permission denied. Please enter city manually.");
+                        setLoading(false);
+                    }
+                );
+                return; 
+            } else {
+                alert("Geolocation is not supported by your browser. Please enter City Manually.");
+                return;
+            }
+        }
+
+        fetchMuhuratFromAPI(city, date, lat, lng);
     };
 
     useEffect(() => {
@@ -144,14 +178,12 @@ const PanchakaSwiss = () => {
     
     
   const checkAndFetchPanchangam = async () => {
-    if (city && date) {
-      setCityError(false);
-      await getMuhuratData();
-    } else if (!city) {
-      setCityError(true);
-    } else if (!date) {
+    if (!date) {
       alert("Please select a Date manually.");
+      return;
     }
+    setCityError(false);
+    await getMuhuratData();
   };
   const convertToDDMMYYYY = (date) => {
     const [year, month, day] = date.split("-");

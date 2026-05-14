@@ -38,19 +38,9 @@ const PanchangDetails = () => {
         alert("Please select a City and Date manually.");
     };
     
-    const getDetailsData = async () => {
-        if (!city || !date) {
-            alert("Please select a City and Date manually.");
-            return;
-        }
-
-        if (!city ) {
-            alert("City value is not correct, Please Enter Manually.")
-            return;
-        }
-
+    const fetchPanchangFromAPI = (fetchCity, fetchDate, fetchLat, fetchLng) => {
         setLoading(true);
-        fetch(`${process.env.REACT_APP_API_URL}/api/getPanchangData?city=${encodeURIComponent(city)}&date=${date}&lat=${lat || ''}&lng=${lng || ''}`)
+        fetch(`${process.env.REACT_APP_API_URL}/api/getPanchangData?city=${encodeURIComponent(fetchCity)}&date=${fetchDate}&lat=${fetchLat || ''}&lng=${fetchLng || ''}`)
             .then(response => response.json())
             .then(data => {
                 setPanchangData(data);
@@ -62,6 +52,52 @@ const PanchangDetails = () => {
             });
     };
 
+    const getDetailsData = async () => {
+        if (!date) {
+            alert("Please select a Date manually.");
+            return;
+        }
+
+        if (!city) {
+            if (navigator.geolocation) {
+                setLoading(true);
+                navigator.geolocation.getCurrentPosition(
+                    async (position) => {
+                        const newLat = position.coords.latitude;
+                        const newLng = position.coords.longitude;
+                        try {
+                            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/fetchCityName/${newLat}/${newLng}`);
+                            if (!response.ok) throw new Error('Failed to fetch city name');
+                            const data = await response.json();
+                            
+                            setCity(data.cityName);
+                            setLat(newLat);
+                            setLng(newLng);
+                            setCityAndDate(data.cityName, date, newLat, newLng);
+                            
+                            fetchPanchangFromAPI(data.cityName, date, newLat, newLng);
+                        } catch (error) {
+                            console.error("Error fetching city from geolocation:", error);
+                            alert("Could not determine city from your location. Please enter manually.");
+                            setLoading(false);
+                        }
+                    },
+                    (error) => {
+                        console.error("Geolocation error:", error);
+                        alert("Geolocation failed or permission denied. Please enter city manually.");
+                        setLoading(false);
+                    }
+                );
+                return;
+            } else {
+                alert("Geolocation is not supported by your browser. Please enter City Manually.");
+                return;
+            }
+        }
+
+        fetchPanchangFromAPI(city, date, lat, lng);
+    };
+
     useEffect(() => {
         if (fetchCity) {
             getDetailsData();
@@ -70,14 +106,12 @@ const PanchangDetails = () => {
     }, [fetchCity]);
     
     const checkAndFetchData = async () => {
-        if (city && date) {
-            setCityError(false);
-            await getDetailsData();
-        } else if (!city) {
-            setCityError(true);
-        } else if (!date) {
+        if (!date) {
             alert("Please select a Date manually.");
+            return;
         }
+        setCityError(false);
+        await getDetailsData();
     };
 
     const handleCityChange = (value) => {
