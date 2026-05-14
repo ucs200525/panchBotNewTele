@@ -14,16 +14,24 @@ const apiAnalyticsSchema = new mongoose.Schema({
     },
 
     // User Info
-    userId: String, // If you implement user auth later
-    sessionId: String, // Browser fingerprint
-    ipAddress: String,
+    userId: {
+        type: String,
+        index: true
+    },
+    sessionId: String, // Legacy - kept for backward compatibility
+    ipAddress: {
+        type: String,
+        index: true
+    },
 
-    // Location Info
+    // User Location (resolved from IP)
     userLocation: {
         country: String,
+        countryCode: String,
         city: String,
         region: String,
         timezone: String,
+        isp: String,
         coordinates: {
             lat: Number,
             lng: Number
@@ -31,13 +39,12 @@ const apiAnalyticsSchema = new mongoose.Schema({
     },
 
     // Requested Data
-    requestedCity: String, // City they searched for
-    requestedDate: Date,
+    requestedCity: String, // City they searched for panchang
+    requestedDate: String,
 
     // Engine Info
     engineUsed: {
         type: String,
-        enum: ['native', 'js', 'unknown'],
         default: 'unknown'
     },
 
@@ -59,14 +66,49 @@ const apiAnalyticsSchema = new mongoose.Schema({
     timestamps: true
 });
 
-// Indexes for fast queries
+// Optimized indexes for the queries we actually run
 apiAnalyticsSchema.index({ timestamp: -1 });
+apiAnalyticsSchema.index({ userId: 1, timestamp: -1 });
 apiAnalyticsSchema.index({ endpoint: 1, timestamp: -1 });
-apiAnalyticsSchema.index({ sessionId: 1, timestamp: -1 });
-apiAnalyticsSchema.index({ requestedCity: 1, timestamp: -1 });
-apiAnalyticsSchema.index({ engineUsed: 1 });
+apiAnalyticsSchema.index({ requestedCity: 1 });
+apiAnalyticsSchema.index({ ipAddress: 1 });
 
-// Daily Summary Schema (for faster dashboard queries)
+// ── Page View Schema ───────────────────────────────────────────────
+const pageViewSchema = new mongoose.Schema({
+    userId: {
+        type: String,
+        required: true,
+        index: true
+    },
+    page: {
+        type: String,
+        required: true,
+        index: true
+    },
+    ipAddress: String,
+    userLocation: {
+        country: String,
+        countryCode: String,
+        city: String,
+        region: String
+    },
+    screenWidth: Number,
+    screenHeight: Number,
+    referrer: String,
+    userAgent: String,
+    timestamp: {
+        type: Date,
+        default: Date.now,
+        index: true
+    }
+}, {
+    timestamps: true
+});
+
+pageViewSchema.index({ userId: 1, timestamp: -1 });
+pageViewSchema.index({ page: 1, timestamp: -1 });
+
+// ── Daily Summary Schema (for faster dashboard queries) ────────────
 const dailySummarySchema = new mongoose.Schema({
     date: {
         type: Date,
@@ -112,9 +154,11 @@ const dailySummarySchema = new mongoose.Schema({
 });
 
 const ApiAnalytics = mongoose.model('ApiAnalytics', apiAnalyticsSchema);
+const PageView = mongoose.model('PageView', pageViewSchema);
 const DailySummary = mongoose.model('DailySummary', dailySummarySchema);
 
 module.exports = {
     ApiAnalytics,
+    PageView,
     DailySummary
 };

@@ -3,919 +3,372 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Analytics & Logs</title>
+    <title>Panchangam Analytics Dashboard</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 2rem;
-        }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        
-        h1 {
-            color: white;
-            text-align: center;
-            margin-bottom: 2rem;
-            font-size: 2.5rem;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        
-        .stat-card {
-            background: white;
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-        }
-        
-        .stat-label {
-            font-size: 0.875rem;
-            color: #64748b;
-            margin-bottom: 0.5rem;
-        }
-        
-        .stat-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #1e293b;
-        }
-        
-        .section {
-            background: white;
-            border-radius: 12px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-        }
-        
-        .section-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #1e293b;
-            margin-bottom: 1.5rem;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        th, td {
-            padding: 0.75rem;
-            text-align: left;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        
-        th {
-            background: #f8fafc;
-            font-weight: 600;
-            color: #475569;
-        }
-        
-        tr:hover {
-            background: #f8fafc;
-        }
-        
-        .badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 12px;
-            font-size: 0.875rem;
-            font-weight: 600;
-        }
-        
-        .badge-native {
-            background: #dcfce7;
-            color: #166534;
-        }
-        
-        .badge-js {
-            background: #fef3c7;
-            color: #92400e;
-        }
-        
-        .badge-top {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-        
-        .badge-error {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-        
-        .badge-warn {
-            background: #fed7aa;
-            color: #9a3412;
-        }
-        
-        .badge-info {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 2rem;
-            color: #64748b;
-        }
-        
-        .refresh-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            display: block;
-            margin: 0 auto 2rem auto;
-        }
-        
-        .refresh-btn:hover {
-            opacity: 0.9;
-        }
-        
-        /* Admin Auth Modal */
-        .auth-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-        
-        .auth-modal.hidden {
-            display: none;
-        }
-        
-        .auth-box {
-            background: white;
-            padding: 2rem;
-            border-radius: 16px;
-            max-width: 400px;
-            width: 90%;
-            text-align: center;
-        }
-        
-        .auth-box h2 {
-            margin-bottom: 1.5rem;
-            color: #1e293b;
-        }
-        
-        .auth-box input {
-            width: 100%;
-            padding: 0.75rem;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 1rem;
-            margin-bottom: 1rem;
-        }
-        
-        .auth-box button {
-            width: 100%;
-            padding: 0.75rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        
-        .error-msg {
-            color: #dc2626;
-            margin-top: 0.5rem;
-            font-size: 0.875rem;
-        }
-        
-        /* Cleanup Controls */
-        .cleanup-section {
-            background: #fef3c7;
-            border-left: 4px solid #f59e0b;
-            padding: 1.5rem;
-            border-radius: 8px;
-            margin-bottom: 2rem;
-        }
-        
-        .cleanup-btns {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-            margin-top: 1rem;
-        }
-        
-        .cleanup-btn {
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .cleanup-btn.danger {
-            background: #dc2626;
-            color: white;
-        }
-        
-        .cleanup-btn.warning {
-            background: #f59e0b;
-            color: white;
-        }
-        
-        .cleanup-btn:hover {
-            opacity: 0.8;
-            transform: translateY(-2px);
-        }
-        
-        /* Tabs */
-        .tabs {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            border-bottom: 2px solid white;
-            padding-bottom: 1rem;
-        }
-        
-        .tab {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 8px 8px 0 0;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .tab.active {
-            background: white;
-            color: #667eea;
-        }
-        
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+        h1 { text-align: center; margin-bottom: 1.5rem; font-size: 2rem; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .stat-card { background: #1e293b; border-radius: 12px; padding: 1.2rem; border: 1px solid #334155; }
+        .stat-label { font-size: 0.8rem; color: #94a3b8; margin-bottom: 0.3rem; }
+        .stat-value { font-size: 1.8rem; font-weight: 700; color: #38bdf8; }
+        .section { background: #1e293b; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; border: 1px solid #334155; }
+        .section-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 1rem; color: #f1f5f9; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        th, td { padding: 0.6rem 0.8rem; text-align: left; border-bottom: 1px solid #334155; }
+        th { background: #0f172a; color: #94a3b8; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; position: sticky; top: 0; }
+        tr:hover { background: #334155; }
+        .badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600; }
+        .badge-good { background: #064e3b; color: #6ee7b7; }
+        .badge-warn { background: #78350f; color: #fbbf24; }
+        .badge-error { background: #7f1d1d; color: #fca5a5; }
+        .badge-info { background: #1e3a5f; color: #7dd3fc; }
+        .tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .tab { background: #1e293b; color: #94a3b8; padding: 0.6rem 1.2rem; border: 1px solid #334155; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .tab.active { background: #3b82f6; color: white; border-color: #3b82f6; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .btn { padding: 0.5rem 1rem; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.85rem; }
+        .btn-primary { background: #3b82f6; color: white; }
+        .btn-danger { background: #dc2626; color: white; }
+        .btn-warn { background: #f59e0b; color: white; }
+        .btn:hover { opacity: 0.85; transform: translateY(-1px); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .toolbar { display: flex; gap: 0.8rem; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
+        .auth-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .auth-overlay.hidden { display: none; }
+        .auth-box { background: #1e293b; padding: 2rem; border-radius: 16px; max-width: 380px; width: 90%; text-align: center; border: 1px solid #334155; }
+        .auth-box h2 { margin-bottom: 1rem; color: #f1f5f9; }
+        .auth-box input { width: 100%; padding: 0.7rem; border: 2px solid #334155; border-radius: 8px; font-size: 1rem; margin-bottom: 0.8rem; background: #0f172a; color: #e2e8f0; }
+        .auth-box .error { color: #f87171; margin-top: 0.5rem; font-size: 0.85rem; }
+        .user-detail-row { display: none; }
+        .user-detail-row.open { display: table-row; }
+        .user-detail-cell { padding: 1rem; background: #0f172a; }
+        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .detail-list { max-height: 250px; overflow-y: auto; font-size: 0.8rem; }
+        .detail-list table { font-size: 0.8rem; }
+        .clickable { cursor: pointer; color: #38bdf8; text-decoration: underline; }
+        code { font-size: 0.8rem; color: #7dd3fc; background: #0f172a; padding: 0.1rem 0.3rem; border-radius: 3px; }
+        .cleanup-bar { background: #1c1917; border: 1px solid #78350f; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; display: flex; gap: 0.8rem; flex-wrap: wrap; align-items: center; }
+        .cleanup-bar span { color: #fbbf24; font-weight: 600; font-size: 0.85rem; }
+        @media (max-width: 768px) { .detail-grid { grid-template-columns: 1fr; } .stats-grid { grid-template-columns: repeat(2, 1fr); } }
     </style>
 </head>
 <body>
-    <!-- Admin Authentication Modal -->
-    <div id="auth-modal" class="auth-modal">
-        <div class="auth-box">
-            <h2>🔐 Admin Access Required</h2>
-            <p style="margin-bottom: 1rem; color: #64748b;">Enter admin password</p>
-            <input type="password" id="admin-password" placeholder="Admin Secret" onkeypress="if(event.key==='Enter') login()">
-            <button onclick="login()">Access Dashboard</button>
-            <div id="auth-error" class="error-msg"></div>
+
+<!-- Auth -->
+<div id="auth-overlay" class="auth-overlay">
+    <div class="auth-box">
+        <h2>🔐 Admin Access</h2>
+        <input type="password" id="admin-pw" placeholder="Admin Secret" onkeypress="if(event.key==='Enter')login()">
+        <button class="btn btn-primary" style="width:100%" onclick="login()">Access Dashboard</button>
+        <div id="auth-err" class="error"></div>
+    </div>
+</div>
+
+<div class="container" id="main" style="display:none">
+    <h1>📊 Panchangam Analytics Dashboard</h1>
+
+    <div class="toolbar">
+        <button class="btn btn-primary" onclick="refreshAll()">🔄 Refresh</button>
+        <span id="space-info" style="color:#94a3b8;font-size:0.85rem">Loading...</span>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('overview',this)">📈 Overview</button>
+        <button class="tab" onclick="switchTab('users',this)">👥 Users</button>
+        <button class="tab" onclick="switchTab('pages',this)">📄 Pages</button>
+        <button class="tab" onclick="switchTab('cities',this)">🌍 Cities & Geo</button>
+        <button class="tab" onclick="switchTab('logs',this)">📝 Logs</button>
+        <button class="tab" onclick="switchTab('cleanup',this)">🗑️ Cleanup</button>
+    </div>
+
+    <!-- OVERVIEW TAB -->
+    <div id="tab-overview" class="tab-content active">
+        <div class="stats-grid" id="stats-grid"></div>
+        <div class="section">
+            <h2 class="section-title">🔥 Top Endpoints</h2>
+            <table><thead><tr><th>Endpoint</th><th>Requests</th><th>Avg Response</th><th>Error %</th></tr></thead><tbody id="tb-endpoints"></tbody></table>
+        </div>
+        <div class="section">
+            <h2 class="section-title">⚡ Engine Usage</h2>
+            <table><thead><tr><th>Engine</th><th>Count</th><th>Avg Response</th></tr></thead><tbody id="tb-engines"></tbody></table>
         </div>
     </div>
-    
-    <div class="container" id="dashboard-content" style="display: none;">
-        <h1>📊 Admin Dashboard - Analytics & Logs</h1>
-        
-        <button class="refresh-btn" onclick="refreshCurrentTab()">🔄 Refresh Data</button>
-        
-        <!-- Tabs -->
-        <div class="tabs">
-            <button class="tab active" onclick="switchTab('analytics')">📊 Analytics</button>
-            <button class="tab" onclick="switchTab('logs')">📝 Application Logs</button>
-        </div>
-        
-        <!-- ANALYTICS TAB -->
-        <div id="analytics-tab" class="tab-content active">
-            <!-- Space Management & Cleanup -->
-            <div class="cleanup-section">
-                <h3 style="margin-bottom: 0.5rem;">🗑️ Space Management</h3>
-                <p style="color: #92400e; margin-bottom: 1rem;" id="space-info">Loading space statistics...</p>
-                <div class="cleanup-btns">
-                    <button class="cleanup-btn warning" onclick="cleanupOldAnalytics()">
-                        Delete Analytics > 90 Days
-                    </button>
-                    <button class="cleanup-btn warning" onclick="cleanupOldLogs()">
-                        Delete Logs > 30 Days
-                    </button>
-                    <button class="cleanup-btn danger" onclick="cleanupAllData()">
-                        ⚠️ Delete ALL Data
-                    </button>
-                </div>
-                
-                <!-- Selective Cleanup -->
-                <details style="margin-top: 1rem;">
-                    <summary style="cursor: pointer; font-weight: 600; padding: 0.5rem; background: #e0e7ff; border-radius: 6px; color: #3730a3;">
-                        🎯 Selective Cleanup (Advanced)
-                    </summary>
-                    <div style="margin-top: 1rem; padding: 1rem; background: #f8fafc; border-radius: 8px;">
-                        <p style="color: #475569; margin-bottom: 0.75rem; font-size: 0.875rem;">Delete specific types of analytics:</p>
-                        <div class="cleanup-btns">
-                            <button class="cleanup-btn warning" onclick="cleanupSelective('admin')" style="font-size: 0.875rem;">
-                                🔒 Delete Admin Requests
-                            </button>
-                            <button class="cleanup-btn warning" onclick="cleanupSelective('favicon')" style="font-size: 0.875rem;">
-                                🖼️ Delete Favicon Requests
-                            </button>
-                            <button class="cleanup-btn warning" onclick="cleanupSelective('errors')" style="font-size: 0.875rem;">
-                                ❌ Delete Error Requests
-                            </button>
-                            <button class="cleanup-btn warning" onclick="cleanupSelective('static')" style="font-size: 0.875rem;">
-                                📄 Delete Static Files
-                            </button>
-                        </div>
-                    </div>
-                </details>
-            </div>
-            
-            <!-- Overall Stats -->
-            <div class="stats-grid" id="overall-stats">
-                <div class="stat-card">
-                    <div class="stat-label">Total Requests</div>
-                    <div class="stat-value" id="total-requests">-</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Today's Requests</div>
-                    <div class="stat-value" id="today-requests">-</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Unique Users</div>
-                    <div class="stat-value" id="unique-users">-</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Avg Response Time</div>
-                    <div class="stat-value" id="avg-response">-</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Error Rate</div>
-                    <div class="stat-value" id="error-rate">-</div>
-                </div>
-            </div>
-            
-            <!-- Engine Usage -->
-            <div class="section">
-                <h2 class="section-title">⚡ Engine Usage (Native vs Fallback)</h2>
-                <table id="engine-table">
-                    <thead>
-                        <tr>
-                            <th>Engine</th>
-                            <th>Request Count</th>
-                            <th>Avg Response Time</th>
-                            <th>Percentage</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-            
 
-            
-            <!-- Popular Endpoints -->
-            <div class="section">
-                <h2 class="section-title">🔥 Most Used Pages/Endpoints</h2>
-                <table id="endpoints-table">
-                    <thead>
-                        <tr>
-                            <th>Endpoint</th>
-                            <th>Requests</th>
-                            <th>Avg Response</th>
-                            <th>Error Rate</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-            
-            <!-- Popular Cities -->
-            <div class="section">
-                <h2 class="section-title">🌍 Most Requested Cities</h2>
-                <table id="cities-table">
-                    <thead>
-                        <tr>
-                            <th>Rank</th>
-                            <th>City</th>
-                            <th>Total Requests</th>
-                            <th>Unique Users</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-            
-            <!-- User Geography -->
-            <div class="section">
-                <h2 class="section-title">📍 User Locations (Where Users Are From)</h2>
-                <p style="color: #64748b; margin-bottom: 1rem;"><em>Note: Localhost testing shows "Unknown". Real users from internet will show actual countries.</em></p>
-                <table id="geography-table">
-                    <thead>
-                        <tr>
-                            <th>Country</th>
-                            <th>Total Requests</th>
-                            <th>Cities Count</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-            
-            <!-- Top Users -->
-            <div class="section">
-                <h2 class="section-title">👥 Top Active Users</h2>
-                <table id="users-table">
-                    <thead>
-                        <tr>
-                            <th>Session ID</th>
-                            <th>IP Address</th>
-                            <th>Requests</th>
-                            <th>Last Seen</th>
-                            <th>Location</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </div>
-        
-        <!-- LOGS TAB -->
-        <div id="logs-tab" class="tab-content">
-            <div class="section">
-                <h2 class="section-title">📝 Application Logs</h2>
-                <div style="margin-bottom: 1rem; display: flex; gap: 1rem; align-items: center;">
-                    <select id="log-level" onchange="loadLogs()" style="padding: 0.5rem; border-radius: 6px; border: 2px solid #e2e8f0;">
-                        <option value="">All Levels</option>
-                        <option value="error">Error</option>
-                        <option value="warn">Warn</option>
-                        <option value="info">Info</option>
-                    </select>
-                    <input type="text" id="log-search" placeholder="Search logs..." style="flex: 1; padding: 0.5rem; border-radius: 6px; border: 2px solid #e2e8f0;">
-                    <button onclick="loadLogs()" class="cleanup-btn warning">Search</button>
-                </div>
-                <div style="margin-bottom: 1rem; color: #64748b;">
-                    Showing <span id="log-count">0</span> logs (Page <span id="log-page">1</span> of <span id="log-total-pages">1</span>)
-                </div>
-                <table id="logs-table">
-                    <thead>
-                        <tr>
-                            <th>Level</th>
-                            <th>Timestamp</th>
-                            <th>Message</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-                <div style="margin-top: 1rem; display: flex; gap: 1rem; justify-content: center;">
-                    <button onclick="loadLogs(currentLogPage - 1)" class="cleanup-btn warning" id="prev-logs">← Previous</button>
-                    <button onclick="loadLogs(currentLogPage + 1)" class="cleanup-btn warning" id="next-logs">Next →</button>
-                </div>
+    <!-- USERS TAB -->
+    <div id="tab-users" class="tab-content">
+        <div class="section">
+            <h2 class="section-title">👥 All Users (grouped by User ID)</h2>
+            <p style="color:#64748b;margin-bottom:1rem;font-size:0.85rem">Click a user row to see their full activity log.</p>
+            <table><thead><tr><th>User ID</th><th>IP</th><th>Location</th><th>Requests</th><th>Cities Searched</th><th>First Seen</th><th>Last Seen</th></tr></thead><tbody id="tb-users"></tbody></table>
+            <div class="toolbar" style="margin-top:1rem;justify-content:center">
+                <button class="btn btn-primary" id="btn-prev-users" onclick="loadUsers(userPage-1)">← Prev</button>
+                <span id="user-page-info" style="color:#94a3b8">Page 1</span>
+                <button class="btn btn-primary" id="btn-next-users" onclick="loadUsers(userPage+1)">Next →</button>
             </div>
         </div>
     </div>
-    
-    <script>
-        const API_BASE = window.location.origin;
-        let ADMIN_SECRET = '';
-        let currentTab = 'analytics';
-       let currentLogPage = 1;
-        
-        // Tab switching
-        function switchTab(tab) {
-            currentTab = tab;
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            
-            event.target.classList.add('active');
-            document.getElementById(tab + '-tab').classList.add('active');
-            
-            if (tab === 'analytics') {
-                loadAllData();
-                loadSpaceStats();
-            } else if (tab === 'logs') {
-                loadLogs();
-            }
-        }
-        
-        function refreshCurrentTab() {
-            if (currentTab === 'analytics') {
-                loadAllData();
-                loadSpaceStats();
-            } else if (currentTab === 'logs') {
-                loadLogs();
-            }
-        }
-        
-        // Login function
-        function login() {
-            const password = document.getElementById('admin-password').value;
-            const errorEl = document.getElementById('auth-error');
-            
-            if (!password) {
-                errorEl.textContent = 'Please enter admin password';
-                return;
-            }
-            
-            ADMIN_SECRET = password;
-            
-            // Test authentication
-            fetch(`${API_BASE}/api/analytics/stats/overall`, {
-                headers: { 'x-admin-secret': ADMIN_SECRET }
-            })
-            .then(res => {
-                if (res.ok) {
-                    document.getElementById('auth-modal').classList.add('hidden');
-                    document.getElementById('dashboard-content').style.display = 'block';
-                    loadAllData();
-                    loadSpaceStats();
-                } else {
-                    errorEl.textContent = 'Invalid password';
-                    ADMIN_SECRET = '';
-                }
-            })
-            .catch(err => {
-                errorEl.textContent = 'Connection error';
-            });
-        }
-        
-        // Load space statistics
-        async function loadSpaceStats() {
-            try {
-                const res = await fetch(`${API_BASE}/api/analytics/stats/space`, {
-                    headers: { 'x-admin-secret': ADMIN_SECRET }
-                });
-                const data = await res.json();
-                
-                let info = `Analytics: ${data.analytics.estimatedSize} (${data.analytics.count.toLocaleString()} records) | `;
-                info += `Logs: ${data.logs.estimatedSize} (${data.logs.count.toLocaleString()} records) | `;
-                info += `Total: ${data.total.estimatedSize}`;
-                
-                if (data.recommendations && data.recommendations.length > 0) {
-                    const highSeverity = data.recommendations.filter(r => r.severity === 'high');
-                    if (highSeverity.length > 0) {
-                        info += ` | ⚠️ ${highSeverity[0].message}`;
-                    }
-                }
-                
-                document.getElementById('space-info').textContent = info;
-            } catch (error) {
-                console.error('Error loading space stats:', error);
-            }
-        }
-        
-        // Cleanup functions
-        async function cleanupOldAnalytics() {
-            if (!confirm('Delete all analytics data older than 90 days?')) return;
-            
-            try {
-                const res = await fetch(`${API_BASE}/api/analytics/cleanup/analytics?olderThanDays=90`, {
-                    method: 'DELETE',
-                    headers: { 'x-admin-secret': ADMIN_SECRET }
-                });
-                const data = await res.json();
-                
-                alert(`Success! Deleted ${data.deletedCount} analytics records`);
-                loadSpaceStats();
-                loadAllData();
-            } catch (error) {
-                alert('Error: ' + error.message);
-            }
-        }
-        
-        async function cleanupOldLogs() {
-            if (!confirm('Delete all logs older than 30 days?')) return;
-            
-            try {
-                const res = await fetch(`${API_BASE}/api/analytics/cleanup/logs?olderThanDays=30`, {
-                    method: 'DELETE',
-                    headers: { 'x-admin-secret': ADMIN_SECRET }
-                });
-                const data = await res.json();
-                
-                alert(`Success! Deleted ${data.deletedCount} log records`);
-                loadSpaceStats();
-            } catch (error) {
-                alert('Error: ' + error.message);
-            }
-        }
-        
-        async function cleanupAllData() {
-            const confirmed = confirm('⚠️ WARNING: This will delete ALL analytics and logs!\n\nAre you absolutely sure?');
-            if (!confirmed) return;
-            
-            const doubleConfirm = prompt('Type "DELETE ALL" to confirm:');
-            if (doubleConfirm !== 'DELETE ALL') {
-                alert('Cancelled');
-                return;
-            }
-            
-            try {
-                await Promise.all([
-                    fetch(`${API_BASE}/api/analytics/cleanup/analytics/all`, {
-                        method: 'DELETE',
-                        headers: { 'x-admin-secret': ADMIN_SECRET }
-                    }),
-                    fetch(`${API_BASE}/api/analytics/cleanup/logs/all`, {
-                        method: 'DELETE',
-                        headers: { 'x-admin-secret': ADMIN_SECRET }
-                    })
-                ]);
-                
-                alert('All data deleted successfully');
-                loadSpaceStats();
-                loadAllData();
-            } catch (error) {
-                alert('Error: ' + error.message);
-            }
-        }
-        
-        async function cleanupSelective(type) {
-            const descriptions = {
-                'admin': 'all admin dashboard and analytics requests',
-                'favicon': 'all favicon.ico requests',
-                'errors': 'all failed/error requests',
-                'static': 'all static file requests (CSS, JS, images, etc.)'
-            };
-            
-            const description = descriptions[type] || type;
-            
-            if (!confirm(`Delete ${description}?\n\nThis will remove these analytics records permanently.`)) {
-                return;
-            }
-            
-            try {
-                const res = await fetch(`${API_BASE}/api/analytics/cleanup/analytics/selective?type=${type}`, {
-                    method: 'DELETE',
-                    headers: { 'x-admin-secret': ADMIN_SECRET }
-                });
-                const data = await res.json();
-                
-                alert(`Success! Deleted ${data.deletedCount} ${description}`);
-                loadSpaceStats();
-                loadAllData();
-            } catch (error) {
-                alert('Error: ' + error.message);
-            }
-        }
-        
-        async function loadAllData() {
-            await Promise.all([
-                loadOverallStats(),
-                loadEngineStats(),
-                loadPopularEndpoints(),
-                loadPopularCities(),
-                loadUserGeography(),
-                loadTopUsers()
-            ]);
-        }
-        
-        async function loadOverallStats() {
-            try {
-                const res = await fetch(`${API_BASE}/api/analytics/stats/overall`, {
-                    headers: { 'x-admin-secret': ADMIN_SECRET }
-                });
-                const data = await res.json();
-                
-                document.getElementById('total-requests').textContent = data.totalRequests.toLocaleString();
-                document.getElementById('today-requests').textContent = data.todayRequests.toLocaleString();
-                document.getElementById('unique-users').textContent = data.uniqueUsers.toLocaleString();
-                document.getElementById('avg-response').textContent = data.avgResponseTime + ' ms';
-                document.getElementById('error-rate').textContent = data.errorRate + '%';
-            } catch (error) {
-                console.error('Error loading overall stats:', error);
-            }
-        }
-        
-        async function loadEngineStats() {
-            try {
-                const res = await fetch(`${API_BASE}/api/analytics/stats/engine-usage`, {
-                    headers: { 'x-admin-secret': ADMIN_SECRET }
-                });
-                const data = await res.json();
-                
-                const tbody = document.querySelector('#engine-table tbody');
-                tbody.innerHTML = '';
-                
-                const total = data.overall.reduce((sum, item) => sum + item.count, 0);
-                
-                data.overall.forEach(item => {
-                    const percentage = ((item.count / total) * 100).toFixed(1);
-                    const badgeClass = item._id === 'native' ? 'badge-native' : 'badge-js';
-                    
-                    tbody.innerHTML += `
-                        <tr>
-                            <td><span class="badge ${badgeClass}">${item._id.toUpperCase()}</span></td>
-                            <td>${item.count.toLocaleString()}</td>
-                            <td>${Math.round(item.avgResponseTime)} ms</td>
-                            <td>${percentage}%</td>
-                        </tr>
-                    `;
-                });
-            } catch (error) {
-                console.error('Error loading engine stats:', error);
-            }
-        }
-        
 
-        
-        async function loadPopularEndpoints() {
-            try {
-                const res = await fetch(`${API_BASE}/api/analytics/stats/popular-endpoints?limit=15`, {
-                    headers: { 'x-admin-secret': ADMIN_SECRET }
-                });
-                const data = await res.json();
-                
-                const tbody = document.querySelector('#endpoints-table tbody');
-                tbody.innerHTML = '';
-                
-                data.forEach((item, idx) => {
-                    const topBadge = idx < 3 ? '<span class="badge badge-top">TOP</span> ' : '';
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>${topBadge}${item.endpoint}</td>
-                            <td>${item.count.toLocaleString()}</td>
-                            <td>${item.avgResponseTime} ms</td>
-                            <td>${item.errorRate}%</td>
-                        </tr>
-                    `;
-                });
-            } catch (error) {
-                console.error('Error loading endpoints:', error);
-            }
-        }
-        
-        async function loadPopularCities() {
-            try {
-                const res = await fetch(`${API_BASE}/api/analytics/stats/popular-cities?limit=20`, {
-                    headers: { 'x-admin-secret': ADMIN_SECRET }
-                });
-                const data = await res.json();
-                
-                const tbody = document.querySelector('#cities-table tbody');
-                tbody.innerHTML = '';
-                
-                data.forEach((item, idx) => {
-                    const ipSpan = item.ips && item.ips.length > 0 
-                        ? `<br><small style="color: #64748b; font-size: 0.75rem;">(IPs: ${item.ips.slice(0, 3).join(', ')}${item.ips.length > 3 ? '...' : ''})</small>` 
-                        : '';
-                        
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>${idx + 1}</td>
-                            <td><strong>${item.city}</strong>${ipSpan}</td>
-                            <td>${item.requestCount.toLocaleString()}</td>
-                            <td>${item.uniqueUsers.toLocaleString()}</td>
-                        </tr>
-                    `;
-                });
-            } catch (error) {
-                console.error('Error loading cities:', error);
-            }
-        }
-        
-        async function loadUserGeography() {
-            try {
-                const res = await fetch(`${API_BASE}/api/analytics/stats/user-geography`, {
-                    headers: { 'x-admin-secret': ADMIN_SECRET }
-                });
-                const data = await res.json();
-                
-                const tbody = document.querySelector('#geography-table tbody');
-                tbody.innerHTML = '';
-                
-                if (data.byCountry && data.byCountry.length > 0) {
-                    data.byCountry.forEach(item => {
-                        const ipSpan = item.ips && item.ips.length > 0 
-                            ? `<br><small style="color: #64748b; font-size: 0.75rem;">(IPs: ${item.ips.slice(0, 3).join(', ')}${item.ips.length > 3 ? '...' : ''})</small>` 
-                            : '';
-                            
-                        tbody.innerHTML += `
-                            <tr>
-                                <td><strong>${item._id || 'Unknown'}</strong>${ipSpan}</td>
-                                <td>${item.count.toLocaleString()}</td>
-                                <td>${item.cities.length}</td>
-                            </tr>
-                        `;
-                    });
-                } else {
-                    tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #64748b;">No geographic data yet (localhost shows as Unknown)</td></tr>';
-                }
-            } catch (error) {
-                console.error('Error loading geography:', error);
-            }
-        }
-        
-        async function loadTopUsers() {
-            try {
-                const res = await fetch(`${API_BASE}/api/analytics/stats/per-user?limit=20`, {
-                    headers: { 'x-admin-secret': ADMIN_SECRET }
-                });
-                const data = await res.json();
-                
-                const tbody = document.querySelector('#users-table tbody');
-                tbody.innerHTML = '';
-                
-                data.forEach(item => {
-                    const lastSeen = new Date(item.lastSeen).toLocaleString();
-                    const location = item.location?.city ? `${item.location.city}, ${item.location.country}` : 'Unknown';
-                    
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>${item.sessionId.substring(0, 8)}...</td>
-                            <td><code style="font-size: 0.875rem; color: #0ea5e9;">${item.ipAddress || 'Unknown'}</code></td>
-                            <td>${item.requestCount.toLocaleString()}</td>
-                            <td>${lastSeen}</td>
-                            <td>${location}</td>
-                        </tr>
-                    `;
-                });
-            } catch (error) {
-                console.error('Error loading users:', error);
-            }
-        }
-        
-        // Load application logs
-        async function loadLogs(page = 1) {
-            try {
-                currentLogPage = page;
-                const level = document.getElementById('log-level').value;
-                const search = document.getElementById('log-search').value;
-                
-                let url = `${API_BASE}/admin/logs?page=${page}&limit=50`;
-                if (level) url += `&level=${level}`;
-                if (search) url += `&search=${encodeURIComponent(search)}`;
-                
-                const res = await fetch(url, {
-                    headers: { 'x-admin-secret': ADMIN_SECRET }
-                });
-                const data = await res.json();
-                
-                const tbody = document.querySelector('#logs-table tbody');
-                tbody.innerHTML = '';
-                
-                if (data.logs && data.logs.length > 0) {
-                    data.logs.forEach(log => {
-                        const levelBadge = getLevelBadge(log.level);
-                        const message = typeof log.message === 'string' ? log.message : JSON.stringify(log.message);
-                        const timestamp = new Date(log.timestamp).toLocaleString();
-                        
-                        tbody.innerHTML += `
-                            <tr>
-                                <td><span class="badge ${levelBadge.class}">${log.level.toUpperCase()}</span></td>
-                                <td>${timestamp}</td>
-                                <td>${message}</td>
-                            </tr>
-                        `;
-                    });
-                } else {
-                    tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #64748b;">No logs found</td></tr>';
-                }
-                
-                document.getElementById('log-count').textContent = data.totalLogs || 0;
-                document.getElementById('log-page').textContent = data.currentPage || 1;
-                document.getElementById('log-total-pages').textContent = data.totalPages || 1;
-                
-                // Disable/enable pagination buttons
-                document.getElementById('prev-logs').disabled = page <= 1;
-                document.getElementById('next-logs').disabled = page >= (data.totalPages || 1);
-            } catch (error) {
-                console.error('Error loading logs:', error);
-            }
-        }
-        
-        function getLevelBadge(level) {
-            switch(level) {
-                case 'error': return { class: 'badge-error' };
-                case 'warn': return { class: 'badge-warn' };
-                default: return { class: 'badge-info' };
-            }
-        }
-        
-        // Auto-refresh every 30 seconds
-        setInterval(() => {
-            if (!document.getElementById('auth-modal').classList.contains('hidden')) return;
-            refreshCurrentTab();
-            loadSpaceStats();
-        }, 30000);
-    </script>
+    <!-- PAGES TAB -->
+    <div id="tab-pages" class="tab-content">
+        <div class="section">
+            <h2 class="section-title">📄 Frontend Pages Visited</h2>
+            <table><thead><tr><th>Page</th><th>Views</th><th>Unique Users</th></tr></thead><tbody id="tb-pages"></tbody></table>
+        </div>
+    </div>
+
+    <!-- CITIES & GEO TAB -->
+    <div id="tab-cities" class="tab-content">
+        <div class="section">
+            <h2 class="section-title">🌍 Most Requested Cities (Panchang)</h2>
+            <table><thead><tr><th>#</th><th>City</th><th>Requests</th><th>Unique Users</th></tr></thead><tbody id="tb-cities"></tbody></table>
+        </div>
+        <div class="section">
+            <h2 class="section-title">📍 User Countries (by IP)</h2>
+            <table><thead><tr><th>Country</th><th>Requests</th><th>Cities</th><th>Users</th></tr></thead><tbody id="tb-geo"></tbody></table>
+        </div>
+    </div>
+
+    <!-- LOGS TAB -->
+    <div id="tab-logs" class="tab-content">
+        <div class="section">
+            <h2 class="section-title">📝 Application Logs</h2>
+            <div class="toolbar">
+                <select id="log-level" onchange="loadLogs()" style="padding:0.4rem;border-radius:6px;border:1px solid #334155;background:#0f172a;color:#e2e8f0">
+                    <option value="">All</option><option value="error">Error</option><option value="warn">Warn</option><option value="info">Info</option>
+                </select>
+                <button class="btn btn-primary" onclick="loadLogs()">Load</button>
+                <span id="log-info" style="color:#94a3b8;font-size:0.85rem"></span>
+            </div>
+            <table><thead><tr><th>Level</th><th>Time</th><th>Message</th></tr></thead><tbody id="tb-logs"></tbody></table>
+            <div class="toolbar" style="margin-top:1rem;justify-content:center">
+                <button class="btn btn-primary" id="btn-prev-logs" onclick="loadLogs(logPage-1)">← Prev</button>
+                <span id="log-page-info" style="color:#94a3b8">Page 1</span>
+                <button class="btn btn-primary" id="btn-next-logs" onclick="loadLogs(logPage+1)">Next →</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CLEANUP TAB -->
+    <div id="tab-cleanup" class="tab-content">
+        <div class="section">
+            <h2 class="section-title">🗑️ Data Cleanup</h2>
+            <div class="cleanup-bar"><span>⚠️ These actions are permanent!</span></div>
+            <div style="display:flex;gap:0.8rem;flex-wrap:wrap;margin-bottom:1rem">
+                <button class="btn btn-warn" onclick="doCleanup('/cleanup/analytics?olderThanDays=90','analytics > 90 days')">Delete Analytics > 90d</button>
+                <button class="btn btn-warn" onclick="doCleanup('/cleanup/logs?olderThanDays=30','logs > 30 days')">Delete Logs > 30d</button>
+                <button class="btn btn-warn" onclick="doCleanup('/cleanup/analytics/selective?type=admin','admin requests')">Delete Admin Requests</button>
+                <button class="btn btn-warn" onclick="doCleanup('/cleanup/analytics/selective?type=favicon','favicon requests')">Delete Favicons</button>
+                <button class="btn btn-warn" onclick="doCleanup('/cleanup/analytics/selective?type=static','static files')">Delete Static Files</button>
+                <button class="btn btn-danger" onclick="doCleanupAll()">⚠️ DELETE ALL DATA</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const API = window.location.origin;
+let SECRET = '';
+let userPage = 1, logPage = 1;
+
+function switchTab(id, el) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('tab-' + id).classList.add('active');
+    if (id === 'users') loadUsers();
+    else if (id === 'pages') loadPages();
+    else if (id === 'cities') { loadCities(); loadGeo(); }
+    else if (id === 'logs') loadLogs();
+    else if (id === 'overview') loadOverview();
+}
+
+async function api(path, method = 'GET') {
+    const opts = { method, headers: { 'x-admin-secret': SECRET } };
+    const res = await fetch(API + '/api/analytics' + path, opts);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
+
+function login() {
+    SECRET = document.getElementById('admin-pw').value;
+    if (!SECRET) { document.getElementById('auth-err').textContent = 'Enter password'; return; }
+    api('/stats/overall').then(() => {
+        document.getElementById('auth-overlay').classList.add('hidden');
+        document.getElementById('main').style.display = 'block';
+        refreshAll();
+    }).catch(() => { document.getElementById('auth-err').textContent = 'Invalid password'; SECRET = ''; });
+}
+
+function refreshAll() { loadOverview(); loadSpace(); }
+
+async function loadSpace() {
+    try {
+        const d = await api('/stats/space');
+        document.getElementById('space-info').textContent =
+            `Analytics: ${d.analytics.count} | PageViews: ${d.pageviews.count} | Logs: ${d.logs.count} | Total: ${d.total.estimatedSize}`;
+    } catch(e) { console.error(e); }
+}
+
+async function loadOverview() {
+    try {
+        const d = await api('/stats/overall');
+        document.getElementById('stats-grid').innerHTML = [
+            card('Total Requests', d.totalRequests),
+            card("Today's Requests", d.todayRequests),
+            card('Last 7 Days', d.last7DaysRequests),
+            card('Unique Users', d.uniqueUsers),
+            card('Avg Response', d.avgResponseTime + ' ms'),
+            card('Page Views', d.totalPageviews),
+            card("Today's Pages", d.todayPageviews),
+        ].join('');
+    } catch(e) { console.error(e); }
+
+    try {
+        const d = await api('/stats/popular-endpoints?limit=15');
+        document.getElementById('tb-endpoints').innerHTML = d.map(i =>
+            `<tr><td>${i.endpoint}</td><td>${i.count}</td><td>${i.avgResponseTime} ms</td><td>${i.errorRate}%</td></tr>`
+        ).join('');
+    } catch(e) { console.error(e); }
+
+    try {
+        const d = await api('/stats/engine-usage');
+        document.getElementById('tb-engines').innerHTML = (d.overall||[]).map(i =>
+            `<tr><td><span class="badge badge-info">${(i._id||'unknown').toUpperCase()}</span></td><td>${i.count}</td><td>${Math.round(i.avgResponseTime)} ms</td></tr>`
+        ).join('');
+    } catch(e) { console.error(e); }
+}
+
+function card(label, value) {
+    return `<div class="stat-card"><div class="stat-label">${label}</div><div class="stat-value">${typeof value === 'number' ? value.toLocaleString() : value}</div></div>`;
+}
+
+async function loadUsers(page = 1) {
+    userPage = Math.max(1, page);
+    try {
+        const d = await api(`/stats/users?page=${userPage}&limit=30`);
+        const tb = document.getElementById('tb-users');
+        tb.innerHTML = '';
+        (d.users || []).forEach(u => {
+            const loc = u.lastLocation?.city ? `${u.lastLocation.city}, ${u.lastLocation.country || ''}` : (u.lastLocation?.country || '—');
+            const cities = (u.cities || []).filter(Boolean).join(', ') || '—';
+            const uid = u.userId || 'unknown';
+            const short = uid.length > 12 ? uid.substring(0, 12) + '…' : uid;
+            tb.innerHTML += `<tr onclick="toggleUserDetail('${uid}',this)" style="cursor:pointer">
+                <td><code>${short}</code></td>
+                <td><code>${u.lastIP || '—'}</code></td>
+                <td>${loc}</td>
+                <td>${u.totalRequests}</td>
+                <td>${cities}</td>
+                <td>${fmtDate(u.firstSeen)}</td>
+                <td>${fmtDate(u.lastSeen)}</td>
+            </tr>
+            <tr class="user-detail-row" id="detail-${uid}"><td colspan="7" class="user-detail-cell"><div class="detail-grid"><div class="detail-list" id="detail-api-${uid}">Loading...</div><div class="detail-list" id="detail-pv-${uid}"></div></div></td></tr>`;
+        });
+        const p = d.pagination || {};
+        document.getElementById('user-page-info').textContent = `Page ${p.page || 1} of ${p.totalPages || 1} (${p.totalUsers || 0} users)`;
+        document.getElementById('btn-prev-users').disabled = userPage <= 1;
+        document.getElementById('btn-next-users').disabled = userPage >= (p.totalPages || 1);
+    } catch(e) { console.error(e); }
+}
+
+async function toggleUserDetail(userId, row) {
+    const detailRow = document.getElementById('detail-' + userId);
+    if (!detailRow) return;
+    if (detailRow.classList.contains('open')) {
+        detailRow.classList.remove('open');
+        return;
+    }
+    detailRow.classList.add('open');
+    try {
+        const d = await api(`/stats/users/${userId}?limit=50`);
+        const apiDiv = document.getElementById('detail-api-' + userId);
+        const pvDiv = document.getElementById('detail-pv-' + userId);
+
+        apiDiv.innerHTML = '<strong>API Activity</strong><table><thead><tr><th>Time</th><th>Endpoint</th><th>City</th><th>Status</th><th>ms</th></tr></thead><tbody>' +
+            (d.apiActivity || []).map(a =>
+                `<tr><td>${fmtTime(a.timestamp)}</td><td>${a.endpoint}</td><td>${a.requestedCity||'—'}</td><td>${a.statusCode}</td><td>${a.responseTime}</td></tr>`
+            ).join('') + '</tbody></table>';
+
+        pvDiv.innerHTML = '<strong>Page Views</strong><table><thead><tr><th>Time</th><th>Page</th><th>Screen</th></tr></thead><tbody>' +
+            (d.pageViews || []).map(p =>
+                `<tr><td>${fmtTime(p.timestamp)}</td><td>${p.page}</td><td>${p.screenWidth||'?'}x${p.screenHeight||'?'}</td></tr>`
+            ).join('') + '</tbody></table>';
+    } catch(e) { document.getElementById('detail-api-' + userId).textContent = 'Error loading details'; }
+}
+
+async function loadPages() {
+    try {
+        const d = await api('/stats/popular-pages?limit=20');
+        document.getElementById('tb-pages').innerHTML = d.map(i =>
+            `<tr><td>${i.page}</td><td>${i.views}</td><td>${i.uniqueUsers}</td></tr>`
+        ).join('');
+    } catch(e) { console.error(e); }
+}
+
+async function loadCities() {
+    try {
+        const d = await api('/stats/popular-cities?limit=30');
+        document.getElementById('tb-cities').innerHTML = d.map((i, idx) =>
+            `<tr><td>${idx+1}</td><td><strong>${i.city}</strong></td><td>${i.requestCount}</td><td>${i.uniqueUsers}</td></tr>`
+        ).join('');
+    } catch(e) { console.error(e); }
+}
+
+async function loadGeo() {
+    try {
+        const d = await api('/stats/user-geography');
+        document.getElementById('tb-geo').innerHTML = (d.byCountry || []).map(i =>
+            `<tr><td><strong>${i.country || 'Unknown'}</strong></td><td>${i.requests}</td><td>${i.cityCount}</td><td>${i.userCount}</td></tr>`
+        ).join('') || '<tr><td colspan="4" style="text-align:center;color:#64748b">No geo data yet</td></tr>';
+    } catch(e) { console.error(e); }
+}
+
+async function loadLogs(page = 1) {
+    logPage = Math.max(1, page);
+    const level = document.getElementById('log-level').value;
+    try {
+        let url = `${API}/admin/logs?page=${logPage}&limit=50`;
+        if (level) url += `&level=${level}`;
+        const res = await fetch(url, { headers: { 'x-admin-secret': SECRET } });
+        const d = await res.json();
+        const badges = { error: 'badge-error', warn: 'badge-warn', info: 'badge-info' };
+        document.getElementById('tb-logs').innerHTML = (d.logs || []).map(l => {
+            const msg = typeof l.message === 'string' ? l.message : JSON.stringify(l.message);
+            return `<tr><td><span class="badge ${badges[l.level]||'badge-info'}">${l.level.toUpperCase()}</span></td><td>${fmtTime(l.timestamp)}</td><td>${msg.substring(0,200)}</td></tr>`;
+        }).join('') || '<tr><td colspan="3" style="text-align:center;color:#64748b">No logs</td></tr>';
+        document.getElementById('log-page-info').textContent = `Page ${d.currentPage||1} of ${d.totalPages||1}`;
+        document.getElementById('btn-prev-logs').disabled = logPage <= 1;
+        document.getElementById('btn-next-logs').disabled = logPage >= (d.totalPages || 1);
+    } catch(e) { console.error(e); }
+}
+
+async function doCleanup(path, desc) {
+    if (!confirm(`Delete ${desc}?`)) return;
+    try {
+        const d = await api(path, 'DELETE');
+        alert(`Deleted ${d.deletedCount || 0} records`);
+        loadSpace();
+    } catch(e) { alert('Error: ' + e.message); }
+}
+
+async function doCleanupAll() {
+    if (!confirm('⚠️ DELETE ALL analytics, pageviews and logs?')) return;
+    if (prompt('Type "DELETE ALL" to confirm:') !== 'DELETE ALL') return;
+    try {
+        await Promise.all([api('/cleanup/analytics/all', 'DELETE'), api('/cleanup/logs/all', 'DELETE')]);
+        alert('All data deleted');
+        refreshAll();
+    } catch(e) { alert('Error: ' + e.message); }
+}
+
+function fmtDate(d) { if(!d) return '—'; return new Date(d).toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'}); }
+function fmtTime(d) { if(!d) return '—'; return new Date(d).toLocaleString('en-IN', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hour12:true}); }
+
+setInterval(() => { if(SECRET) { loadSpace(); } }, 60000);
+</script>
 </body>
 </html>
