@@ -478,12 +478,27 @@ async function openUserModal(userId) {
             <button class="btn btn-danger" onclick="deleteUser('${userId}')">🗑️ Delete User Logs</button>
         </div>`;
 
+        // Extract latest hardware details from page views (if available)
+        const latestPage = (d.pageViews || [])[0] || {};
+        const cores = latestPage.hardwareConcurrency ? `${latestPage.hardwareConcurrency}-Core CPU` : '—';
+        const ram = latestPage.deviceMemory ? `~${latestPage.deviceMemory}GB RAM` : '—';
+        const lang = latestPage.language || '—';
+        const tz = latestPage.timeZone || '—';
+        const res = latestPage.screenWidth && latestPage.screenHeight ? `${latestPage.screenWidth}x${latestPage.screenHeight}` : '—';
+
         // Summary Card
         const summaryHtml = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem;padding:1.2rem;background:#0f172a;border-radius:12px;border:1px solid #334155">
-            <div>📱 <strong>Device:</strong> ${device}</div>
+            <div title="Raw User-Agent: ${ua}">📱 <strong>Device:</strong> ${device} <span style="cursor:help;font-size:0.7rem;color:#64748b">(hover to see raw UA)</span></div>
             <div>🌐 <strong>Browser:</strong> ${browser}</div>
             <div>⏱️ <strong>Active for:</strong> ${sessionDur}</div>
             <div>📊 <strong>Total Requests:</strong> ${s.totalRequests || 0}</div>
+            
+            <div style="grid-column:1/-1;border-top:1px solid #334155;margin-top:0.5rem;padding-top:1rem;display:flex;gap:1.5rem;flex-wrap:wrap;color:#94a3b8;font-size:0.85rem">
+                <span>💻 <strong>Hardware:</strong> ${cores}, ${ram}</span>
+                <span>🖥️ <strong>Display:</strong> ${res}</span>
+                <span>🌍 <strong>System:</strong> ${lang} (${tz})</span>
+            </div>
+            
             <div style="grid-column:1/-1">🔗 <strong>Known IPs:</strong> ${ips.map(ip=>'<code>'+ip+'</code>').join(', ')}</div>
         </div>`;
 

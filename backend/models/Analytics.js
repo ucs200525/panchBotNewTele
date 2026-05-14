@@ -100,6 +100,12 @@ const pageViewSchema = new mongoose.Schema({
     },
     screenWidth: Number,
     screenHeight: Number,
+    viewportWidth: Number,
+    viewportHeight: Number,
+    hardwareConcurrency: Number,
+    deviceMemory: Number,
+    language: String,
+    timeZone: String,
     referrer: String,
     userAgent: String,
     timestamp: {
