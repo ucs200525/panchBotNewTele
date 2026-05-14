@@ -1663,10 +1663,215 @@ router.post("/getOldSwissTable-image", async (req, res) => {
     }
 });
 
+// New POST route for custom, fully free, rule-based Astro-Advisory Engine
+router.post('/personalized-advice', async (req, res) => {
+    try {
+        const { city, date, name, birthNakshatra, birthRashi, lat, lng } = req.body;
+        logger.info({ message: 'POST /personalized-advice called', city, date, name, birthNakshatra, birthRashi });
+
+        if (!city || !date) {
+            return res.status(400).json({ error: 'City and date are required' });
+        }
+
+        // Use provided coordinates or fetch them
+        let coords;
+        if (lat && lng && lat !== 'null' && lng !== 'null') {
+            const { getTimezoneFromCoordinates } = require('../utils/panchangHelper');
+            coords = { lat: parseFloat(lat), lng: parseFloat(lng), timeZone: getTimezoneFromCoordinates(parseFloat(lat), parseFloat(lng)) };
+        } else {
+            coords = await fetchCoordinates(city);
+            if (!coords) {
+                return res.status(404).json({ error: 'City not found' });
+            }
+        }
+
+        // Get sun times
+        const sunTimesData = await fetchSunTimes(coords.lat, coords.lng, date, coords.timeZone);
+        if (!sunTimesData) {
+            return res.status(500).json({ error: 'Could not calculate sunrise/sunset times' });
+        }
+
+        // Calculate comprehensive Panchang data WITH SWISS EPHEMERIS
+        const { calculatePanchangData } = require('../utils/panchangHelper');
+        const panchangData = await calculatePanchangData(
+            city,
+            date,
+            coords.lat,
+            coords.lng,
+            sunTimesData.sunriseToday,
+            sunTimesData.sunsetToday,
+            sunTimesData.moonriseToday,
+            sunTimesData.moonsetToday,
+            sunTimesData.sunriseTmrw,
+            true  // includeTransitions
+        );
+
+        // Run the Astro Advisory Rule Engine
+        const { generatePersonalizedAdvice } = require('../utils/advisoryEngine');
+        const advice = generatePersonalizedAdvice({ name, birthNakshatra, birthRashi }, panchangData);
+
+        res.json(advice);
+    } catch (error) {
+        logger.error({ message: 'POST /personalized-advice error', error: error.message, stack: error.stack });
+        res.status(500).json({ error: 'Failed to calculate personalized advice', details: error.message });
+    }
+});
+
+// New POST route for natural language Conversational Astrology Chatbot
+router.post('/ai/chat', async (req, res) => {
+    try {
+        const { message, city, date, name, birthNakshatra, birthRashi, birthDate, birthTime, lat, lng, history } = req.body;
+        logger.info({ message: 'POST /ai/chat called', messageStr: message, city, date, hasHistory: !!history });
+
+        if (!message || !city || !date) {
+            return res.status(400).json({ error: 'Message, city, and date are required' });
+        }
+
+        // Use provided coordinates or fetch them
+        let coords;
+        if (lat && lng && lat !== 'null' && lng !== 'null') {
+            const { getTimezoneFromCoordinates } = require('../utils/panchangHelper');
+            coords = { lat: parseFloat(lat), lng: parseFloat(lng), timeZone: getTimezoneFromCoordinates(parseFloat(lat), parseFloat(lng)) };
+        } else {
+            coords = await fetchCoordinates(city);
+            if (!coords) {
+                return res.status(404).json({ error: 'City not found' });
+            }
+        }
+
+        // Get sun times
+        const sunTimesData = await fetchSunTimes(coords.lat, coords.lng, date, coords.timeZone);
+        if (!sunTimesData) {
+            return res.status(500).json({ error: 'Could not calculate sunrise/sunset times' });
+        }
+
+        // Calculate comprehensive Panchang data WITH SWISS EPHEMERIS
+        const { calculatePanchangData } = require('../utils/panchangHelper');
+        const panchangData = await calculatePanchangData(
+            city,
+            date,
+            coords.lat,
+            coords.lng,
+            sunTimesData.sunriseToday,
+            sunTimesData.sunsetToday,
+            sunTimesData.moonriseToday,
+            sunTimesData.moonsetToday,
+            sunTimesData.sunriseTmrw,
+            true  // includeTransitions
+        );
+
+        // Derive a stable sessionId or use provided one for history continuity
+        let sessionId = req.body.sessionId;
+        if (!sessionId) {
+            const isGuest = !name || name.toLowerCase() === 'guest';
+            sessionId = !isGuest 
+              ? `${name.toLowerCase().replace(/\s+/g, '_')}_${city.toLowerCase()}_${Date.now()}`
+              : `guest_${req.ip || 'unknown'}_${Date.now()}`;
+        }
+
+        // Run the Chatbot Copilot Engine
+        const { processChatRequest } = require('../utils/chatEngine');
+        
+        // Pass the internal fetchmuhurat and createBharagvTable functions so the engine can fetch live data
+        const chatResponse = await processChatRequest(
+            message,
+            city,
+            date,
+            { 
+              name, 
+              nakshatra: birthNakshatra, 
+              rashi: birthRashi, 
+              dob: birthDate, 
+              time: birthTime, 
+              lat, 
+              lng 
+            },
+            panchangData,
+            // helper wrappers
+            async (c, d) => await fetchmuhurat(c, convertToDDMMYYYY(d), coords.lat, coords.lng, coords.timeZone),
+            async (c, d, showNonBlue = true, is12HourFormat = true) => await createBharagvTable(c, d, showNonBlue, is12HourFormat, coords.lat, coords.lng, coords.timeZone),
+            history,
+            sessionId
+        );
+
+        res.setHeader('Content-Type', 'application/json; charset=utf-8');
+        res.json({ ...chatResponse, sessionId });
+    } catch (error) {
+        logger.error({ message: 'POST /api/ai/chat error', error: error.message, stack: error.stack });
+        res.status(500).json({ error: 'Failed to process chat query', details: error.message });
+    }
+});
+
+/**
+ * GET /api/ai/history
+ * Fetch previous chat messages for a session
+ */
+router.get('/ai/history', async (req, res) => {
+    try {
+        const { name, city, date, sessionId: providedId } = req.query;
+        const { getSession } = require('../ai_core/context/sessionStore');
+        
+        const sessionId = providedId || (name 
+          ? `${name.toLowerCase().replace(/\s+/g, '_')}_${city.toLowerCase()}`
+          : `guest_${req.ip || 'unknown'}_${date}`);
+
+        const sessionData = await getSession(sessionId);
+        res.json({
+            success: true,
+            sessionId,
+            history: sessionData.history || []
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch history' });
+    }
+});
+
+/**
+ * POST /api/ai/clear-chat
+ * Reset conversation
+ */
+router.post('/api/clear-chat', async (req, res) => {
+    try {
+        const { name, city, date, sessionId: providedId } = req.body;
+        const { clearSession } = require('../ai_core/context/sessionStore');
+        
+        const sessionId = providedId || (name 
+          ? `${name.toLowerCase().replace(/\s+/g, '_')}_${city.toLowerCase()}`
+          : `guest_${req.ip || 'unknown'}_${date}`);
+
+        await clearSession(sessionId);
+        res.json({ success: true, message: 'Chat history cleared', sessionId });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to clear chat' });
+    }
+});
+
+/**
+ * GET /api/ai/sessions
+ * List all active sessions for the user
+ */
+router.get('/ai/sessions', async (req, res) => {
+    try {
+        const { name, city } = req.query;
+        const { listSessions } = require('../ai_core/context/sessionStore');
+        
+        const isGuest = !name || name.toLowerCase() === 'guest';
+        const prefix = !isGuest 
+          ? `${name.toLowerCase().replace(/\s+/g, '_')}_${city.toLowerCase()}`
+          : `guest_${req.ip || 'unknown'}`;
+
+        const sessions = await listSessions(prefix);
+        res.json({ success: true, sessions });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to list sessions' });
+    }
+});
+
 module.exports = { 
     router, 
     createDrikTable, 
     createBharagvTable,
     processMuhuratAndPanchangam,
-    convertToDDMMYYYY
+    convertToDDMMYYYY,
+    fetchSunTimes
 };

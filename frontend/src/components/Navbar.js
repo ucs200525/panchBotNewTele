@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { ProfileService } from '../utils/profileService';
 import './Navbar.css';
 
 const Navbar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeSubmenu, setActiveSubmenu] = useState(null);
-  const isActive = (path) => location.pathname === path;
+  
+  const userName = localStorage.getItem('astro_name');
+  const isLoggedIn = ProfileService.isLoggedIn();
 
   // Handle mobile menu toggle
   const toggleMobileMenu = () => {
@@ -30,6 +34,12 @@ const Navbar = () => {
     closeAll();
   }, [location.pathname]);
 
+  const handleLogout = () => {
+
+    ProfileService.logout();
+    navigate('/login');
+  };
+
   return (
     <nav className="pro-navbar">
       {/* Tier 1: Brand & Actions */}
@@ -42,12 +52,22 @@ const Navbar = () => {
           </div>
 
           <div className="upper-right">
-            <button className="pro-login-btn desktop-only">
-              <span className="login-icon">👤</span>
-              <span className="login-text">Login</span>
-            </button>
+            {isLoggedIn ? (
+              <div className="user-profile-nav">
+                <span className="user-welcome">Namaste, {userName}</span>
+                <button onClick={handleLogout} className="pro-login-btn">
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <button className="pro-login-btn desktop-only" onClick={() => navigate('/login')}>
+                <span className="login-icon">👤</span>
+                <span className="login-text">Login</span>
+              </button>
+            )}
 
             <button
+
               className="mobile-menu-btn mobile-only"
               onClick={toggleMobileMenu}
               aria-label="Menu"
@@ -109,6 +129,7 @@ const Navbar = () => {
                 </div>
               </div>
               <div className="submenu-content">
+                <Link to="/advisor" className="submenu-link">Personal Advisor 🌟</Link>
                 <Link to="/charts" className="submenu-link">Birth Charts</Link>
                 <Link to="/dasha" className="submenu-link">Vimshottari Dasha</Link>
                 <Link to="/planetary" className="submenu-link">Planetary Positions</Link>
@@ -126,6 +147,7 @@ const Navbar = () => {
                 </div>
               </div>
               <div className="submenu-content">
+                <Link to="/chat" className="submenu-link">Vedic Chat Copilot 🔮</Link>
                 <Link to="/combine" className="submenu-link">Combined View</Link>
                 <Link to="/panchaka" className="submenu-link">Old Panchaka Tool</Link>
                 <Link to="/" className="submenu-link">Bhargava Panchangam</Link>

@@ -341,3 +341,16 @@
         font-size: 12px;
     }
 }
+
+.user-profile-nav {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.user-welcome {
+  color: #a855f7;
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+}

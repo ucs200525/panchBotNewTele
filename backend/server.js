@@ -60,6 +60,34 @@ app.use('/admin', adminRoutes); // Mount Admin API
 app.use('/api/analytics', analyticsRoutes); // Mount Analytics API (admin-protected)
 app.use('/api', subscriptionRoutes); // Mount Subscription API (for bot preferences)
 app.use('/api', botCronRoutes); // Mount Bot Cron API
+const aiAstrologerRoutes = require('./ai_astrologer/router');
+const userRoutes = require('./routes/userRoutes');
+const authRoutes = require('./routes/authRoutes');
+const { computeBirthChart } = require('./utils/chatEngine');
+const { drawSouthIndianChart } = require('./utils/chartRenderer');
+
+app.use('/api/ai-astrologer', aiAstrologerRoutes); 
+app.use('/api/user', userRoutes);
+app.use('/api/auth', authRoutes);
+
+// Visual Chart Image Endpoint
+app.get('/api/chart-image', async (req, res) => {
+  console.log('🖼️  Generating Birth Chart Image for:', req.query.dob);
+  try {
+    const { dob, time, lat, lng } = req.query;
+    const chartData = await computeBirthChart({ dob, time, lat, lng });
+    const imageBuffer = await drawSouthIndianChart(chartData.lagna, chartData.houseMaps);
+    res.set('Content-Type', 'image/png');
+    res.send(imageBuffer);
+  } catch (err) {
+    console.error('❌ Chart generation failed:', err.message);
+    res.status(500).send('Chart generation failed');
+  }
+});
+
+
+
+
 
 
 // Error Handling Middleware

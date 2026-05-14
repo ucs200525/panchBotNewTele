@@ -1,0 +1,16 @@
+{
+  "weights": {
+    "isAbhijit": 25,
+    "isAmritKaal": 35,
+    "isRahu": -50,
+    "isGulika": -15,
+    "isYamaGanda": -25,
+    "sadhanaTara": 20,
+    "chandraAshtama": -40
+  },
+  "thresholds": {
+    "good": 30,
+    "neutral": 0,
+    "bad": -15
+  }
+}

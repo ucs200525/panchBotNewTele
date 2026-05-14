@@ -1,48 +1,113 @@
-# Panchangam Image Generation API
+# 🕉️ Panchangam & Vedic Copilot (PanchBotNewTele)
 
-This API provides professional, high-resolution astrological reports as PNG images. The reports are styled with a premium design system and high-accuracy astronomical data.
+A high-precision Vedic astrology platform featuring a hybrid AI reasoning engine, professional image generation, and comprehensive Panchangam data.
 
-## 🌟 Image Generation Routes
+## 🚀 Project Overview
 
-All routes expect a `POST` request with a JSON body.
+This repository contains the complete source code for a modern Vedic Astrology application. It combines traditional astronomical calculations (using Swiss Ephemeris) with state-of-the-art AI capabilities to provide personalized astrological guidance.
 
-### 1. Combined Insights Report (Premium)
-Fuses Muhurat calculations with Bhargava Panchang timings.
-- **Endpoint**: `/api/combine-image`
-- **Body Parameters**:
-  - `city` (string, Required): The city name.
-  - `date` (string, Required): Date in `YYYY-MM-DD` format.
-  - `showNonBlue` (boolean, Optional): Default `true`. If true, shows only auspicious periods.
-  - `is12HourFormat` (boolean, Optional): Default `true`. Output time in AM/PM.
-  - `lat` (number, Optional): Precise latitude.
-  - `lng` (number, Optional): Precise longitude.
-  - `timeZone` (string, Optional): The local timezone ID (e.g., `Asia/Kolkata`).
-
-### 2. Swiss Panchaka Report (Rahita Muhurats)
-Detailed Rahita Muhurats calculated using precision mathematical formulas.
-- **Endpoint**: `/api/getSwissTable-image`
-- **Body Parameters**:
-  - `city`, `date` (Required)
-  - `lat`, `lng`, `timeZone` (Optional)
-
-### 3. Bhargava Panchang Report
-Daily guide to auspicious timings based on authentic Vedic astrology.
-- **Endpoint**: `/api/getBharagvTable-image`
-- **Body Parameters**:
-  - `city`, `date` (Required)
-  - `showNonBlue`, `is12HourFormat` (Optional)
-  - `lat`, `lng`, `timeZone` (Optional)
-
-### 4. Drik Table Report (Old Scraper Basis)
-Report based on Drik Panchang scraped data.
-- **Endpoint**: `/api/getDrikTable-image`
-- **Body Parameters**:
-  - `city`, `date` (Required)
-  - `goodTimingsOnly` (boolean, Optional)
+### Key Features
+- **Hybrid AI Astrologer**: Features a highly advanced Deterministic Hybrid NLP/NLG Engine. Uses strict intent classification, entity extraction (Regex + spaCy), and context-aware session management to provide scalable, highly accurate conversational astrology.
+- **High-Precision Panchangam**: Accurate calculations for Tithi, Nakshatra, Yoga, Karana, and more using `swisseph`.
+- **Muhurat & Auspicious Timings**: Advanced filtering for Choghadiya, Hora, and Swiss-precision Rahita Muhurats.
+- **Dynamic Chart Rendering**: Professional South Indian style birth charts rendered as PNG/SVG.
+- **Image Generation API**: Dedicated routes for generating high-resolution reports for sharing.
+- **Analytics Dashboard**: Comprehensive tracking of API usage and user engagement.
 
 ---
 
-## ✅ Recent Updates
-- **Geographic Precision**: All image routes now support `lat`, `lng`, and `timeZone` parameters. If provided, the backend skips geocoding and uses these coordinates for pinpoint mathematical accuracy.
-- **Enhanced Templating**: Reports use a high-resolution 2x scale (1080p effective width) with full Google Font support (Inter & Outfit).
-- **Duration Logic**: The `createDrikTable` helper now automatically calculates durations for time intervals, even those crossing midnight.
+## 📂 Directory Structure
+
+```text
+panchBotNewTele/
+├── 📁 backend/                # Node.js/Express Server
+│   ├── 📁 ai_astrologer/      # Advanced AI Reasoning Engine & Router
+│   ├── 📁 ai_core/            # Core NLP, NLG, and Executor Pipelines
+│   ├── 📁 astrology_engines/  # Specialized calculation logic
+│   ├── 📁 routes/             # API Endpoints (Panchang, Dasha, Lagna, etc.)
+│   ├── 📁 utils/              # Core helpers (Interpreters, DB, OpenRouter)
+│   ├── 📁 data/               # Static astrological data
+│   ├── 📁 middleware/         # Auth & Analytics logic
+│   ├── 📄 server.js           # Backend Entry Point
+│   └── 📄 vercel.json         # Backend Deployment Config
+├── 📁 frontend/               # React SPA
+│   ├── 📁 src/
+│   │   ├── 📁 pages/          # 40+ specialized Astro & Panchang screens
+│   │   ├── 📁 components/     # Modular UI elements
+│   │   ├── 📁 context/        # State management (User/Astro data)
+│   │   ├── 📁 utils/          # API Service layers
+│   │   └── 📄 App.js          # Routing & Main Layout
+│   └── 📄 package.json        # Frontend dependencies
+├── 📄 PROJECT_ARCHITECTURE.md # Deep-dive into system design
+├── 📄 ADVANCED_AI.md          # Comprehensive breakdown of the Hybrid AI Engine
+├── 📄 AI_IMPLEMENTATION_PLAN.md # Roadmap for AI features
+├── 📄 vercel.json             # Root monorepo deployment config
+└── 📄 README.md               # This file
+```
+
+---
+
+## 🛠️ Technology Stack
+
+### Backend
+- **Core**: Node.js, Express
+- **Astronomy**: `swisseph` (Swiss Ephemeris Node bindings)
+- **Database**: MongoDB (via Mongoose)
+- **AI Integration**: Hybrid Regex + Python spaCy NLP Pipeline / OpenRouter API
+- **Rendering**: `canvas` / `skia-canvas` for chart & report generation
+- **Logging**: Winston with Daily Rotate File
+
+### Frontend
+- **Framework**: React 18
+- **Routing**: React Router 6
+- **Styling**: Vanilla CSS with CSS Modules for scoped styles
+- **Visualization**: HTML2Canvas for client-side exports
+
+---
+
+## ⚙️ Getting Started
+
+### Prerequisites
+- Node.js v22.x
+- MongoDB Instance
+- OpenRouter API Key (for LLM extensions)
+- Python 3.8+ (for advanced spaCy NLP features)
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd panchBotNewTele
+   ```
+
+2. **Setup Backend & Python Engine**
+   ```bash
+   cd backend
+   npm install
+   cp .env.example .env # Configure your variables
+   npm start
+   ```
+
+3. **Setup Frontend**
+   ```bash
+   cd ../frontend
+   npm install
+   npm start
+   ```
+
+---
+
+## 📄 Documentation
+
+For more detailed information, please refer to:
+- [Advanced AI Architecture](file:///d:/4.own/project/panchagamswiss/panchBotNewTele/ADVANCED_AI.md) - **Start Here for AI Core modifications**
+- [Project Architecture](file:///d:/4.own/project/panchagamswiss/panchBotNewTele/PROJECT_ARCHITECTURE.md)
+- [AI Implementation Plan](file:///d:/4.own/project/panchagamswiss/panchBotNewTele/AI_IMPLEMENTATION_PLAN.md)
+- [Personalized Advisor Specs](file:///d:/4.own/project/panchagamswiss/panchBotNewTele/PERSONALIZED_ADVISOR.md)
+
+---
+
+## 🛡️ License
+Proprietary. All rights reserved.
+
