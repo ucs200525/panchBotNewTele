@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panchangam Analytics Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/UAParser.js/1.0.37/ua-parser.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; line-height: 1.5; }
@@ -609,63 +610,43 @@ function closePayload() {
 function parseDevice(ua) {
     if (!ua) return 'Unknown';
     
-    // Check for Android Model
-    if (/Android/i.test(ua)) {
-        let model = '';
+    try {
+        const parser = new UAParser(ua);
+        const result = parser.getResult();
         
-        // Pattern 1: (Linux; Android ...; [MODEL] Build/...)
-        const buildMatch = ua.match(/Android [^;]+; ([^;)]+) Build\//);
-        if (buildMatch) model = buildMatch[1];
-        
-        // Pattern 2: (Linux; Android ...; [MODEL])
-        if (!model) {
-            const genericMatch = ua.match(/\(Linux; Android [^;]+; ([^;)]+)\)/);
-            if (genericMatch) model = genericMatch[1];
+        // Mobile/Tablet specific
+        if (result.device.vendor && result.device.model) {
+            return `📱 ${result.device.vendor} ${result.device.model}`;
+        } else if (result.device.model) {
+            return `📱 ${result.device.model}`;
         }
         
-        // Pattern 3: (Android ...; Mobile; [MODEL])
-        if (!model) {
-            const mobileMatch = ua.match(/Android [^;]+; Mobile; ([^;)]+)/);
-            if (mobileMatch) model = mobileMatch[1];
-        }
-
-        // Clean up common generic words from model
-        if (model) {
-            model = model.replace(/Build\/[^;]+|Version\/[^;]+|Mobile|Tablet|Android|Linux/gi, '').trim();
-            if (model.length <= 2) model = '';
-        }
-
-        const brand = /Samsung|SM-|GT-|SCH-|SGH-|SPH-/i.test(model) ? 'Samsung' : 
-                      /Pixel/i.test(model) ? 'Google Pixel' :
-                      /Redmi|Xiaomi|Mi |MI /i.test(model) ? 'Xiaomi' :
-                      /OnePlus/i.test(model) ? 'OnePlus' : 
-                      /Vivo/i.test(model) ? 'Vivo' :
-                      /Oppo|CPH/i.test(model) ? 'Oppo' : 
-                      /Motorola|Moto/i.test(model) ? 'Motorola' : 
-                      /Realme|RMX/i.test(model) ? 'Realme' : '';
+        // Fallbacks based on OS if device info is missing
+        if (result.os.name === 'Android') return '📱 Android Phone';
+        if (result.os.name === 'iOS') return `📱 ${result.device.model || 'iPhone/iPad'}`;
+        if (result.os.name === 'Windows') return '💻 Windows PC';
+        if (result.os.name === 'Mac OS') return '💻 Mac';
+        if (result.os.name === 'Linux') return '💻 Linux';
         
-        const deviceString = `${brand} ${model}`.trim();
-        return deviceString ? `📱 ${deviceString}` : '📱 Android Phone';
+        return '❓ Other';
+    } catch(e) {
+        return 'Unknown';
     }
-    
-    if (/iPad/i.test(ua)) return '📱 iPad';
-    if (/iPhone/i.test(ua)) return '📱 iPhone';
-    
-    if (/Windows/i.test(ua)) return '💻 Windows PC';
-    if (/Macintosh/i.test(ua)) return '💻 Mac';
-    if (/Linux/i.test(ua)) return '💻 Linux';
-    
-    return '❓ Other';
 }
 
 function parseBrowser(ua) {
     if (!ua) return 'Unknown';
-    if (/Edg\//i.test(ua)) return 'Edge';
-    if (/Chrome\//i.test(ua) && !/Chromium/i.test(ua)) return 'Chrome';
-    if (/Firefox\//i.test(ua)) return 'Firefox';
-    if (/Safari\//i.test(ua) && !/Chrome/i.test(ua)) return 'Safari';
-    if (/Opera|OPR/i.test(ua)) return 'Opera';
-    return 'Other';
+    
+    try {
+        const parser = new UAParser(ua);
+        const result = parser.getResult();
+        if (result.browser.name) {
+            return `${result.browser.name} ${result.browser.major || ''}`.trim();
+        }
+        return 'Other';
+    } catch(e) {
+        return 'Unknown';
+    }
 }
 
 function timeDiff(start, end) {

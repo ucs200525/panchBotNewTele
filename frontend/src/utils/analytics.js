@@ -82,10 +82,16 @@ export const trackPageView = (pagePath) => {
     userId: getUserId(),
     page: pagePath,
     timestamp: new Date().toISOString(),
-    screenWidth: typeof window !== 'undefined' ? window.innerWidth : 0,
-    screenHeight: typeof window !== 'undefined' ? window.innerHeight : 0,
+    screenWidth: typeof window !== 'undefined' ? window.screen.width : 0,
+    screenHeight: typeof window !== 'undefined' ? window.screen.height : 0,
+    viewportWidth: typeof window !== 'undefined' ? window.innerWidth : 0,
+    viewportHeight: typeof window !== 'undefined' ? window.innerHeight : 0,
     referrer: typeof document !== 'undefined' ? document.referrer : null,
     userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
+    hardwareConcurrency: typeof navigator !== 'undefined' ? navigator.hardwareConcurrency || null : null,
+    deviceMemory: typeof navigator !== 'undefined' ? navigator.deviceMemory || null : null,
+    language: typeof navigator !== 'undefined' ? navigator.language : null,
+    timeZone: typeof Intl !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : null
   };
 
   const trackUrl = `${API_URL}/api/analytics/pageview`;
@@ -115,7 +121,11 @@ export const trackEvent = (eventName, eventData = {}) => {
   const payload = {
     userId: getUserId(),
     eventName,
-    eventData,
+    eventData: {
+      ...eventData,
+      hardwareConcurrency: typeof navigator !== 'undefined' ? navigator.hardwareConcurrency || null : null,
+      deviceMemory: typeof navigator !== 'undefined' ? navigator.deviceMemory || null : null,
+    },
     page: typeof window !== 'undefined' ? window.location.pathname : null,
     timestamp: new Date().toISOString(),
   };
