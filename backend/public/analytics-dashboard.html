@@ -102,8 +102,8 @@
     <div id="tab-users" class="tab-content">
         <div class="section">
             <h2 class="section-title">👥 All Users (grouped by User ID)</h2>
-            <p style="color:#64748b;margin-bottom:1rem;font-size:0.85rem">Click a user row to see their full activity log.</p>
-            <table><thead><tr><th>User ID</th><th>IP</th><th>Location</th><th>Requests</th><th>Cities Searched</th><th>First Seen</th><th>Last Seen</th></tr></thead><tbody id="tb-users"></tbody></table>
+            <p style="color:#64748b;margin-bottom:1rem;font-size:0.85rem">Click a user row to see their full activity log. <br><span style="color:#f59e0b">⚠️ Location is based on IP/ISP — it shows where the ISP server is (e.g. Chennai), not the user's exact physical city (e.g. Vijayawada). This is a known limitation of IP geolocation.</span></p>
+            <table><thead><tr><th>User ID</th><th>IP</th><th>Location (ISP ≈)</th><th>Requests</th><th>Cities Searched</th><th>First Seen</th><th>Last Seen</th></tr></thead><tbody id="tb-users"></tbody></table>
             <div class="toolbar" style="margin-top:1rem;justify-content:center">
                 <button class="btn btn-primary" id="btn-prev-users" onclick="loadUsers(userPage-1)">← Prev</button>
                 <span id="user-page-info" style="color:#94a3b8">Page 1</span>

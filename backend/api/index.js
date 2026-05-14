@@ -37,6 +37,7 @@ const allowedOrigins = [
 const corsOption = {
   origin: true, // Allow all origins temporarily to debug, or you can use a function to check .vercel.app
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'x-admin-secret', 'x-user-id', 'x-session-id', 'Authorization'],
   credentials: true,
 };
 
