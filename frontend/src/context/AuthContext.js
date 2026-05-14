@@ -59,6 +59,25 @@
 // src/context/AuthContext.js
 import React, { createContext, useState, useContext, useEffect } from 'react';
 
+// Run migration / cache clear ONLY ONCE per browser
+const CLEAR_VERSION = "v1_clear_location";
+if (typeof window !== 'undefined') {
+    if (localStorage.getItem('app_clear_version') !== CLEAR_VERSION) {
+        // Clear all location-related keys to force a fresh geolocation prompt
+        localStorage.removeItem('city');
+        localStorage.removeItem('lat');
+        localStorage.removeItem('lng');
+        localStorage.removeItem('cityName');
+        localStorage.removeItem('panchaka_city');
+        localStorage.removeItem('panchaka_filteredData');
+        localStorage.removeItem('panchaka_allMuhuratData');
+        
+        // Mark as cleared
+        localStorage.setItem('app_clear_version', CLEAR_VERSION);
+        console.log("One-time cache clear complete. Location reset.");
+    }
+}
+
 // Create the AuthContext
 const AuthContext = createContext();
 
