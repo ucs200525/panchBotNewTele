@@ -486,6 +486,27 @@ async function openUserModal(userId) {
         const tz = latestPage.timeZone || '—';
         const res = latestPage.screenWidth && latestPage.screenHeight ? `${latestPage.screenWidth}x${latestPage.screenHeight}` : '—';
 
+        // Extract accurate coordinates from API logs if they used Geolocation auto-fetch
+        let preciseLat = null;
+        let preciseLng = null;
+        for (const api of (d.apiActivity || [])) {
+            const geoMatch = api.endpoint.match(/\/api\/fetchCityName\/([\d.-]+)\/([\d.-]+)/);
+            if (geoMatch) {
+                preciseLat = geoMatch[1];
+                preciseLng = geoMatch[2];
+                break;
+            }
+            if (api.requestBody && api.requestBody.lat && api.requestBody.lng) {
+                preciseLat = api.requestBody.lat;
+                preciseLng = api.requestBody.lng;
+                break;
+            }
+        }
+        
+        const coordsHtml = preciseLat && preciseLng 
+            ? `<a href="https://www.google.com/maps?q=${preciseLat},${preciseLng}" target="_blank" style="color:#38bdf8;text-decoration:none">📍 ${preciseLat}, ${preciseLng} (View on Map)</a>` 
+            : '—';
+
         // Summary Card
         const summaryHtml = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem;padding:1.2rem;background:#0f172a;border-radius:12px;border:1px solid #334155">
             <div title="Raw User-Agent: ${ua}">📱 <strong>Device:</strong> ${device} <span style="cursor:help;font-size:0.7rem;color:#64748b">(hover to see raw UA)</span></div>
@@ -497,6 +518,7 @@ async function openUserModal(userId) {
                 <span>💻 <strong>Hardware:</strong> ${cores}, ${ram}</span>
                 <span>🖥️ <strong>Display:</strong> ${res}</span>
                 <span>🌍 <strong>System:</strong> ${lang} (${tz})</span>
+                <span>${coordsHtml !== '—' ? '🗺️ <strong>Precise Location:</strong> ' + coordsHtml : ''}</span>
             </div>
             
             <div style="grid-column:1/-1">🔗 <strong>Known IPs:</strong> ${ips.map(ip=>'<code>'+ip+'</code>').join(', ')}</div>
@@ -508,11 +530,19 @@ async function openUserModal(userId) {
             ${(d.apiActivity || []).map((a, idx) => {
                 const badge = a.statusCode >= 500 ? 'badge-error' : a.statusCode >= 400 ? 'badge-warn' : 'badge-good';
                 const label = a.statusCode >= 500 ? 'ERROR' : a.statusCode >= 400 ? 'WARN' : 'OK';
+                
+                // Try to extract city from endpoint if not in requestedCity
+                let displayCity = a.requestedCity;
+                if (!displayCity) {
+                    const sunMatch = a.endpoint.match(/\/api\/getSunTimesForCity\/([^/]+)/);
+                    if (sunMatch) displayCity = decodeURIComponent(sunMatch[1]);
+                }
+
                 return `<tr class="clickable-row" onclick="viewPayload(${idx})">
                     <td>${fmtTime(a.timestamp)}</td>
                     <td><code>${a.method}</code></td>
                     <td>${a.endpoint}</td>
-                    <td>${a.requestedCity||'—'}</td>
+                    <td>${displayCity || '—'}</td>
                     <td><span class="badge ${badge}">${label} ${a.statusCode || '???'}</span></td>
                     <td>${a.responseTime || 0}</td>
                 </tr>`;
