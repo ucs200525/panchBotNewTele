@@ -29,6 +29,7 @@ const PanchakaMuhurth = () => {
     const [loading, setLoading] = useState(false); // Add loading state
     const [error, setError] = useState(null);
     const [fetchCity, setfetchCity] = useState(false);
+    const [cityError, setCityError] = useState(false);
 
     useEffect(() => {
         localStorage.setItem('panchaka_filteredData', JSON.stringify(filteredData));
@@ -86,46 +87,12 @@ const PanchakaMuhurth = () => {
     }, [filteredData, date]); // Memoize with filteredData and date as dependencies
 
     const autoGeolocation = async () => {
-        // setIsLoading(true);
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(
-            async (position) => {
-              const lat = position.coords.latitude;
-              const lng = position.coords.longitude;
-              try {
-                const cityResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/fetchCityName/${lat}/${lng}`);
-                if (!cityResponse.ok) {
-                  throw new Error('Failed to fetch city name');
-                }
-                const cityData = await cityResponse.json();
-                const cityName = cityData.cityName;
-                console.log("cityData",cityData);
-                setCity(cityName);
-                setLat(lat);
-                setLng(lng);
-                setfetchCity(true);
-              } catch (error) {
-                setError(error.message || 'Error fetching city name');}
-              //  finally {
-              //   setIsLoading(false);
-              // }
-            },
-            (error) => {
-              setError('Geolocation error: ' + error.message);
-           
-            }
-          );
-          
-        } else {
-          setError('Geolocation is not supported by this browser.');
-         
-        }
-      };
+        alert("Please select a City and Date manually.");
+    };
     
     const getMuhuratData = async () => {
         if (!city || !date) {
-            await autoGeolocation();
-            
+            alert("Please select a City and Date manually.");
             return;
         }
 
@@ -167,11 +134,12 @@ const PanchakaMuhurth = () => {
     
   const checkAndFetchPanchangam = async () => {
     if (city && date) {
+      setCityError(false);
       await getMuhuratData();
-      
-    } else {
-      await autoGeolocation();
-      
+    } else if (!city) {
+      setCityError(true);
+    } else if (!date) {
+      alert("Please select a Date manually.");
     }
   };
   const convertToDDMMYYYY = (date) => {
@@ -274,10 +242,14 @@ const PanchakaMuhurth = () => {
       <h1>Panchaka Muhurat Table</h1>
         <label className="entercity">Enter City Name:</label>
         <input
-          className="city"
+          className={`city ${cityError ? 'error-highlight' : ''}`}
+          style={cityError ? { border: '2px solid red', boxShadow: '0 0 8px rgba(255, 0, 0, 0.6)' } : {}}
           type="text"
           value={city}
-          onChange={(e) => setCity(e.target.value)}
+          onChange={(e) => {
+            setCity(e.target.value);
+            setCityError(false);
+          }}
           placeholder="Enter city"
         />
       </div>

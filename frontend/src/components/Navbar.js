@@ -64,6 +64,14 @@ const Navbar = () => {
             <span className="nav-text">Good Timings </span>
           </Link>
 
+          {/* <Link 
+            to="/panchang-details" 
+            className={`nav-link ${isActive('/panchang-details') ? 'active' : ''}`}
+          >
+            <span className="nav-icon">📋</span>
+            <span className="nav-text">Panchang Details</span>
+          </Link>
+ */}
 
 
           {/* Removed More dropdown - uncomment if needed */}

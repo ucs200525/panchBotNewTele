@@ -27,6 +27,7 @@ const CombinePage = () => {
   const [weekday, setWeekday] = useState(() => localStorage.getItem('weekday') || '');
   const [showNonBlue, setShowNonBlue] = useState(true);  // default to true
   const [is12HourFormat, setIs12HourFormat] = useState(true); // default to true
+  const [cityError, setCityError] = useState(false);
 
 
 
@@ -49,60 +50,7 @@ const CombinePage = () => {
 
 
   const autoGeolocation = async () => {
-    if (navigator.geolocation) {
-      // Track if success callback already fired (handles browser extension race condition)
-      let geoSucceeded = false;
-      
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          geoSucceeded = true;
-          setError(null); // Clear any false error from extension interference
-          const lat = position.coords.latitude;
-          const lng = position.coords.longitude;
-          try {
-            const cityResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/fetchCityName/${lat}/${lng}`);
-            if (!cityResponse.ok) {
-              throw new Error('Failed to fetch city name');
-            }
-            const cityData = await cityResponse.json();
-            const cityName = cityData.cityName;
-            console.log('cityData', cityData);
-            setCity(cityName);
-            setLat(lat);
-            setLng(lng);
-            setFetchCity(true);
-            setFetchData(true);
-          } catch (error) {
-            setError(error.message || 'Error fetching city name');
-          }
-        },
-        (error) => {
-          console.warn('Geolocation error code:', error.code, '- may be caused by a browser extension');
-          // Delay showing the error to allow the real geolocation success callback to fire first
-          setTimeout(() => {
-            if (!geoSucceeded) {
-              let errorMsg = 'Geolocation error: ';
-              switch (error.code) {
-                case error.PERMISSION_DENIED:
-                  errorMsg += 'Permission denied. Please allow location access in browser settings.';
-                  break;
-                case error.POSITION_UNAVAILABLE:
-                  errorMsg += 'Location information unavailable. Check if Location is enabled in Windows Settings > Privacy > Location.';
-                  break;
-                case error.TIMEOUT:
-                  errorMsg += 'Location request timed out. Please try again.';
-                  break;
-                default:
-                  errorMsg += error.message;
-              }
-              setError(errorMsg);
-            }
-          }, 2000);
-        }
-      );
-    } else {
-      setError('Geolocation is not supported by this browser.');
-    }
+    alert("Please select a City and Date manually.");
   };
 
   const handleCityChange = (value) => {
@@ -110,6 +58,7 @@ const CombinePage = () => {
     setLat(null);
     setLng(null);
     setFetchCity(false); // Reset fetchCity if user provides a manual input
+    setCityError(false);
   };
 
   const handleCitySelect = (selectedCity) => {
@@ -117,6 +66,7 @@ const CombinePage = () => {
     setLat(selectedCity.lat);
     setLng(selectedCity.lng);
     setFetchCity(false);
+    setCityError(false);
   };
 
 
@@ -139,11 +89,12 @@ const CombinePage = () => {
 
   const checkAndFetchPanchangam = async () => {
     if (city && date) {
+      setCityError(false);
       await fetchMuhuratData();
-      // setCityAndDate(cityName,currentDate);
-    } else {
-      await autoGeolocation();
-      // setCityAndDate(cityName,currentDate);
+    } else if (!city) {
+      setCityError(true);
+    } else if (!date) {
+      alert("Please select a Date manually.");
     }
   };
 
@@ -235,6 +186,7 @@ const CombinePage = () => {
           onChange={handleCityChange}
           onSelect={handleCitySelect}
           placeholder="Enter city"
+          hasError={cityError}
         />
       </div>
   

@@ -10,6 +10,7 @@ import AdminLogs from './pages/AdminLogs';
 
 import PanchakaSwiss from './pages/PanchakaSwiss';
 import CombineSwiss from './pages/CombineSwiss';
+import PanchangDetails from './pages/PanchangDetails';
 
 function App() {
   return (
@@ -17,10 +18,11 @@ function App() {
       <Navbar />
       <Routes>
         <Route path="/" element={<PachangamForm />} />
-        <Route path="/panchaka" element={<PanchakaMuhurth />} />
+        {/* <Route path="/panchaka" element={<PanchakaMuhurth />} /> */}
         <Route path="/panchaka-swiss" element={<PanchakaSwiss />} />
-        <Route path="/combine" element={<Combine />} />
+        {/* <Route path="/combine" element={<Combine />} /> */}
         <Route path="/combine-swiss" element={<CombineSwiss />} />
+        <Route path="/panchang-details" element={<PanchangDetails />} />
 
         {/* <Route path="/DownloadImage" element={<DownloadImage />} />
         <Route path="/drik-table-image" element={<DrikTableImage />} />

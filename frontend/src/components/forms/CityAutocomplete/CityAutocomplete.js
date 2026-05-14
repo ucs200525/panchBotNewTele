@@ -6,7 +6,8 @@ const CityAutocomplete = ({
   onChange,
   onSelect,
   placeholder = 'Search city...',
-  showGeolocation = true
+  showGeolocation = true,
+  hasError = false
 }) => {
   const getFlagEmoji = (countryCode) => {
     if (!countryCode) return '📍';
@@ -249,7 +250,8 @@ const CityAutocomplete = ({
       <div className="autocomplete-input-wrapper">
         <input
           type="text"
-          className="autocomplete-input"
+          className={`autocomplete-input ${hasError ? 'error-highlight' : ''}`}
+          style={hasError ? { border: '2px solid red', boxShadow: '0 0 8px rgba(255, 0, 0, 0.6)' } : {}}
           value={inputValue}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}

@@ -40,6 +40,7 @@ const TimeConverterApp = () => {
 
   // Phase 1: Panchang Data State
   const [panchangData, setPanchangData] = useState(null);
+  const [cityError, setCityError] = useState(false);
 
 
   useEffect(() => {
@@ -76,67 +77,7 @@ const TimeConverterApp = () => {
   }, []);
 
   const autoGeolocation = async () => {
-    setIsLoading(true);
-    if (navigator.geolocation) {
-      // Track if success callback already fired (handles browser extension race condition)
-      let geoSucceeded = false;
-      
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          geoSucceeded = true;
-          setError(null); // Clear any false error from extension interference
-          const latitude = position.coords.latitude;
-          const longitude = position.coords.longitude;
-          setLat(latitude);
-          setLng(longitude);
-          try {
-            const cityResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/fetchCityName/${latitude}/${longitude}`);
-            if (!cityResponse.ok) {
-              throw new Error('Failed to fetch city name');
-            }
-            const cityData = await cityResponse.json();
-            const fetchedCityName = cityData.cityName;
-            console.log("cityData", cityData);
-            console.log("cityResponse", cityResponse);
-            setCity(fetchedCityName);
-            setfetchSuntimes(true);
-
-          } catch (error) {
-            setError(error.message || 'Error fetching city name');
-            setIsLoading(false);
-          }
-        },
-        (error) => {
-          console.warn('Geolocation error code:', error.code, '- may be caused by a browser extension');
-          // Delay showing the error to allow the real geolocation success callback to fire first
-          // (browser extensions like location spoofers can trigger a false PERMISSION_DENIED)
-          setTimeout(() => {
-            if (!geoSucceeded) {
-              let errorMsg = 'Geolocation error: ';
-              switch (error.code) {
-                case error.PERMISSION_DENIED:
-                  errorMsg += 'Permission denied. Please allow location access in browser settings.';
-                  break;
-                case error.POSITION_UNAVAILABLE:
-                  errorMsg += 'Location information unavailable. Check if Location is enabled in Windows Settings > Privacy > Location.';
-                  break;
-                case error.TIMEOUT:
-                  errorMsg += 'Location request timed out. Please try again.';
-                  break;
-                default:
-                  errorMsg += error.message;
-              }
-              setError(errorMsg);
-              setIsLoading(false);
-            }
-          }, 2000);
-        }
-      );
-
-    } else {
-      setError('Geolocation is not supported by this browser.');
-      setIsLoading(false);
-    }
+    alert("Please select a City and Date manually.");
   };
 
   const Getpanchangam = async () => {
@@ -175,9 +116,12 @@ const TimeConverterApp = () => {
 
   const checkAndFetchPanchangam = async () => {
     if (city && date) {
+      setCityError(false);
       await Getpanchangam();
-    } else {
-      await autoGeolocation();
+    } else if (!city) {
+      setCityError(true);
+    } else if (!date) {
+      alert("Please select a Date manually.");
     }
   };
 
@@ -257,12 +201,14 @@ const TimeConverterApp = () => {
     setCity(value);
     setLat(null);
     setLng(null);
+    setCityError(false);
   };
 
   const handleCitySelect = (selectedCity) => {
     setCity(selectedCity.name);
     setLat(selectedCity.lat);
     setLng(selectedCity.lng);
+    setCityError(false);
   };
 
 
@@ -282,6 +228,7 @@ const TimeConverterApp = () => {
             onChange={handleCityChange}
             onSelect={handleCitySelect}
             placeholder="Enter city"
+            hasError={cityError}
           />
           <label className="date">Enter Date:</label>
           <input
