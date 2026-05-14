@@ -107,6 +107,34 @@ export const trackPageView = (pagePath) => {
   });
 };
 
+// ── Custom Event Tracking ──────────────────────────────────────────
+/**
+ * Track a custom user event (e.g. click, download, share).
+ */
+export const trackEvent = (eventName, eventData = {}) => {
+  const payload = {
+    userId: getUserId(),
+    eventName,
+    eventData,
+    page: typeof window !== 'undefined' ? window.location.pathname : null,
+    timestamp: new Date().toISOString(),
+  };
+
+  const trackUrl = `${API_URL}/api/analytics/event`;
+  console.log(`[Analytics] Tracking event: ${eventName}`, eventData);
+
+  fetch(trackUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-user-id': getUserId(),
+    },
+    body: JSON.stringify(payload),
+  }).catch((err) => {
+    console.warn('[Analytics] Event tracking failed:', err.message);
+  });
+};
+
 // ── Global Fetch Interceptor ────────────────────────────────────────
 const installFetchInterceptor = () => {
   if (typeof window === 'undefined') return;
@@ -145,6 +173,7 @@ export default {
   getUserId,
   getAnalyticsHeaders,
   trackPageView,
+  trackEvent
 };
 
 

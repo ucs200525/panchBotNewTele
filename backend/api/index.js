@@ -23,13 +23,14 @@ connectDB().catch(err => logger.error('Initial DB connect failed: ' + err.messag
 
 const app = express();
 
-// Middleware for parsing JSON requests
+// Middleware for parsing JSON and Form requests
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Analytics Tracking Middleware - MOVED TO TOP to capture everything
+app.use(excludeFromTracking(['/api/analytics', '/admin', '/analytics-dashboard.html']));
 
 // ── Ensure DB is ready before handling requests ─────────────────────
-// This prevents "buffering timed out" errors on serverless cold starts.
-// Instead of queries silently buffering and timing out after 10s,
-// this middleware awaits the connection first, then proceeds.
 app.use(async (req, res, next) => {
   try {
     await connectDB();
@@ -59,9 +60,6 @@ app.use(cors(corsOption)); // apply CORS middleware
 
 // Request Logger Middleware - logs all routes with structured JSON format
 app.use(requestLogger);
-
-// Analytics Tracking Middleware - track API usage (exclude admin/analytics endpoints)
-app.use(excludeFromTracking(['/api/analytics', '/admin', '/analytics-dashboard.html']));
 
 // Serve static files (for analytics dashboard)
 app.use(express.static(path.join(__dirname, '../public')));

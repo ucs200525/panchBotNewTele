@@ -95,6 +95,42 @@ async function resolveIPLocation(req) {
 // ── Analytics Tracking Middleware ────────────────────────────────────
 const trackApiRequest = async (req, res, next) => {
     const startTime = Date.now();
+    
+    // Capture request details immediately (before they might be modified or cleared)
+    const capturedBody = req.body && Object.keys(req.body).length > 0 ? JSON.parse(JSON.stringify(req.body)) : null;
+    const capturedQuery = req.query && Object.keys(req.query).length > 0 ? JSON.parse(JSON.stringify(req.query)) : null;
+
+    // Intercept response body
+    let responseBody = null;
+    
+    // Wrap res.json
+    const originalJson = res.json;
+    res.json = function(body) {
+        responseBody = body;
+        return originalJson.apply(res, arguments);
+    };
+
+    // Wrap res.send
+    const originalSend = res.send;
+    res.send = function(body) {
+        // If responseBody is already set (by res.json), we don't overwrite it
+        if (!responseBody && body) {
+            try {
+                if (typeof body === 'string') {
+                    try {
+                        responseBody = JSON.parse(body);
+                    } catch (e) {
+                        responseBody = body;
+                    }
+                } else {
+                    responseBody = body;
+                }
+            } catch (e) {
+                // ignore
+            }
+        }
+        return originalSend.apply(res, arguments);
+    };
 
     // Capture the finish event to log after response is sent
     res.on('finish', async () => {
@@ -121,14 +157,22 @@ const trackApiRequest = async (req, res, next) => {
                 responseTime: responseTime,
                 statusCode: res.statusCode,
                 success: res.statusCode < 400,
-                requestedCity: req.query.city || req.body?.city || null,
-                requestedDate: req.query.date || req.body?.date || null,
-                engineUsed: req.query.engine || 'unknown',
+                requestedCity: (capturedQuery && capturedQuery.city) || (capturedBody && capturedBody.city) || null,
+                requestedDate: (capturedQuery && capturedQuery.date) || (capturedBody && capturedBody.date) || null,
+                engineUsed: (capturedQuery && capturedQuery.engine) || 'unknown',
                 userLocation: userLocation,
                 referer: req.headers.referer || req.headers.referrer || null,
+                
+                // Detailed Info
+                queryParams: capturedQuery,
+                requestBody: capturedBody,
+                responseBody: responseBody,
+                requestHeaders: req.headers
             };
 
             // Save to DB asynchronously - don't block the response
+            // In serverless, we must await if we want to be 100% sure, but this is a middleware finish event
+            // so we'll try to save it. If it's Vercel, it might still terminate.
             ApiAnalytics.create(analyticsData).catch(err => {
                 console.error('Analytics Save Error:', err.message);
             });

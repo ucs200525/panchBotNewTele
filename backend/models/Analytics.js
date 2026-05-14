@@ -61,7 +61,13 @@ const apiAnalyticsSchema = new mongoose.Schema({
         index: true
     },
     userAgent: String,
-    referer: String
+    referer: String,
+    
+    // Detailed Request/Response Info (for debugging)
+    queryParams: mongoose.Schema.Types.Mixed,
+    requestBody: mongoose.Schema.Types.Mixed,
+    responseBody: mongoose.Schema.Types.Mixed,
+    requestHeaders: mongoose.Schema.Types.Mixed
 }, {
     timestamps: true
 });
@@ -107,6 +113,49 @@ const pageViewSchema = new mongoose.Schema({
 
 pageViewSchema.index({ userId: 1, timestamp: -1 });
 pageViewSchema.index({ page: 1, timestamp: -1 });
+
+// ── User Event Schema (for Shares, Downloads, Clicks) ────────────────
+const userEventSchema = new mongoose.Schema({
+    userId: {
+        type: String,
+        required: true,
+        index: true
+    },
+    eventName: {
+        type: String,
+        required: true,
+        index: true
+    },
+    eventData: mongoose.Schema.Types.Mixed,
+    page: String,
+    timestamp: {
+        type: Date,
+        default: Date.now,
+        index: true
+    },
+    userAgent: String,
+    ipAddress: String
+}, {
+    timestamps: true
+});
+
+userEventSchema.index({ userId: 1, timestamp: -1 });
+userEventSchema.index({ eventName: 1 });
+
+// ── User Metadata Schema (for Nicknames/Labels) ──────────────────────
+const userMetadataSchema = new mongoose.Schema({
+    userId: {
+        type: String,
+        required: true,
+        unique: true,
+        index: true
+    },
+    nickname: String,
+    notes: String,
+    isIgnored: { type: Boolean, default: false }
+}, {
+    timestamps: true
+});
 
 // ── Daily Summary Schema (for faster dashboard queries) ────────────
 const dailySummarySchema = new mongoose.Schema({
@@ -155,10 +204,14 @@ const dailySummarySchema = new mongoose.Schema({
 
 const ApiAnalytics = mongoose.model('ApiAnalytics', apiAnalyticsSchema);
 const PageView = mongoose.model('PageView', pageViewSchema);
+const UserEvent = mongoose.model('UserEvent', userEventSchema);
+const UserMetadata = mongoose.model('UserMetadata', userMetadataSchema);
 const DailySummary = mongoose.model('DailySummary', dailySummarySchema);
 
 module.exports = {
     ApiAnalytics,
     PageView,
+    UserEvent,
+    UserMetadata,
     DailySummary
 };

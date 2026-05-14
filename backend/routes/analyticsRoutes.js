@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { ApiAnalytics, PageView, DailySummary } = require('../models/Analytics');
+const { ApiAnalytics, PageView, DailySummary, UserEvent, UserMetadata } = require('../models/Analytics');
 const Log = require('../models/Log');
 
 // ── Max time for aggregation queries (prevents MongoDB timeout) ─────
@@ -64,7 +64,37 @@ router.post('/pageview', async (req, res) => {
     }
 });
 
-// ── Protect ALL remaining analytics routes with admin auth ──────────
+// POST: Track custom user event (Share, Download, Click)
+router.post('/event', async (req, res) => {
+    try {
+        const { eventName, eventData, userId, page } = req.body;
+        if (!userId || !eventName) return res.status(400).json({ error: 'Missing userId or eventName' });
+
+        const event = {
+            userId,
+            eventName,
+            eventData,
+            page: page || req.headers.referer || null,
+            ipAddress: req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress,
+            userAgent: req.headers['user-agent'],
+            timestamp: new Date()
+        };
+
+        // In serverless, we must await
+        try {
+            await UserEvent.create(event);
+        } catch (err) {
+            console.error('UserEvent Save Error:', err.message);
+        }
+
+        res.json({ ok: true });
+    } catch (error) {
+        console.error('Event Route Error:', error.message);
+        res.json({ ok: true }); // Silent fail
+    }
+});
+
+// Everything below this requires admin secret
 router.use(authenticateAdmin);
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -401,6 +431,14 @@ router.get('/stats/users', async (req, res) => {
             { $skip: skip },
             { $limit: limit },
             {
+                $lookup: {
+                    from: 'usermetadatas',
+                    localField: '_id',
+                    foreignField: 'userId',
+                    as: 'meta'
+                }
+            },
+            {
                 $project: {
                     userId: '$_id',
                     totalRequests: 1,
@@ -413,6 +451,7 @@ router.get('/stats/users', async (req, res) => {
                     lastIP: 1,
                     lastUserAgent: 1,
                     avgResponseTime: { $round: ['$avgResponseTime', 0] },
+                    nickname: { $arrayElemAt: ['$meta.nickname', 0] },
                     _id: 0
                 }
             }
@@ -447,12 +486,12 @@ router.get('/stats/users/:userId', async (req, res) => {
         const { userId } = req.params;
         const limit = parseInt(req.query.limit) || 100;
 
-        const [apiActivity, pageViews, summary] = await Promise.all([
+        const [apiActivity, pageViews, userEvents, summary] = await Promise.all([
             // Recent API calls
             ApiAnalytics.find({ userId })
                 .sort({ timestamp: -1 })
                 .limit(limit)
-                .select('endpoint method requestedCity requestedDate responseTime statusCode success timestamp userLocation ipAddress userAgent')
+                .select('endpoint method requestedCity requestedDate responseTime statusCode success timestamp userLocation ipAddress userAgent queryParams requestBody responseBody')
                 .lean()
                 .maxTimeMS(MAX_QUERY_MS),
             // Page views
@@ -460,6 +499,12 @@ router.get('/stats/users/:userId', async (req, res) => {
                 .sort({ timestamp: -1 })
                 .limit(limit)
                 .select('page timestamp ipAddress userLocation screenWidth screenHeight')
+                .lean()
+                .maxTimeMS(MAX_QUERY_MS),
+            // User Events (Shares, Downloads, etc.)
+            UserEvent.find({ userId })
+                .sort({ timestamp: -1 })
+                .limit(limit)
                 .lean()
                 .maxTimeMS(MAX_QUERY_MS),
             // Summary
@@ -486,7 +531,45 @@ router.get('/stats/users/:userId', async (req, res) => {
             summary: summary[0] || {},
             apiActivity,
             pageViews,
+            userEvents: userEvents || [],
+            metadata: await UserMetadata.findOne({ userId }).lean() || { userId, nickname: '' }
         });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// DELETE: Specific user and all their activity
+router.delete('/users/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const results = await Promise.all([
+            ApiAnalytics.deleteMany({ userId }),
+            PageView.deleteMany({ userId }),
+            UserEvent.deleteMany({ userId }),
+            UserMetadata.deleteOne({ userId })
+        ]);
+        
+        const deletedCount = results[0].deletedCount + results[1].deletedCount + results[2].deletedCount;
+        res.json({ message: `Deleted user ${userId} and ${deletedCount} records`, deletedCount });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// POST: Update user nickname
+router.post('/users/:userId/nickname', async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { nickname } = req.body;
+        
+        await UserMetadata.findOneAndUpdate(
+            { userId },
+            { nickname, userId },
+            { upsert: true, new: true }
+        );
+        
+        res.json({ success: true, nickname });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

@@ -1,5 +1,6 @@
 import React from 'react';
 import html2canvas from 'html2canvas';
+import { trackEvent } from '../utils/analytics';
 
 const TableScreenshot = ({ tableId, city }) => {
   const captureTable = async () => {
@@ -141,6 +142,8 @@ const TableScreenshot = ({ tableId, city }) => {
       link.href = img;
       link.download = `${city || 'Panchangam'}_${new Date().toISOString().split('T')[0]}.png`;
       link.click();
+      
+      trackEvent('DOWNLOAD_TABLE', { city, tableId });
     } catch (error) {
       console.error('Error downloading image:', error);
       alert('Failed to download image. Please try again.');
@@ -162,9 +165,12 @@ const TableScreenshot = ({ tableId, city }) => {
           title: `${city || 'Panchangam'} Table`,
           text: 'Check out this Panchang table!',
         });
+
+        trackEvent('SHARE_TABLE', { city, tableId, method: 'Native' });
       } else {
         alert('Sharing not supported. Downloading instead...');
         await handleDownload();
+        trackEvent('SHARE_TABLE', { city, tableId, method: 'Fallback Download' });
       }
     } catch (error) {
       if (error.name === 'AbortError') {
