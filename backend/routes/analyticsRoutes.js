@@ -390,6 +390,7 @@ router.get('/stats/users', async (req, res) => {
                     ipAddresses: { $addToSet: '$ipAddress' },
                     lastLocation: { $last: '$userLocation' },
                     lastIP: { $last: '$ipAddress' },
+                    lastUserAgent: { $last: '$userAgent' },
                     avgResponseTime: { $avg: '$responseTime' },
                 }
             },
@@ -407,6 +408,7 @@ router.get('/stats/users', async (req, res) => {
                     ipAddresses: 1,
                     lastLocation: 1,
                     lastIP: 1,
+                    lastUserAgent: 1,
                     avgResponseTime: { $round: ['$avgResponseTime', 0] },
                     _id: 0
                 }
@@ -447,7 +449,7 @@ router.get('/stats/users/:userId', async (req, res) => {
             ApiAnalytics.find({ userId })
                 .sort({ timestamp: -1 })
                 .limit(limit)
-                .select('endpoint method requestedCity requestedDate responseTime statusCode success timestamp userLocation ipAddress')
+                .select('endpoint method requestedCity requestedDate responseTime statusCode success timestamp userLocation ipAddress userAgent')
                 .lean()
                 .maxTimeMS(MAX_QUERY_MS),
             // Page views
@@ -522,4 +524,37 @@ router.get('/stats/trends', async (req, res) => {
     }
 });
 
+// GET: Live feed - last N seconds of activity (for real-time dashboard)
+router.get('/stats/live', async (req, res) => {
+    try {
+        const seconds = Math.min(parseInt(req.query.seconds) || 30, 300); // max 5 min
+        const since = new Date(Date.now() - seconds * 1000);
+
+        const [recentApi, recentPages] = await Promise.all([
+            ApiAnalytics.find({ timestamp: { $gte: since } })
+                .sort({ timestamp: -1 })
+                .limit(50)
+                .select('userId endpoint method requestedCity statusCode responseTime timestamp ipAddress userAgent userLocation')
+                .lean()
+                .maxTimeMS(MAX_QUERY_MS),
+            PageView.find({ timestamp: { $gte: since } })
+                .sort({ timestamp: -1 })
+                .limit(50)
+                .select('userId page timestamp ipAddress screenWidth screenHeight')
+                .lean()
+                .maxTimeMS(MAX_QUERY_MS)
+        ]);
+
+        res.json({
+            apiRequests: recentApi,
+            pageViews: recentPages,
+            since: since.toISOString(),
+            count: recentApi.length + recentPages.length,
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 module.exports = router;
+

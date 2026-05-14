@@ -18,13 +18,26 @@ const { excludeFromTracking } = require('../middleware/analytics'); // Import An
 const path = require('path');
 const connectDB = require('../utils/db'); // Import DB Connection Helper
 
-// Connect to Database
-connectDB();
+// Start initial DB connection (don't await - it runs in background)
+connectDB().catch(err => logger.error('Initial DB connect failed: ' + err.message));
 
 const app = express();
 
 // Middleware for parsing JSON requests
 app.use(express.json());
+
+// ── Ensure DB is ready before handling requests ─────────────────────
+// This prevents "buffering timed out" errors on serverless cold starts.
+// Instead of queries silently buffering and timing out after 10s,
+// this middleware awaits the connection first, then proceeds.
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    res.status(503).json({ error: 'Database connection unavailable. Please retry in a few seconds.' });
+  }
+});
 
 
 const allowedOrigins = [

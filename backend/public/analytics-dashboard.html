@@ -72,12 +72,14 @@
 
     <div class="toolbar">
         <button class="btn btn-primary" onclick="refreshAll()">🔄 Refresh</button>
+        <button class="btn" id="live-btn" onclick="toggleLive()" style="background:#064e3b;color:#6ee7b7">🔴 Live Mode: OFF</button>
         <span id="space-info" style="color:#94a3b8;font-size:0.85rem">Loading...</span>
     </div>
 
     <!-- Tabs -->
     <div class="tabs">
         <button class="tab active" onclick="switchTab('overview',this)">📈 Overview</button>
+        <button class="tab" onclick="switchTab('live',this)">🔴 Live Feed</button>
         <button class="tab" onclick="switchTab('users',this)">👥 Users</button>
         <button class="tab" onclick="switchTab('pages',this)">📄 Pages</button>
         <button class="tab" onclick="switchTab('cities',this)">🌍 Cities & Geo</button>
@@ -98,12 +100,21 @@
         </div>
     </div>
 
+    <!-- LIVE FEED TAB -->
+    <div id="tab-live" class="tab-content">
+        <div class="section">
+            <h2 class="section-title"><span id="live-dot" style="color:#ef4444;animation:blink 1s infinite">●</span> Live Activity Feed <span id="live-status" style="font-size:0.85rem;color:#94a3b8;font-weight:normal">(paused)</span></h2>
+            <p style="color:#64748b;margin-bottom:1rem;font-size:0.85rem">Shows all API requests and page views in the last 30 seconds. Auto-refreshes every 5s when Live Mode is ON.</p>
+            <table><thead><tr><th>Time</th><th>Type</th><th>User</th><th>Action</th><th>City</th><th>Status</th><th>Device</th></tr></thead><tbody id="tb-live"></tbody></table>
+        </div>
+    </div>
+
     <!-- USERS TAB -->
     <div id="tab-users" class="tab-content">
         <div class="section">
             <h2 class="section-title">👥 All Users (grouped by User ID)</h2>
             <p style="color:#64748b;margin-bottom:1rem;font-size:0.85rem">Click a user row to see their full activity log. <br><span style="color:#f59e0b">⚠️ Location is based on IP/ISP — it shows where the ISP server is (e.g. Chennai), not the user's exact physical city (e.g. Vijayawada). This is a known limitation of IP geolocation.</span></p>
-            <table><thead><tr><th>User ID</th><th>IP</th><th>Location (ISP ≈)</th><th>Requests</th><th>Cities Searched</th><th>First Seen</th><th>Last Seen</th></tr></thead><tbody id="tb-users"></tbody></table>
+            <table><thead><tr><th>User ID</th><th>IP</th><th>Location (ISP ≈)</th><th>Device</th><th>Requests</th><th>Cities Searched</th><th>First Seen</th><th>Last Seen</th></tr></thead><tbody id="tb-users"></tbody></table>
             <div class="toolbar" style="margin-top:1rem;justify-content:center">
                 <button class="btn btn-primary" id="btn-prev-users" onclick="loadUsers(userPage-1)">← Prev</button>
                 <span id="user-page-info" style="color:#94a3b8">Page 1</span>
@@ -184,26 +195,54 @@ function switchTab(id, el) {
     else if (id === 'cities') { loadCities(); loadGeo(); }
     else if (id === 'logs') loadLogs();
     else if (id === 'overview') loadOverview();
-}
-
-async function api(path, method = 'GET') {
-    const opts = { method, headers: { 'x-admin-secret': SECRET } };
-    const res = await fetch(API + '/api/analytics' + path, opts);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return res.json();
+    else if (id === 'live') loadLive();
 }
 
 function login() {
     SECRET = document.getElementById('admin-pw').value;
     if (!SECRET) { document.getElementById('auth-err').textContent = 'Enter password'; return; }
+    document.getElementById('auth-err').textContent = 'Connecting to database...';
+    document.getElementById('auth-err').style.color = '#94a3b8';
     api('/stats/overall').then(() => {
         document.getElementById('auth-overlay').classList.add('hidden');
         document.getElementById('main').style.display = 'block';
         refreshAll();
-    }).catch(() => { document.getElementById('auth-err').textContent = 'Invalid password'; SECRET = ''; });
+    }).catch(() => { 
+        document.getElementById('auth-err').textContent = 'Invalid password or DB unavailable. Retry.'; 
+        document.getElementById('auth-err').style.color = '#f87171';
+        SECRET = ''; 
+    });
 }
 
-function refreshAll() { loadOverview(); loadSpace(); }
+function refreshAll() { 
+    document.getElementById('space-info').textContent = '⏳ Loading...';
+    loadOverview(); 
+    loadSpace(); 
+}
+
+// API helper with retry for cold-start
+async function api(path, method = 'GET', retries = 2) {
+    const opts = { method, headers: { 'x-admin-secret': SECRET } };
+    try {
+        const res = await fetch(API + '/api/analytics' + path, opts);
+        if (!res.ok) {
+            const body = await res.json().catch(() => ({}));
+            // If it's a DB timeout (503), retry
+            if (res.status === 503 && retries > 0) {
+                await new Promise(r => setTimeout(r, 2000));
+                return api(path, method, retries - 1);
+            }
+            throw new Error(body.error || `HTTP ${res.status}`);
+        }
+        return res.json();
+    } catch(e) {
+        if (retries > 0 && (e.message.includes('timeout') || e.message.includes('buffering') || e.message.includes('503') || e.message.includes('Failed to fetch'))) {
+            await new Promise(r => setTimeout(r, 2000));
+            return api(path, method, retries - 1);
+        }
+        throw e;
+    }
+}
 
 async function loadSpace() {
     try {
@@ -257,16 +296,18 @@ async function loadUsers(page = 1) {
             const cities = (u.cities || []).filter(Boolean).join(', ') || '—';
             const uid = u.userId || 'unknown';
             const short = uid.length > 12 ? uid.substring(0, 12) + '…' : uid;
+            const dev = parseDevice(u.lastUserAgent || '');
             tb.innerHTML += `<tr onclick="toggleUserDetail('${uid}',this)" style="cursor:pointer">
                 <td><code>${short}</code></td>
                 <td><code>${u.lastIP || '—'}</code></td>
                 <td>${loc}</td>
+                <td>${dev}</td>
                 <td>${u.totalRequests}</td>
                 <td>${cities}</td>
                 <td>${fmtDate(u.firstSeen)}</td>
                 <td>${fmtDate(u.lastSeen)}</td>
             </tr>
-            <tr class="user-detail-row" id="detail-${uid}"><td colspan="7" class="user-detail-cell"><div class="detail-grid"><div class="detail-list" id="detail-api-${uid}">Loading...</div><div class="detail-list" id="detail-pv-${uid}"></div></div></td></tr>`;
+            <tr class="user-detail-row" id="detail-${uid}"><td colspan="8" class="user-detail-cell"><div class="detail-grid"><div class="detail-list" id="detail-api-${uid}">Loading...</div><div class="detail-list" id="detail-pv-${uid}"></div></div></td></tr>`;
         });
         const p = d.pagination || {};
         document.getElementById('user-page-info').textContent = `Page ${p.page || 1} of ${p.totalPages || 1} (${p.totalUsers || 0} users)`;
@@ -287,17 +328,66 @@ async function toggleUserDetail(userId, row) {
         const d = await api(`/stats/users/${userId}?limit=50`);
         const apiDiv = document.getElementById('detail-api-' + userId);
         const pvDiv = document.getElementById('detail-pv-' + userId);
+        const s = d.summary || {};
 
-        apiDiv.innerHTML = '<strong>API Activity</strong><table><thead><tr><th>Time</th><th>Endpoint</th><th>City</th><th>Status</th><th>ms</th></tr></thead><tbody>' +
-            (d.apiActivity || []).map(a =>
-                `<tr><td>${fmtTime(a.timestamp)}</td><td>${a.endpoint}</td><td>${a.requestedCity||'—'}</td><td>${a.statusCode}</td><td>${a.responseTime}</td></tr>`
-            ).join('') + '</tbody></table>';
+        // Detect device & browser from recent activity
+        const ua = (d.apiActivity && d.apiActivity[0]?.userAgent) || '';
+        const device = parseDevice(ua);
+        const browser = parseBrowser(ua);
+        const ips = (s.ips || []).filter(Boolean);
+        const sessionDur = s.firstSeen && s.lastSeen ? timeDiff(s.firstSeen, s.lastSeen) : '—';
+
+        // User summary card
+        const summaryHtml = `<div style="display:flex;gap:1.5rem;flex-wrap:wrap;margin-bottom:1rem;padding:0.8rem;background:#1e293b;border-radius:8px;border:1px solid #334155">
+            <div>📱 <strong>Device:</strong> ${device}</div>
+            <div>🌐 <strong>Browser:</strong> ${browser}</div>
+            <div>🔗 <strong>IPs:</strong> ${ips.slice(0,3).map(ip=>'<code>'+ip+'</code>').join(', ')}${ips.length>3?' +more':''}</div>
+            <div>⏱️ <strong>Active for:</strong> ${sessionDur}</div>
+            <div>📊 <strong>Total API calls:</strong> ${s.totalRequests || 0}</div>
+        </div>`;
+
+        apiDiv.innerHTML = summaryHtml + '<strong>API Activity</strong><table><thead><tr><th>Time</th><th>Endpoint</th><th>City</th><th>Status</th><th>ms</th></tr></thead><tbody>' +
+            (d.apiActivity || []).map(a => {
+                const badge = a.statusCode >= 500 ? 'badge-error' : a.statusCode >= 400 ? 'badge-warn' : 'badge-good';
+                const label = a.statusCode >= 500 ? 'ERROR' : a.statusCode >= 400 ? 'WARN' : 'OK';
+                return `<tr><td>${fmtTime(a.timestamp)}</td><td>${a.endpoint}</td><td>${a.requestedCity||'—'}</td><td><span class="badge ${badge}">${label} ${a.statusCode}</span></td><td>${a.responseTime}</td></tr>`;
+            }).join('') + '</tbody></table>';
 
         pvDiv.innerHTML = '<strong>Page Views</strong><table><thead><tr><th>Time</th><th>Page</th><th>Screen</th></tr></thead><tbody>' +
             (d.pageViews || []).map(p =>
                 `<tr><td>${fmtTime(p.timestamp)}</td><td>${p.page}</td><td>${p.screenWidth||'?'}x${p.screenHeight||'?'}</td></tr>`
             ).join('') + '</tbody></table>';
     } catch(e) { document.getElementById('detail-api-' + userId).textContent = 'Error loading details'; }
+}
+
+function parseDevice(ua) {
+    if (!ua) return 'Unknown';
+    if (/iPad/i.test(ua)) return '📱 iPad';
+    if (/iPhone/i.test(ua)) return '📱 iPhone';
+    if (/Android.*Mobile/i.test(ua)) return '📱 Android Phone';
+    if (/Android/i.test(ua)) return '📱 Android Tablet';
+    if (/Windows/i.test(ua)) return '💻 Windows PC';
+    if (/Macintosh/i.test(ua)) return '💻 Mac';
+    if (/Linux/i.test(ua)) return '💻 Linux';
+    return '❓ Other';
+}
+
+function parseBrowser(ua) {
+    if (!ua) return 'Unknown';
+    if (/Edg\//i.test(ua)) return 'Edge';
+    if (/Chrome\//i.test(ua) && !/Chromium/i.test(ua)) return 'Chrome';
+    if (/Firefox\//i.test(ua)) return 'Firefox';
+    if (/Safari\//i.test(ua) && !/Chrome/i.test(ua)) return 'Safari';
+    if (/Opera|OPR/i.test(ua)) return 'Opera';
+    return 'Other';
+}
+
+function timeDiff(start, end) {
+    const ms = new Date(end) - new Date(start);
+    if (ms < 60000) return Math.round(ms/1000) + 's';
+    if (ms < 3600000) return Math.round(ms/60000) + ' min';
+    if (ms < 86400000) return (ms/3600000).toFixed(1) + ' hrs';
+    return Math.round(ms/86400000) + ' days';
 }
 
 async function loadPages() {
@@ -368,7 +458,78 @@ async function doCleanupAll() {
 function fmtDate(d) { if(!d) return '—'; return new Date(d).toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'}); }
 function fmtTime(d) { if(!d) return '—'; return new Date(d).toLocaleString('en-IN', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hour12:true}); }
 
-setInterval(() => { if(SECRET) { loadSpace(); } }, 60000);
+// Live mode
+let liveMode = false;
+let liveInterval = null;
+
+function toggleLive() {
+    liveMode = !liveMode;
+    const btn = document.getElementById('live-btn');
+    const status = document.getElementById('live-status');
+    if (liveMode) {
+        btn.style.background = '#dc2626';
+        btn.style.color = 'white';
+        btn.textContent = '🔴 Live Mode: ON';
+        status.textContent = '(updating every 5s)';
+        status.style.color = '#6ee7b7';
+        loadLive();
+        liveInterval = setInterval(() => {
+            loadLive();
+            loadSpace();
+        }, 5000);
+    } else {
+        btn.style.background = '#064e3b';
+        btn.style.color = '#6ee7b7';
+        btn.textContent = '🔴 Live Mode: OFF';
+        status.textContent = '(paused)';
+        status.style.color = '#94a3b8';
+        if (liveInterval) { clearInterval(liveInterval); liveInterval = null; }
+    }
+}
+
+async function loadLive() {
+    try {
+        const d = await api('/stats/live?seconds=30');
+        const tb = document.getElementById('tb-live');
+        
+        // Merge and sort all events by time
+        const events = [];
+        (d.apiRequests || []).forEach(a => {
+            const badge = a.statusCode >= 500 ? 'badge-error' : a.statusCode >= 400 ? 'badge-warn' : 'badge-good';
+            const label = a.statusCode >= 500 ? 'ERROR' : a.statusCode >= 400 ? 'WARN' : 'OK';
+            const uid = (a.userId || 'unknown').substring(0, 8);
+            const dev = parseDevice(a.userAgent || '');
+            events.push({
+                time: a.timestamp,
+                html: `<tr><td>${fmtLive(a.timestamp)}</td><td><span class="badge badge-info">API</span></td><td><code>${uid}</code></td><td>${a.method} ${a.endpoint}</td><td>${a.requestedCity||'—'}</td><td><span class="badge ${badge}">${label} ${a.statusCode}</span></td><td>${dev}</td></tr>`
+            });
+        });
+        (d.pageViews || []).forEach(p => {
+            const uid = (p.userId || 'unknown').substring(0, 8);
+            events.push({
+                time: p.timestamp,
+                html: `<tr><td>${fmtLive(p.timestamp)}</td><td><span class="badge badge-good">PAGE</span></td><td><code>${uid}</code></td><td>Visited ${p.page}</td><td>—</td><td>—</td><td>${p.screenWidth||'?'}x${p.screenHeight||'?'}</td></tr>`
+            });
+        });
+        
+        events.sort((a, b) => new Date(b.time) - new Date(a.time));
+        tb.innerHTML = events.map(e => e.html).join('') || '<tr><td colspan="7" style="text-align:center;color:#64748b">No activity in the last 30 seconds</td></tr>';
+    } catch(e) { console.error('Live feed error:', e); }
+}
+
+function fmtLive(d) {
+    if (!d) return '—';
+    const dt = new Date(d);
+    const now = new Date();
+    const diff = Math.round((now - dt) / 1000);
+    if (diff < 5) return '<span style="color:#6ee7b7">just now</span>';
+    if (diff < 60) return `<span style="color:#fbbf24">${diff}s ago</span>`;
+    return fmtTime(d);
+}
+
+// Background refresh (slower, for non-live)
+setInterval(() => { if(SECRET && !liveMode) { loadSpace(); } }, 60000);
 </script>
+<style>@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }</style>
 </body>
 </html>
