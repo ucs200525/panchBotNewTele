@@ -50,14 +50,17 @@ router.post('/pageview', async (req, res) => {
             timestamp: req.body.timestamp ? new Date(req.body.timestamp) : new Date(),
         };
 
-        // Fire and forget
-        PageView.create(pageView).catch(err => {
+        // In serverless (Vercel), we MUST await the save or the function might kill the process before it finishes
+        try {
+            await PageView.create(pageView);
+        } catch (err) {
             console.error('PageView Save Error:', err.message);
-        });
-
+        }
+        
         res.json({ ok: true });
     } catch (error) {
-        res.json({ ok: true }); // Never fail on analytics
+        console.error('Analytics Route Error:', error.message);
+        res.json({ ok: true }); // Never fail on analytics for the user
     }
 });
 

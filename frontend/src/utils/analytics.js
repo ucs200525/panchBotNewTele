@@ -6,16 +6,39 @@
  * Tracks frontend page visits by sending lightweight events to the backend.
  */
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+// Helper to get the API URL and ensure no trailing slash
+const getApiUrl = () => {
+  let url = process.env.REACT_APP_API_URL || '';
+  
+  if (!url) {
+    if (typeof window !== 'undefined') {
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        url = 'http://localhost:4000';
+      } else {
+        // In production, we fallback to relative but warn because it might fail if backend is on different domain
+        url = window.location.origin;
+        console.warn('[Analytics] REACT_APP_API_URL is NOT set. Analytics may fail if backend is on a different domain.');
+      }
+    } else {
+      url = 'http://localhost:4000';
+    }
+  }
+  
+  const cleanUrl = url.replace(/\/$/, '');
+  return cleanUrl;
+};
+
+const API_URL = getApiUrl();
 
 // ── User ID Management ──────────────────────────────────────────────
 const USER_ID_KEY = 'panchangam_user_id';
 
 /**
  * Get or create a persistent user ID.
- * This survives page refreshes but not clearing localStorage.
  */
 export const getUserId = () => {
+  if (typeof window === 'undefined') return 'server';
+  
   let userId = localStorage.getItem(USER_ID_KEY);
   if (!userId) {
     userId = generateUUID();
@@ -25,14 +48,12 @@ export const getUserId = () => {
 };
 
 /**
- * Generate a UUID v4 (browser-compatible, no crypto dependency needed)
+ * Generate a UUID v4
  */
 function generateUUID() {
-  // Use crypto.randomUUID if available (modern browsers)
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
     return crypto.randomUUID();
   }
-  // Fallback for older browsers
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
     const r = (Math.random() * 16) | 0;
     const v = c === 'x' ? r : (r & 0x3) | 0x8;
@@ -41,10 +62,6 @@ function generateUUID() {
 }
 
 // ── API Request Headers ─────────────────────────────────────────────
-/**
- * Returns standard headers that include the user ID.
- * Use this when making fetch() calls.
- */
 export const getAnalyticsHeaders = () => {
   return {
     'x-user-id': getUserId(),
@@ -56,12 +73,8 @@ let lastTrackedPage = null;
 
 /**
  * Track a frontend page view.
- * Call this on route changes (e.g., inside useEffect in App.js).
- * 
- * @param {string} pagePath - The current route path (e.g., "/panchaka-swiss")
  */
 export const trackPageView = (pagePath) => {
-  // Avoid duplicate tracking of the same page
   if (pagePath === lastTrackedPage) return;
   lastTrackedPage = pagePath;
 
@@ -69,55 +82,54 @@ export const trackPageView = (pagePath) => {
     userId: getUserId(),
     page: pagePath,
     timestamp: new Date().toISOString(),
-    screenWidth: window.innerWidth,
-    screenHeight: window.innerHeight,
-    referrer: document.referrer || null,
-    userAgent: navigator.userAgent,
+    screenWidth: typeof window !== 'undefined' ? window.innerWidth : 0,
+    screenHeight: typeof window !== 'undefined' ? window.innerHeight : 0,
+    referrer: typeof document !== 'undefined' ? document.referrer : null,
+    userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
   };
 
-  // Fire and forget - don't block the user
-  fetch(`${API_URL}/api/analytics/pageview`, {
+  const trackUrl = `${API_URL}/api/analytics/pageview`;
+  
+  // Debug log for production (visible in browser console)
+  console.log(`[Analytics] Tracking pageview: ${pagePath} to ${trackUrl}`);
+
+  fetch(trackUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'x-user-id': getUserId(),
     },
     body: JSON.stringify(payload),
+  }).then(res => {
+    if (!res.ok) console.warn(`[Analytics] Pageview tracking failed with status: ${res.status}`);
   }).catch((err) => {
-    // Silently fail - analytics should never break the app
-    console.debug('Analytics pageview error (non-blocking):', err.message);
+    console.warn('[Analytics] Pageview tracking failed:', err.message);
   });
 };
 
-export default {
-  getUserId,
-  getAnalyticsHeaders,
-  trackPageView,
-};
-
 // ── Global Fetch Interceptor ────────────────────────────────────────
-/**
- * Monkey-patches window.fetch to automatically inject x-user-id header
- * into every request that goes to our API backend.
- * This means we DON'T need to modify every individual fetch() call.
- */
 const installFetchInterceptor = () => {
+  if (typeof window === 'undefined') return;
+  
   const originalFetch = window.fetch;
   window.fetch = function (url, options = {}) {
-    // Only inject for our own API
     const urlStr = typeof url === 'string' ? url : url?.url || '';
-    const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
-
-    if (urlStr.startsWith(apiUrl) || urlStr.startsWith('/api')) {
+    
+    // Inject header for requests to our API
+    // We check for API_URL or relative /api calls
+    const isOurApi = (API_URL && urlStr.startsWith(API_URL)) || urlStr.startsWith('/api') || urlStr.includes('/api/');
+    
+    if (isOurApi) {
       options.headers = options.headers || {};
-      // Support both plain object and Headers instance
+      const uid = getUserId();
+      
       if (options.headers instanceof Headers) {
         if (!options.headers.has('x-user-id')) {
-          options.headers.set('x-user-id', getUserId());
+          options.headers.set('x-user-id', uid);
         }
       } else {
         if (!options.headers['x-user-id']) {
-          options.headers['x-user-id'] = getUserId();
+          options.headers['x-user-id'] = uid;
         }
       }
     }
@@ -126,6 +138,14 @@ const installFetchInterceptor = () => {
   };
 };
 
-// Install interceptor immediately when this module loads
+// Install
 installFetchInterceptor();
+
+export default {
+  getUserId,
+  getAnalyticsHeaders,
+  trackPageView,
+};
+
+
 
