@@ -6,53 +6,90 @@
     <title>Panchangam Analytics Dashboard</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
-        .container { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
-        h1 { text-align: center; margin-bottom: 1.5rem; font-size: 2rem; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
-        .stat-card { background: #1e293b; border-radius: 12px; padding: 1.2rem; border: 1px solid #334155; }
-        .stat-label { font-size: 0.8rem; color: #94a3b8; margin-bottom: 0.3rem; }
-        .stat-value { font-size: 1.8rem; font-weight: 700; color: #38bdf8; }
-        .section { background: #1e293b; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; border: 1px solid #334155; }
-        .section-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 1rem; color: #f1f5f9; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-        th, td { padding: 0.6rem 0.8rem; text-align: left; border-bottom: 1px solid #334155; }
-        th { background: #0f172a; color: #94a3b8; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; position: sticky; top: 0; }
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; line-height: 1.5; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 1rem; }
+        h1 { text-align: center; margin-bottom: 1.5rem; font-size: clamp(1.5rem, 5vw, 2.2rem); background: linear-gradient(135deg, #60a5fa, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; padding-top: 0.5rem; }
+        
+        /* Stats Grid */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem; margin-bottom: 1.5rem; }
+        .stat-card { background: #1e293b; border-radius: 12px; padding: 1rem; border: 1px solid #334155; display: flex; flex-direction: column; justify-content: center; }
+        .stat-label { font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.25rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        .stat-value { font-size: 1.5rem; font-weight: 800; color: #38bdf8; word-break: break-all; }
+        
+        .section { background: #1e293b; border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem; border: 1px solid #334155; overflow: hidden; }
+        .section-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; color: #f1f5f9; display: flex; align-items: center; gap: 0.5rem; }
+        
+        /* Tables & Responsiveness */
+        .table-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 0.5rem; border-radius: 8px; border: 1px solid #334155; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 600px; }
+        #tab-live table, #tab-users table { min-width: 800px; } /* These need more space */
+        
+        th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid #334155; }
+        th { background: #111827; color: #94a3b8; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; position: sticky; top: 0; white-space: nowrap; }
         tr:hover { background: #334155; }
-        .badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600; }
-        .badge-good { background: #064e3b; color: #6ee7b7; }
-        .badge-warn { background: #78350f; color: #fbbf24; }
-        .badge-error { background: #7f1d1d; color: #fca5a5; }
-        .badge-info { background: #1e3a5f; color: #7dd3fc; }
-        .tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
-        .tab { background: #1e293b; color: #94a3b8; padding: 0.6rem 1.2rem; border: 1px solid #334155; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-        .tab.active { background: #3b82f6; color: white; border-color: #3b82f6; }
-        .tab-content { display: none; }
+        
+        /* UI Components */
+        .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.7rem; font-weight: 700; white-space: nowrap; }
+        .badge-good { background: #064e3b; color: #6ee7b7; border: 1px solid #065f46; }
+        .badge-warn { background: #78350f; color: #fbbf24; border: 1px solid #92400e; }
+        .badge-error { background: #7f1d1d; color: #fca5a5; border: 1px solid #991b1b; }
+        .badge-info { background: #1e3a8a; color: #93c5fd; border: 1px solid #1e40af; }
+        
+        .tabs { display: flex; gap: 0.4rem; margin-bottom: 1.5rem; overflow-x: auto; padding-bottom: 0.5rem; scrollbar-width: none; -ms-overflow-style: none; }
+        .tabs::-webkit-scrollbar { display: none; }
+        .tab { background: #1e293b; color: #94a3b8; padding: 0.6rem 1rem; border: 1px solid #334155; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; font-size: 0.8rem; }
+        .tab.active { background: #3b82f6; color: white; border-color: #2563eb; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        
+        .tab-content { display: none; animation: fadeIn 0.3s ease-out; }
         .tab-content.active { display: block; }
-        .btn { padding: 0.5rem 1rem; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.85rem; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .btn { padding: 0.6rem 1.2rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.4rem; }
         .btn-primary { background: #3b82f6; color: white; }
-        .btn-danger { background: #dc2626; color: white; }
-        .btn-warn { background: #f59e0b; color: white; }
-        .btn:hover { opacity: 0.85; transform: translateY(-1px); }
-        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-        .toolbar { display: flex; gap: 0.8rem; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
-        .auth-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn:hover { opacity: 0.9; transform: scale(1.02); }
+        .btn:active { transform: scale(0.98); }
+        
+        .toolbar { display: flex; gap: 0.75rem; margin-bottom: 1.25rem; flex-wrap: wrap; align-items: center; }
+        
+        /* Auth Overlay */
+        .auth-overlay { position: fixed; inset: 0; background: #020617; display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1rem; }
         .auth-overlay.hidden { display: none; }
-        .auth-box { background: #1e293b; padding: 2rem; border-radius: 16px; max-width: 380px; width: 90%; text-align: center; border: 1px solid #334155; }
-        .auth-box h2 { margin-bottom: 1rem; color: #f1f5f9; }
-        .auth-box input { width: 100%; padding: 0.7rem; border: 2px solid #334155; border-radius: 8px; font-size: 1rem; margin-bottom: 0.8rem; background: #0f172a; color: #e2e8f0; }
-        .auth-box .error { color: #f87171; margin-top: 0.5rem; font-size: 0.85rem; }
+        .auth-box { background: #1e293b; padding: 2rem; border-radius: 20px; max-width: 400px; width: 100%; text-align: center; border: 1px solid #334155; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+        .auth-box input { width: 100%; padding: 0.8rem 1rem; border: 2px solid #334155; border-radius: 10px; font-size: 1rem; margin-bottom: 1rem; background: #0f172a; color: white; outline: none; transition: border-color 0.2s; }
+        .auth-box input:focus { border-color: #3b82f6; }
+        
+        /* User Details */
         .user-detail-row { display: none; }
         .user-detail-row.open { display: table-row; }
-        .user-detail-cell { padding: 1rem; background: #0f172a; }
-        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-        .detail-list { max-height: 250px; overflow-y: auto; font-size: 0.8rem; }
-        .detail-list table { font-size: 0.8rem; }
-        .clickable { cursor: pointer; color: #38bdf8; text-decoration: underline; }
-        code { font-size: 0.8rem; color: #7dd3fc; background: #0f172a; padding: 0.1rem 0.3rem; border-radius: 3px; }
-        .cleanup-bar { background: #1c1917; border: 1px solid #78350f; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; display: flex; gap: 0.8rem; flex-wrap: wrap; align-items: center; }
-        .cleanup-bar span { color: #fbbf24; font-weight: 600; font-size: 0.85rem; }
-        @media (max-width: 768px) { .detail-grid { grid-template-columns: 1fr; } .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+        .user-detail-cell { padding: 0; background: #0f172a; }
+        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; padding: 1.5rem; }
+        .detail-list { max-height: 350px; overflow-y: auto; background: #1e293b; border-radius: 10px; padding: 0.5rem; border: 1px solid #334155; }
+        
+        code { font-family: 'Consolas', 'Monaco', monospace; font-size: 0.75rem; color: #7dd3fc; background: #1e293b; padding: 0.15rem 0.4rem; border-radius: 4px; border: 1px solid #334155; }
+        
+        /* Utilities */
+        .text-muted { color: #64748b; font-size: 0.8rem; }
+        .text-orange { color: #f59e0b; }
+        
+        /* Media Queries */
+        @media (max-width: 1024px) {
+            .detail-grid { grid-template-columns: 1fr; }
+        }
+        
+        @media (max-width: 640px) {
+            .container { padding: 0.75rem; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
+            .stat-value { font-size: 1.25rem; }
+            .section { padding: 1rem; }
+            .toolbar { justify-content: space-between; }
+            .toolbar .btn { flex: 1; justify-content: center; }
+            #space-info { width: 100%; text-align: center; }
+        }
+        
+        @media (max-width: 400px) {
+            .stats-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -92,11 +129,15 @@
         <div class="stats-grid" id="stats-grid"></div>
         <div class="section">
             <h2 class="section-title">🔥 Top Endpoints</h2>
-            <table><thead><tr><th>Endpoint</th><th>Requests</th><th>Avg Response</th><th>Error %</th></tr></thead><tbody id="tb-endpoints"></tbody></table>
+            <div class="table-wrapper">
+                <table><thead><tr><th>Endpoint</th><th>Requests</th><th>Avg Response</th><th>Error %</th></tr></thead><tbody id="tb-endpoints"></tbody></table>
+            </div>
         </div>
         <div class="section">
             <h2 class="section-title">⚡ Engine Usage</h2>
-            <table><thead><tr><th>Engine</th><th>Count</th><th>Avg Response</th></tr></thead><tbody id="tb-engines"></tbody></table>
+            <div class="table-wrapper">
+                <table><thead><tr><th>Engine</th><th>Count</th><th>Avg Response</th></tr></thead><tbody id="tb-engines"></tbody></table>
+            </div>
         </div>
     </div>
 
@@ -105,7 +146,9 @@
         <div class="section">
             <h2 class="section-title"><span id="live-dot" style="color:#ef4444;animation:blink 1s infinite">●</span> Live Activity Feed <span id="live-status" style="font-size:0.85rem;color:#94a3b8;font-weight:normal">(paused)</span></h2>
             <p style="color:#64748b;margin-bottom:1rem;font-size:0.85rem">Shows all API requests and page views in the last 30 seconds. Auto-refreshes every 5s when Live Mode is ON.</p>
-            <table><thead><tr><th>Time</th><th>Type</th><th>User</th><th>Action</th><th>City</th><th>Status</th><th>Device</th></tr></thead><tbody id="tb-live"></tbody></table>
+            <div class="table-wrapper">
+                <table><thead><tr><th>Time</th><th>Type</th><th>User</th><th>Action</th><th>City</th><th>Status</th><th>Device</th></tr></thead><tbody id="tb-live"></tbody></table>
+            </div>
         </div>
     </div>
 
@@ -114,7 +157,9 @@
         <div class="section">
             <h2 class="section-title">👥 All Users (grouped by User ID)</h2>
             <p style="color:#64748b;margin-bottom:1rem;font-size:0.85rem">Click a user row to see their full activity log. <br><span style="color:#f59e0b">⚠️ Location is based on IP/ISP — it shows where the ISP server is (e.g. Chennai), not the user's exact physical city (e.g. Vijayawada). This is a known limitation of IP geolocation.</span></p>
-            <table><thead><tr><th>User ID</th><th>IP</th><th>Location (ISP ≈)</th><th>Device</th><th>Requests</th><th>Cities Searched</th><th>First Seen</th><th>Last Seen</th></tr></thead><tbody id="tb-users"></tbody></table>
+            <div class="table-wrapper">
+                <table><thead><tr><th>User ID</th><th>IP</th><th>Location (ISP ≈)</th><th>Device</th><th>Requests</th><th>Cities Searched</th><th>First Seen</th><th>Last Seen</th></tr></thead><tbody id="tb-users"></tbody></table>
+            </div>
             <div class="toolbar" style="margin-top:1rem;justify-content:center">
                 <button class="btn btn-primary" id="btn-prev-users" onclick="loadUsers(userPage-1)">← Prev</button>
                 <span id="user-page-info" style="color:#94a3b8">Page 1</span>
@@ -127,7 +172,9 @@
     <div id="tab-pages" class="tab-content">
         <div class="section">
             <h2 class="section-title">📄 Frontend Pages Visited</h2>
-            <table><thead><tr><th>Page</th><th>Views</th><th>Unique Users</th></tr></thead><tbody id="tb-pages"></tbody></table>
+            <div class="table-wrapper">
+                <table><thead><tr><th>Page</th><th>Views</th><th>Unique Users</th></tr></thead><tbody id="tb-pages"></tbody></table>
+            </div>
         </div>
     </div>
 
@@ -135,11 +182,15 @@
     <div id="tab-cities" class="tab-content">
         <div class="section">
             <h2 class="section-title">🌍 Most Requested Cities (Panchang)</h2>
-            <table><thead><tr><th>#</th><th>City</th><th>Requests</th><th>Unique Users</th></tr></thead><tbody id="tb-cities"></tbody></table>
+            <div class="table-wrapper">
+                <table><thead><tr><th>#</th><th>City</th><th>Requests</th><th>Unique Users</th></tr></thead><tbody id="tb-cities"></tbody></table>
+            </div>
         </div>
         <div class="section">
             <h2 class="section-title">📍 User Countries (by IP)</h2>
-            <table><thead><tr><th>Country</th><th>Requests</th><th>Cities</th><th>Users</th></tr></thead><tbody id="tb-geo"></tbody></table>
+            <div class="table-wrapper">
+                <table><thead><tr><th>Country</th><th>Requests</th><th>Cities</th><th>Users</th></tr></thead><tbody id="tb-geo"></tbody></table>
+            </div>
         </div>
     </div>
 
@@ -154,7 +205,9 @@
                 <button class="btn btn-primary" onclick="loadLogs()">Load</button>
                 <span id="log-info" style="color:#94a3b8;font-size:0.85rem"></span>
             </div>
-            <table><thead><tr><th>Level</th><th>Time</th><th>Message</th></tr></thead><tbody id="tb-logs"></tbody></table>
+            <div class="table-wrapper">
+                <table><thead><tr><th>Level</th><th>Time</th><th>Message</th></tr></thead><tbody id="tb-logs"></tbody></table>
+            </div>
             <div class="toolbar" style="margin-top:1rem;justify-content:center">
                 <button class="btn btn-primary" id="btn-prev-logs" onclick="loadLogs(logPage-1)">← Prev</button>
                 <span id="log-page-info" style="color:#94a3b8">Page 1</span>
@@ -190,6 +243,7 @@ function switchTab(id, el) {
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     el.classList.add('active');
     document.getElementById('tab-' + id).classList.add('active');
+    window.scrollTo(0, 0);
     if (id === 'users') loadUsers();
     else if (id === 'pages') loadPages();
     else if (id === 'cities') { loadCities(); loadGeo(); }
@@ -346,17 +400,17 @@ async function toggleUserDetail(userId, row) {
             <div>📊 <strong>Total API calls:</strong> ${s.totalRequests || 0}</div>
         </div>`;
 
-        apiDiv.innerHTML = summaryHtml + '<strong>API Activity</strong><table><thead><tr><th>Time</th><th>Endpoint</th><th>City</th><th>Status</th><th>ms</th></tr></thead><tbody>' +
+        apiDiv.innerHTML = summaryHtml + '<strong style="display:block;margin-bottom:0.5rem">API Activity</strong><div class="table-wrapper"><table><thead><tr><th>Time</th><th>Endpoint</th><th>City</th><th>Status</th><th>ms</th></tr></thead><tbody>' +
             (d.apiActivity || []).map(a => {
                 const badge = a.statusCode >= 500 ? 'badge-error' : a.statusCode >= 400 ? 'badge-warn' : 'badge-good';
                 const label = a.statusCode >= 500 ? 'ERROR' : a.statusCode >= 400 ? 'WARN' : 'OK';
-                return `<tr><td>${fmtTime(a.timestamp)}</td><td>${a.endpoint}</td><td>${a.requestedCity||'—'}</td><td><span class="badge ${badge}">${label} ${a.statusCode}</span></td><td>${a.responseTime}</td></tr>`;
-            }).join('') + '</tbody></table>';
+                return `<tr><td>${fmtTime(a.timestamp)}</td><td>${a.endpoint}</td><td>${a.requestedCity||'—'}</td><td><span class="badge ${badge}">${label} ${a.statusCode || '???'}</span></td><td>${a.responseTime || 0}</td></tr>`;
+            }).join('') + '</tbody></table></div>';
 
-        pvDiv.innerHTML = '<strong>Page Views</strong><table><thead><tr><th>Time</th><th>Page</th><th>Screen</th></tr></thead><tbody>' +
+        pvDiv.innerHTML = '<strong style="display:block;margin-bottom:0.5rem">Page Views</strong><div class="table-wrapper"><table><thead><tr><th>Time</th><th>Page</th><th>Screen</th></tr></thead><tbody>' +
             (d.pageViews || []).map(p =>
                 `<tr><td>${fmtTime(p.timestamp)}</td><td>${p.page}</td><td>${p.screenWidth||'?'}x${p.screenHeight||'?'}</td></tr>`
-            ).join('') + '</tbody></table>';
+            ).join('') + '</tbody></table></div>';
     } catch(e) { document.getElementById('detail-api-' + userId).textContent = 'Error loading details'; }
 }
 
@@ -501,7 +555,7 @@ async function loadLive() {
             const dev = parseDevice(a.userAgent || '');
             events.push({
                 time: a.timestamp,
-                html: `<tr><td>${fmtLive(a.timestamp)}</td><td><span class="badge badge-info">API</span></td><td><code>${uid}</code></td><td>${a.method} ${a.endpoint}</td><td>${a.requestedCity||'—'}</td><td><span class="badge ${badge}">${label} ${a.statusCode}</span></td><td>${dev}</td></tr>`
+                html: `<tr><td>${fmtLive(a.timestamp)}</td><td><span class="badge badge-info">API</span></td><td><code>${uid}</code></td><td>${a.method} ${a.endpoint}</td><td>${a.requestedCity||'—'}</td><td><span class="badge ${badge}">${label} ${a.statusCode || '???'}</span></td><td>${dev}</td></tr>`
             });
         });
         (d.pageViews || []).forEach(p => {
