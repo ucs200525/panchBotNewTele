@@ -8,7 +8,7 @@ import { CityAutocomplete } from '../components/forms';
 // import { GanttTimeline } from '../components/GanttTimeline';
 
 const TimeConverterApp = () => {
-  const { localCity, localDate, localLat, localLng, setCityAndDate } = useAuth();
+  const { localCity, localDate, localLat, localLng, setCityAndDate, showToast } = useAuth();
   const [tableHtml, setTableHtml] = useState('');
   const [city, setCity] = useState(localCity);
   const [date, setDate] = useState(localDate);
@@ -42,6 +42,13 @@ const TimeConverterApp = () => {
   const [panchangData, setPanchangData] = useState(null);
   const [cityError, setCityError] = useState(false);
 
+  // Dynamic real-time clock to update the active yellow highlighted row instantly
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 10000); // Ticks every 10 seconds
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('data', JSON.stringify(data));
@@ -166,7 +173,7 @@ const TimeConverterApp = () => {
 
   useEffect(() => {
     if (fetchData) {
-      fetchTableData();
+      fetchTableData(true); // Manually triggered via Get Panchangam, show success toast
       setFetchData(false); // Reset fetchData to prevent re-fetching immediately
     }
     if (fetchSuntimes) {
@@ -200,7 +207,7 @@ const TimeConverterApp = () => {
   const checkCurrentState = () => {
     return showNonBlue ? "Show Good Timings Only " : "All Rows";
   };
-  const fetchTableData = async () => {
+  const fetchTableData = async (showSuccessToast = false) => {
     const response = await fetch(`${process.env.REACT_APP_API_URL}/api/update-table`, {
       method: 'POST',
       headers: {
@@ -220,11 +227,14 @@ const TimeConverterApp = () => {
     const data1 = await response.json();
     console.log(data1.newTableData);
     setData(data1.newTableData || []);
+    if (showSuccessToast && data1.newTableData && date) {
+      showToast(`Panchangam table successfully fetched and updated in UI for ${date}!`);
+    }
   }
 
   useEffect(() => {
     console.log(`Currently showing: ${checkCurrentState()}`);
-    fetchTableData();
+    fetchTableData(false); // Automatic loading or display toggle, do not show toast
     // Perform any additional actions when the state changes
   }, [showNonBlue]);
 
@@ -396,7 +406,7 @@ const TimeConverterApp = () => {
                   const todayStr = new Date().toISOString().substring(0, 10);
                   return date === todayStr;
                 };
-                const currentPeriod = findCurrentPeriod(data, new Date());
+                const currentPeriod = findCurrentPeriod(data, currentTime);
                 const isCurrentPeriod = isSelectedToday() && currentPeriod?.index === index;
                 
                 return (

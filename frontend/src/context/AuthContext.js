@@ -81,6 +81,31 @@ if (typeof window !== 'undefined') {
 // Create the AuthContext
 const AuthContext = createContext();
 
+// Elegant Self-Dismissing Toast Component for Premium User Feedback
+const Toast = ({ message, type = 'success', onClose }) => {
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            onClose();
+        }, 4000); // 4000ms ensures the CSS animation has finished completely
+        return () => clearTimeout(timer);
+    }, [onClose]);
+
+    return (
+        <div className="toast-container">
+            <div className="toast-notification">
+                <span className="toast-icon">✓</span>
+                <div className="toast-content">
+                    <div className="toast-title">Data Loaded</div>
+                    <div className="toast-message">{message}</div>
+                </div>
+                <button className="toast-close-btn" onClick={onClose} aria-label="Close">
+                    ✕
+                </button>
+            </div>
+        </div>
+    );
+};
+
 export const AuthProvider = ({ children }) => {
     // Initialize states from localStorage/sessionStorage or provide default values
     const [localCity, setLocalCity] = useState(() => localStorage.getItem('city') || '');
@@ -93,6 +118,7 @@ export const AuthProvider = ({ children }) => {
         const savedLng = localStorage.getItem('lng');
         return savedLng ? parseFloat(savedLng) : null;
     });
+    const [toast, setToast] = useState(null);
 
     // Function to update city, date, lat, and lng globally and in storage
     const setCityAndDate = (newCity, newDate, newLat = null, newLng = null) => {
@@ -119,6 +145,16 @@ export const AuthProvider = ({ children }) => {
         else localStorage.removeItem('lng');
     }, [localCity, localDate, localLat, localLng]);
 
+    // Handle toast display
+    const showToast = (message, type = 'success') => {
+        const id = Date.now();
+        setToast({ id, message, type });
+    };
+
+    const hideToast = () => {
+        setToast(null);
+    };
+
     // Provide values to components consuming AuthContext
     return (
         <AuthContext.Provider value={{ 
@@ -126,9 +162,11 @@ export const AuthProvider = ({ children }) => {
             localDate, 
             localLat, 
             localLng, 
-            setCityAndDate 
+            setCityAndDate,
+            showToast
         }}>
             {children}
+            {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} key={toast.id} />}
         </AuthContext.Provider>
     );
 };
@@ -137,3 +175,4 @@ export const AuthProvider = ({ children }) => {
 export const useAuth = () => {
     return useContext(AuthContext);
 };
+

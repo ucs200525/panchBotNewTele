@@ -497,4 +497,134 @@ textarea:focus {
     font-size: 13px;
     color: #64748b;
     text-align: left;
-}
+}
+
+/* ========================================
+   Toast Notification Styles (Plain Solid High Contrast)
+   ======================================== */
+.toast-container {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  pointer-events: none;
+}
+
+.toast-notification {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 320px;
+  max-width: 480px;
+  background: #ffffff; /* Solid opaque white background */
+  border: 1px solid #cbd5e1; /* Opaque slate border */
+  border-left: 5px solid #10b981; /* Solid emerald green left indicator */
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-5);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 16px -8px rgba(0, 0, 0, 0.15); /* Solid shadow */
+  color: #1e293b; /* Dark slate text for maximum legibility */
+  font-family: var(--font-sans);
+  animation: toast-slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1), toast-fade-out 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: 0s, 3.6s; /* Display toast for 3.6 seconds, then fade out */
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.toast-icon {
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #10b981; /* Rich emerald green success color */
+  flex-shrink: 0;
+  background: #f0fdf4; /* Light solid success green background */
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #bbf7d0; /* Solid border for the icon */
+}
+
+.toast-content {
+  flex: 1;
+}
+
+.toast-title {
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
+  margin-bottom: 2px;
+  color: #0f172a; /* Solid black/slate for title */
+}
+
+.toast-message {
+  font-size: var(--text-xs);
+  color: #334155; /* Solid gray/slate for message readability */
+  line-height: 1.4;
+  font-weight: var(--font-medium);
+}
+
+.toast-close-btn {
+  background: transparent;
+  border: none;
+  color: #64748b; /* Solid slate gray */
+  opacity: 0.8;
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.toast-close-btn:hover {
+  opacity: 1;
+  color: #0f172a;
+  background: #f1f5f9; /* Solid light gray on hover */
+  transform: scale(1.05);
+}
+
+@keyframes toast-slide-in {
+  from {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes toast-fade-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.92) translateY(-8px);
+  }
+}
+
+/* Responsive Styles for Mobile Portability */
+@media (max-width: 480px) {
+  .toast-container {
+    top: 16px;
+    right: 16px;
+    left: 16px;
+    width: calc(100% - 32px);
+  }
+  .toast-notification {
+    min-width: unset;
+    width: 100%;
+    max-width: 100%;
+    padding: var(--space-3) var(--space-4);
+  }
+}
+
+

@@ -9,7 +9,7 @@ import { parseTimeToMinutes } from '../utils/periodHelpers';
 
 const PanchakaSwiss = () => {
     
-    const { localCity, localDate, localLat, localLng, setCityAndDate } = useAuth();
+    const { localCity, localDate, localLat, localLng, setCityAndDate, showToast } = useAuth();
     const [city, setCity] = useState(localCity);
     const [date, setDate] = useState(localDate);
     const [lat, setLat] = useState(localLat);
@@ -31,6 +31,15 @@ const PanchakaSwiss = () => {
     const [error, setError] = useState(null);
     const [fetchCity, setfetchCity] = useState(false);
     const [cityError, setCityError] = useState(false);
+    const [currentTime, setCurrentTime] = useState(new Date());
+
+    // Dynamic real-time clock to update the active yellow highlighted row instantly
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 10000); // Ticks every 10 seconds
+        return () => clearInterval(timer);
+    }, []);
 
     useEffect(() => {
         localStorage.setItem('panchaka_filteredData', JSON.stringify(filteredData));
@@ -116,6 +125,7 @@ const PanchakaSwiss = () => {
                 setShowAll(true);
                 createDummyTable();
                 setLoading(false);
+                showToast(`Panchaka Muhurat table successfully fetched and updated in UI for ${fetchDate}!`);
             })
             .catch(error => {
                 console.error("Error fetching data:", error);
@@ -224,10 +234,9 @@ const PanchakaSwiss = () => {
         return date === todayStr;
     };
 
-    const isRowCurrentPeriod = (timeInterval) => {
+    const isRowCurrentPeriod = (timeInterval, now) => {
         if (!timeInterval || !timeInterval.includes(' to ')) return false;
         const [startStr, endStr] = timeInterval.split(' to ');
-        const now = new Date();
         const currentMinutes = now.getHours() * 60 + now.getMinutes();
         const startMinutes = parseTimeToMinutes(startStr);
         const endMinutes = parseTimeToMinutes(endStr);
@@ -242,7 +251,7 @@ const PanchakaSwiss = () => {
     const generateRows = () => {
         const todayActive = isSelectedToday();
         return (showAll ? allMuhuratData : filteredData).map((item, index) => {
-            const isCurrentPeriod = todayActive && isRowCurrentPeriod(item.time);
+            const isCurrentPeriod = todayActive && isRowCurrentPeriod(item.time, currentTime);
             return (
                 <tr 
                     key={index} 

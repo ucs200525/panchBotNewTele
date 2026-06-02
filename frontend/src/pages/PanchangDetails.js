@@ -6,7 +6,7 @@ import { CityAutocomplete } from '../components/forms';
 
 const PanchangDetails = () => {
     
-    const { localCity, localDate, localLat, localLng, setCityAndDate } = useAuth();
+    const { localCity, localDate, localLat, localLng, setCityAndDate, showToast } = useAuth();
     const [city, setCity] = useState(localCity);
     const [date, setDate] = useState(localDate);
     const [lat, setLat] = useState(localLat);
@@ -45,6 +45,7 @@ const PanchangDetails = () => {
             .then(data => {
                 setPanchangData(data);
                 setLoading(false);
+                showToast(`Panchang details successfully fetched and updated in UI for ${fetchDate}!`);
             })
             .catch(error => {
                 console.error("Error fetching data:", error);

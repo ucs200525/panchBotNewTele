@@ -7,7 +7,7 @@ import { CityAutocomplete } from '../components/forms';
 import { parseTimeToMinutes } from '../utils/periodHelpers';
 
 const CombineSwiss = () => {
-  const { localCity, localDate, localLat, localLng, setCityAndDate } = useAuth();
+  const { localCity, localDate, localLat, localLng, setCityAndDate, showToast } = useAuth();
   const [city, setCity] = useState(localCity);
   const [date, setDate] = useState(localDate);
   const [lat, setLat] = useState(localLat);
@@ -28,8 +28,15 @@ const CombineSwiss = () => {
   const [showNonBlue, setShowNonBlue] = useState(true);  // default to true
   const [is12HourFormat, setIs12HourFormat] = useState(true); // default to true
   const [cityError, setCityError] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
 
-
+  // Dynamic real-time clock to update the active yellow highlighted row instantly
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 10000); // Ticks every 10 seconds
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('combinedData', JSON.stringify(combinedData));
@@ -149,6 +156,7 @@ const CombineSwiss = () => {
       });
       const combinedData = await combinedResponse.json();
       setCombinedData(combinedData);
+      showToast(`Combined Muhurat (Bharagva panchagam + Panchaka rahitha muhurtham) successfully fetched and updated in UI for ${fetchDate}!`);
 
       const weekday = new Date(fetchDate).toLocaleString('en-US', { weekday: 'long' });
       setWeekday(weekday);
@@ -210,7 +218,7 @@ const CombineSwiss = () => {
       {error && <div className="error-message">{error}</div>}
   
       <div style={{ textAlign: 'center', margin: '20px' }}>
-        <h1>Combined Muhurat and Bharagv Table</h1>
+        <h1>Combined Muhurat (Bharagva panchagam + Panchaka rahitha muhurtham)</h1>
         <label className="entercity">Enter City Name:</label>
         <CityAutocomplete
           value={city}
@@ -317,10 +325,9 @@ const CombineSwiss = () => {
           return date === todayStr;
         };
 
-        const isRowCurrentPeriod = (timeInterval) => {
+        const isRowCurrentPeriod = (timeInterval, now) => {
           if (!timeInterval || !timeInterval.includes(' to ')) return false;
           const [startStr, endStr] = timeInterval.split(' to ');
-          const now = new Date();
           const currentMinutes = now.getHours() * 60 + now.getMinutes();
           const startMinutes = parseTimeToMinutes(startStr);
           const endMinutes = parseTimeToMinutes(endStr);
@@ -347,7 +354,7 @@ const CombineSwiss = () => {
             </thead>
             <tbody>
               {combinedData.map((row, index) => {
-                const isCurrentPeriod = todayActive && isRowCurrentPeriod(row.timeInterval);
+                const isCurrentPeriod = todayActive && isRowCurrentPeriod(row.timeInterval, currentTime);
                 return (
                   <React.Fragment key={index}>
                     <tr style={isCurrentPeriod ? { backgroundColor: 'yellow', color: 'black' } : {}}>

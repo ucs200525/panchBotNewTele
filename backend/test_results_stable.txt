@@ -1,0 +1,221 @@
+
+❌ ERROR: Tithi - 
+
+
+❌ ERROR: Nakshatra - 
+
+
+❌ ERROR: Rahu Kaal - 
+
+
+❌ ERROR: Moon - 
+
+
+❌ ERROR: Best Time - 
+
+
+❌ ERROR: Star Today - 
+
+
+❌ ERROR: Ascendant - 
+
+
+❌ ERROR: Lunar Day - 
+
+
+❌ ERROR: Moon Star - 
+
+
+❌ ERROR: Rising Sign - 
+
+
+❌ ERROR: Set Profile - 
+
+
+❌ ERROR: Lagna - 
+
+
+❌ ERROR: Nakshatra from Context - 
+
+
+❌ ERROR: Rising Sign Again - 
+
+
+❌ ERROR: General Day - 
+
+
+❌ ERROR: Consistency 1 - 
+
+
+❌ ERROR: Consistency 2 - 
+
+
+❌ ERROR: Consistency 3 - 
+
+
+❌ ERROR: Multi Lagna Nakshatra - 
+
+
+❌ ERROR: Multi Tithi Time - 
+
+
+❌ ERROR: Multi Rahu Good - 
+
+
+❌ ERROR: Multi Business - 
+
+
+❌ ERROR: Multi Favorable - 
+
+
+❌ ERROR: Birth Lagna - 
+
+
+❌ ERROR: Transit Lagna - 
+
+
+❌ ERROR: Explicit Birth - 
+
+
+❌ ERROR: Transit Nakshatra - 
+
+
+❌ ERROR: Current Lagna - 
+
+
+❌ ERROR: Invalid Date - 
+
+
+❌ ERROR: Missing Info - 
+
+
+❌ ERROR: Invalid DOB - 
+
+
+❌ ERROR: Bad Input - 
+
+
+❌ ERROR: Short Lagna - 
+
+
+❌ ERROR: Short Nakshatra - 
+
+
+❌ ERROR: Short Today - 
+
+
+❌ ERROR: Short Star - 
+
+
+❌ ERROR: Short Time - 
+
+
+❌ ERROR: Travel - 
+
+
+❌ ERROR: Why Travel - 
+
+
+❌ ERROR: Business Start - 
+
+
+❌ ERROR: Avoid Time - 
+
+
+❌ ERROR: After 2PM - 
+
+
+❌ ERROR: Hybrid Business - 
+
+
+❌ ERROR: Hybrid Compare - 
+
+
+❌ ERROR: Hybrid Travel - 
+
+
+❌ ERROR: Hybrid Best Time - 
+
+
+❌ ERROR: Extreme 1 - 
+
+
+❌ ERROR: Extreme 2 - 
+
+
+❌ ERROR: Extreme 3 - 
+
+
+❌ ERROR: Extreme 4 - 
+
+
+❌ ERROR: Ind-Std 1: Mixed - 
+
+
+❌ ERROR: Ind-Std 2: Transit Lagna - 
+
+
+❌ ERROR: Ind-Std 3: Comparison - 
+
+
+❌ ERROR: Ind-Std 4: Star Override - 
+
+
+❌ ERROR: Ind-Std 5: Old Year - 
+
+
+❌ ERROR: Ind-Std 6: Future Birth - 
+
+
+❌ ERROR: Greeting - 
+
+
+❌ ERROR: Empty DOB - 
+
+
+❌ ERROR: Farewell - 
+
+
+❌ ERROR: Acknowledge - 
+
+
+❌ ERROR: Help Request - 
+
+
+❌ ERROR: Future Query - 
+
+
+❌ ERROR: Self Query - 
+
+
+❌ ERROR: Override Step 1 - 
+
+
+❌ ERROR: Override Step 2 (Verification) - 
+
+
+❌ ERROR: Chat Status Query - 
+
+
+❌ ERROR: DD-MM-YYYY Override - 
+
+
+❌ ERROR: Natal/Transit Mix - 
+
+
+❌ ERROR: Star Short Query - 
+
+
+❌ ERROR: Small Talk - 
+
+
+❌ ERROR: Invalid Date - 
+
+
+❌ ERROR: TZ Check - 
+
+
+❌ ERROR: Context Reuse - 
+
+
+❌ ERROR: Extreme Flow - 
