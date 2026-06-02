@@ -1047,7 +1047,6 @@ const processMuhuratAndPanchangam = (muhuratData, panchangamData, baseDate, is12
         const [muhuratStart, muhuratEnd] = splitInterval(muhuratItem.time, baseDate);
         if (muhuratStart && muhuratEnd && validateInterval(muhuratStart, muhuratEnd)) {
             const weekdaysArray = [];
-
             panchangamData.forEach((panchangamItem) => {
                 const timeInterval = panchangamItem.timeInterval1;
                 const [start, end] = splitInterval(timeInterval, baseDate);

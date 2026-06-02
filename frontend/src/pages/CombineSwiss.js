@@ -355,6 +355,7 @@ const CombineSwiss = () => {
             <tbody>
               {combinedData.map((row, index) => {
                 const isCurrentPeriod = todayActive && isRowCurrentPeriod(row.timeInterval, currentTime);
+                
                 return (
                   <React.Fragment key={index}>
                     <tr style={isCurrentPeriod ? { backgroundColor: 'yellow', color: 'black' } : {}}>

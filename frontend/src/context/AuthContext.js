@@ -86,7 +86,7 @@ const Toast = ({ message, type = 'success', onClose }) => {
     useEffect(() => {
         const timer = setTimeout(() => {
             onClose();
-        }, 4000); // 4000ms ensures the CSS animation has finished completely
+        }, 1600); // 1600ms ensures the CSS animation has finished completely (1.2s delay + 0.4s fade out)
         return () => clearTimeout(timer);
     }, [onClose]);
 
