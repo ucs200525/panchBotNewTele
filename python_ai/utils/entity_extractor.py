@@ -82,6 +82,11 @@ class EntityExtractor:
         Uses semantic matching to detect if the user is giving their date of birth,
         handling variations like "DOB", "date of birth", "date and year of birth", etc.
         """
+        # If it's a question asking for/retrieving DOB, it's NOT providing DOB
+        is_question = bool(re.search(r"\b(when|where|what\s+is|what\s+are|tell\s+me|show|get|retrieve|do\s+you\s+know)\b", text))
+        if is_question:
+            return False
+            
         text_embedding = semantic_model.encode([text])
         cos_scores = util.cos_sim(text_embedding, dob_embeddings)[0]
         # If any of the scores is above a threshold (e.g., 0.5), we assume they are talking about DOB

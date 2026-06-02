@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import styles from './PersonalAdvisorCard.module.css'; // Let's use custom advisor styling
 import { ProfileService } from '../utils/profileService';
+import { useBirthProfiles } from '../context/BirthProfileContext';
+import ProfileSelector from '../components/common/ProfileSelector';
 
 const NAKSHATRAS = [
   "Ashwini", "Bharani", "Krittika", "Rohini", "Mrigashirsha", "Ardra", 
@@ -79,6 +81,7 @@ const parseInlineMarkdown = (text) => {
 };
 
 const PersonalizedAdvisor = () => {
+  const { selectedProfile } = useBirthProfiles();
   const [city, setCity] = useState("Hyderabad");
   const [date, setDate] = useState(() => new Date().toISOString().substring(0, 10));
   const [name, setName] = useState("");
@@ -91,33 +94,28 @@ const PersonalizedAdvisor = () => {
   const [timeline, setTimeline] = useState(null);
   const [error, setError] = useState("");
 
-  // Persistent storage of profile
+  // Sync with selected birth profile
   useEffect(() => {
-    const loadProfile = async () => {
-      // 1. Load from local first for fast display
+    if (selectedProfile) {
+      setName(selectedProfile.name);
+      setNakshatra(selectedProfile.nakshatra || "");
+      setRashi(selectedProfile.rashi || "");
+      setBirthDate(selectedProfile.dob || "");
+      setBirthTime(selectedProfile.time || "");
+      setCity(selectedProfile.city || "Hyderabad");
+    } else {
+      // Fallback to local profile service storage if no profile selected
       const local = ProfileService.getLocalProfile();
       if (local.name) {
         setName(local.name);
-        setNakshatra(local.nakshatra);
-        setRashi(local.rashi);
-        setBirthDate(local.dob);
-        setBirthTime(local.time);
+        setNakshatra(local.nakshatra || "");
+        setRashi(local.rashi || "");
+        setBirthDate(local.dob || "");
+        setBirthTime(local.time || "");
         setCity(local.city || "Hyderabad");
       }
-
-      // 2. Refresh from DB
-      const dbProfile = await ProfileService.fetchProfile();
-      if (dbProfile) {
-        setName(dbProfile.name);
-        setNakshatra(dbProfile.nakshatra);
-        setRashi(dbProfile.rashi);
-        setBirthDate(dbProfile.dob);
-        setBirthTime(dbProfile.time);
-        setCity(dbProfile.city || "Hyderabad");
-      }
-    };
-    loadProfile();
-  }, []);
+    }
+  }, [selectedProfile]);
 
   const handleGenerate = async (e) => {
     e.preventDefault();
@@ -212,6 +210,7 @@ const PersonalizedAdvisor = () => {
         <p className={styles.subtitle}>
           Harmonize your actions with real-time celestial transits computed with precision Swiss Ephemeris data.
         </p>
+        <ProfileSelector />
       </div>
 
       <div className={styles.grid}>
@@ -397,48 +396,7 @@ const PersonalizedAdvisor = () => {
                 ))}
               </div>
               
-              {/* Daily Chronological Timeline */}
-              {timeline && timeline.length > 0 && (
-                <div className={styles.timelineSection}>
-                  <h3 className={styles.sectionTitle}>📅 Chronological Daily Muhurat Schedule</h3>
-                  <div className={styles.timelineGrid}>
-                    {timeline.map((item, idx) => (
-                      <div key={idx} className={styles.timelineCard}>
-                        <div className={styles.timelineMain}>
-                          <div className={styles.timeBlock}>
-                            <span className={styles.timeRange}>⏰ {item.interval}</span>
-                            <span className={styles.timeSource}>Source: {item.source}</span>
-                          </div>
-                          
-                          <div className={styles.infoBlock}>
-                            <span className={styles.muhuratName}>{item.name}</span>
-                            <span className={styles.muhuratCategory}>Category: {item.category}</span>
-                          </div>
-
-                          <div className={styles.ratingBlock}>
-                            <span className={styles.ratingBadge} data-rating={item.rating}>
-                              {item.rating}
-                            </span>
-                            <span className={styles.scorePill}>
-                              {item.score > 0 ? `+${item.score}` : item.score} pts
-                            </span>
-                          </div>
-                        </div>
-
-                        {item.reasons && item.reasons.length > 0 && (
-                          <div className={styles.timelineReasons}>
-                            {item.reasons.map((r, rIdx) => (
-                              <div key={rIdx} className={styles.reasonItem}>
-                                {r}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              {/* Daily Chronological Timeline Removed per user request */}
 
               {/* Markdown summary */}
               <h3 className={styles.sectionTitle}>🔮 Holistic Astrological Strategy</h3>

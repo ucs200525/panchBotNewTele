@@ -20,10 +20,19 @@ const TIMEOUT_MS = 5000; // 5s — FastAPI has cold-start overhead on first requ
  * @param {object} payload - JSON body
  * @returns {Promise<object|null>}
  */
-function callPythonService(endpoint, payload) {
+/**
+ * Make a POST request to the Python AI service.
+ * Returns null on: timeout, network error, non-2xx status, or invalid JSON.
+ * @param {string} endpoint - e.g., '/classify'
+ * @param {object} payload - JSON body
+ * @param {number} [customTimeoutMs] - Optional custom timeout override
+ * @returns {Promise<object|null>}
+ */
+function callPythonService(endpoint, payload, customTimeoutMs) {
   return new Promise((resolve) => {
     const body = JSON.stringify(payload);
     const url = new URL(endpoint, PYTHON_SERVICE_URL);
+    const activeTimeout = customTimeoutMs || TIMEOUT_MS;
 
     const options = {
       hostname: url.hostname,
@@ -38,9 +47,9 @@ function callPythonService(endpoint, payload) {
 
     const timer = setTimeout(() => {
       req.destroy();
-      console.warn(`[Python Bridge] Timeout after ${TIMEOUT_MS}ms`);
+      console.warn(`[Python Bridge] Timeout after ${activeTimeout}ms`);
       resolve({ intent: null, confidence: 0, error: 'timeout' });
-    }, TIMEOUT_MS);
+    }, activeTimeout);
 
     const req = http.request(options, (res) => {
       let data = '';
@@ -79,29 +88,33 @@ function callPythonService(endpoint, payload) {
  * @returns {Promise<{intent: string, confidence: number, error?: string, source?: string, all_intents?: string[]}>}
  */
 async function classifyIntent(query, context = {}) {
-  // 1. Try DistilBERT
-  const predictResult = await callPythonService('/predict', { text: query });
-  
+  // Run DistilBERT (/predict) and TF-IDF (/classify) IN PARALLEL to avoid
+  // sequential timeout waits (previously 5s + 5s = 10s wasted on every request).
+  const [predictResult, tfidfResult] = await Promise.all([
+    callPythonService('/predict', { text: query }),
+    callPythonService('/classify', { query, context })
+  ]);
+
+  // 1. Prefer DistilBERT if it returned valid intents
   if (predictResult && !predictResult.error && predictResult.intents && predictResult.intents.length > 0) {
     return {
-      intent: predictResult.intents[0], // Keep backward compatibility with single-intent pipeline
+      intent: predictResult.intents[0],
       confidence: predictResult.confidence || 0,
       source: 'distilbert',
       all_intents: predictResult.intents
     };
   }
 
-  // 2. Fallback to Legacy TF-IDF
-  const result = await callPythonService('/classify', { query, context });
-  if (!result) return { intent: null, confidence: 0, error: 'no_response' };
-  
-  // Return the result directly, index.js will handle the logic
-  return { 
-    intent: result.intent, 
-    confidence: result.confidence || 0,
-    error: result.error || (predictResult ? predictResult.error : null),
-    source: 'tfidf'
-  };
+  // 2. Fall back to TF-IDF classifier
+  if (tfidfResult && !tfidfResult.error && tfidfResult.intent) {
+    return {
+      intent: tfidfResult.intent,
+      confidence: tfidfResult.confidence || 0,
+      source: 'tfidf'
+    };
+  }
+
+  return { intent: null, confidence: 0, error: 'no_response' };
 }
 
 /**
@@ -125,6 +138,23 @@ async function semanticSearch(query) {
 }
 
 /**
+ * Generate conversational Vedic astrology response using local LLM.
+ * @param {string} query
+ * @param {object} contextData
+ * @param {array} history
+ * @returns {Promise<string|null>}
+ */
+async function generateLLMResponse(query, contextData, history = []) {
+  // 5-minute timeout (300000ms) to allow the local CPU LLM to generate the full ~1000 tokens
+  // without dropping the request and falling back to the deterministic NLG engine.
+  const result = await callPythonService('/generate', { query, context: contextData, history }, 300000);
+  if (result && !result.error && result.text) {
+    return result.text;
+  }
+  return null;
+}
+
+/**
  * Health check — is the Python service running?
  */
 async function isPythonServiceAvailable() {
@@ -132,4 +162,4 @@ async function isPythonServiceAvailable() {
   return result !== null && result.status === 'ok';
 }
 
-module.exports = { classifyIntent, extractEntitiesPython, semanticSearch, isPythonServiceAvailable };
+module.exports = { classifyIntent, extractEntitiesPython, semanticSearch, generateLLMResponse, isPythonServiceAvailable };

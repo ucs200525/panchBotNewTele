@@ -63,11 +63,7 @@ class TithiCalculator extends BaseCalculator {
      */
     calculateDayTithis(date, timezone = 'Asia/Kolkata') {
         const tithis = [];
-        const startOfDay = new Date(date);
-        startOfDay.setHours(0, 0, 0, 0);
-        
-        const endOfDay = new Date(date);
-        endOfDay.setHours(23, 59, 59, 999);
+        const startOfDay = this.getStartOfDay(date, timezone);
         
         // Check Tithi at start of day
         let currentTithi = this.getTithiAtTime(startOfDay);
@@ -75,8 +71,7 @@ class TithiCalculator extends BaseCalculator {
         
         // Sample every hour to detect transitions
         for (let hour = 1; hour <= 24; hour++) {
-            const checkTime = new Date(startOfDay);
-            checkTime.setHours(hour, 0, 0, 0);
+            const checkTime = new Date(startOfDay.getTime() + hour * 3600000);
             
             const nextTithi = this.getTithiAtTime(checkTime);
             

@@ -124,6 +124,10 @@ const INTENT_PATTERNS = [
       { rx: /\b(birth\s+chart|kundali|horoscope|natal\s+chart|janma\s*kundali)\b/i, weight: 0.9 },
       { rx: /\b(show\s+(me\s+)?(my\s+)?(birth\s+chart|kundali|horoscope))\b/i, weight: 1.0 },
       { rx: /\b(calculate\s+(my\s+)?horoscope)\b/i, weight: 0.95 },
+      { rx: /\b(explain\s+(about\s+)?me|tell\s+me\s+about\s+(me|myself)|about\s+me|analyse\s+me|analyze\s+me)\b/i, weight: 0.95 },
+      { rx: /\b(my\s+chart|my\s+kundali|my\s+reading|my\s+astrological\s+profile|my\s+astrology|give\s+me\s+(a\s+)?reading)\b/i, weight: 0.9 },
+      { rx: /\b(who\s+am\s+i\s+(astrologically|according\s+to\s+(my\s+)?chart))\b/i, weight: 1.0 },
+      { rx: /\b(describe\s+me|what\s+does\s+my\s+chart\s+say|what\s+does\s+my\s+(kundali|horoscope)\s+say)\b/i, weight: 0.95 },
     ]
   },
   {
@@ -184,6 +188,9 @@ const INTENT_PATTERNS = [
     patterns: [
       { rx: /\b(who\s+am\s+i|how\s+am\s+i|what\s+about\s+me|tell\s+me\s+about\s+myself|my\s+nature|my\s+character|my\s+personality)\b/i, weight: 1.0 },
       { rx: /\b(what\s+me|tell\s+how\s+are\s+am\s+i)\b/i, weight: 1.0 },
+      { rx: /\b(when\s+(was\s+i|i\s+was)\s+born)\b/i, weight: 1.0 },
+      { rx: /\b(my\s+birth\s+details|what\s+is\s+my\s+(dob|birth\s*date|birth\s*time|birth\s*place))\b/i, weight: 1.0 },
+      { rx: /\b(tell\s+me\s+my\s+dob|show\s+my\s+dob|where\s+was\s+i\s+born)\b/i, weight: 1.0 },
     ]
   }
 ];

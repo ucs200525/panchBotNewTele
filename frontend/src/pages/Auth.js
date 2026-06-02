@@ -8,6 +8,7 @@ const Auth = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -20,10 +21,14 @@ const Auth = () => {
     try {
       if (isLogin) {
         await ProfileService.login(email, password);
+        navigate('/chat');
       } else {
-        await ProfileService.register(name, email, password);
+        if (password !== confirmPassword) {
+          throw new Error('Passwords do not match');
+        }
+        await ProfileService.register(name.trim(), email.trim(), password);
+        navigate('/profiles'); // Redirect to profile manager after signup to add birth details
       }
-      navigate('/advisor'); // Take them to setup their profile details next
     } catch (err) {
       setError(err.message);
     } finally {
@@ -43,10 +48,10 @@ const Auth = () => {
         <form onSubmit={handleSubmit} className={styles.form}>
           {!isLogin && (
             <div className={styles.inputGroup}>
-              <label>Full Name</label>
+              <label>Full Name / Username</label>
               <input 
                 type="text" 
-                placeholder="Shiva Kumar" 
+                placeholder="e.g. Shiva Kumar" 
                 value={name} 
                 onChange={(e) => setName(e.target.value)} 
                 required 
@@ -75,6 +80,19 @@ const Auth = () => {
               required 
             />
           </div>
+
+          {!isLogin && (
+            <div className={styles.inputGroup}>
+              <label>Confirm Password</label>
+              <input 
+                type="password" 
+                placeholder="••••••••" 
+                value={confirmPassword} 
+                onChange={(e) => setConfirmPassword(e.target.value)} 
+                required 
+              />
+            </div>
+          )}
 
           {error && <div className={styles.error}>{error}</div>}
 

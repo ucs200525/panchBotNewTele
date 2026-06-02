@@ -55,21 +55,27 @@ class LagnaCalculator extends BaseCalculator {
             // Clean time string (remove am/pm and trim)
             const cleanTime = sunriseStr.toLowerCase().replace(/[ap]m/, '').trim();
             const parts = cleanTime.split(':').map(Number);
-            const hour = parts[0];
+            let hour = parts[0];
             const min = parts[1] || 0;
             const sec = parts[2] || 0;
 
-            const sunriseDate = new Date(date);
-            sunriseDate.setHours(hour, min, sec, 0);
+            if (sunriseStr.toLowerCase().includes('pm') && hour < 12) hour += 12;
+            if (sunriseStr.toLowerCase().includes('am') && hour === 12) hour = 0;
 
-            // Adjust for PM if original string had it (though sunrise usually isn't PM)
-            if (sunriseStr.toLowerCase().includes('pm') && hour < 12) sunriseDate.setHours(hour + 12);
-            if (sunriseStr.toLowerCase().includes('am') && hour === 12) sunriseDate.setHours(0);
+            const dateParts = this.getPartsInTimezone(date, timezone);
+            const sunriseDate = this.getUtcDateForLocalTime(
+                dateParts.year,
+                dateParts.month,
+                dateParts.day,
+                hour,
+                min,
+                sec,
+                timezone
+            );
 
             console.log(`  🌅 Sunrise: ${this.formatTime(sunriseDate, timezone)}`);
 
-            const endTime = new Date(sunriseDate);
-            endTime.setDate(endTime.getDate() + 1);
+            const endTime = new Date(sunriseDate.getTime() + 24 * 60 * 60 * 1000);
 
             // Get Lagna at sunrise
             let currentLagna = this.getLagnaAtTime(sunriseDate, lat, lng);

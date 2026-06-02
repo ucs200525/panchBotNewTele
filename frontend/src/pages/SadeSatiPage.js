@@ -4,9 +4,12 @@ import { Section } from '../components/layout';
 import { CityAutocomplete } from '../components/forms';
 import { useAuth } from '../context/AuthContext';
 import { saveProfile, getProfile, getAllProfiles } from '../utils/profileStorage';
+import { useBirthProfiles } from '../context/BirthProfileContext';
+import ProfileSelector from '../components/common/ProfileSelector';
 
 
 const SadeSatiPage = () => {
+    const { selectedProfile } = useBirthProfiles();
     const { setCityAndDate } = useAuth();
     const [name, setName] = useState('');
     const [cityName, setCityName] = useState(() => localStorage.getItem('selectedCity') || '');
@@ -21,6 +24,17 @@ const SadeSatiPage = () => {
     useEffect(() => {
         setSavedProfiles(getAllProfiles());
     }, []);
+
+    // Sync input fields when global birth profile selection changes
+    useEffect(() => {
+        if (selectedProfile) {
+            setName(selectedProfile.name);
+            setCityName(selectedProfile.city || '');
+            setBirthDate(selectedProfile.dob || '1990-01-01');
+            setBirthTime(selectedProfile.time || '12:00');
+            fetchSadeSatiData(selectedProfile.city, selectedProfile.dob || '', false);
+        }
+    }, [selectedProfile]);
 
     // Initial load: Fetch data automatically if we have city and date
     useEffect(() => {
@@ -99,6 +113,7 @@ const SadeSatiPage = () => {
 
     return (
         <div className={styles.content}>
+            <ProfileSelector />
             {/* Hero Section */}
             <div className="hero-section ss-hero">
                 <div className="hero-content">

@@ -21,38 +21,45 @@ import ChoghadiyaInfo from './pages/ChoghadiyaInfo';
 import PersonalizedAdvisor from './pages/PersonalizedAdvisor';
 import AstroChat from './pages/AstroChat';
 import Auth from './pages/Auth';
+import BirthProfilesPage from './pages/BirthProfilesPage';
+import { BirthProfileProvider } from './context/BirthProfileContext';
+import Footer from './components/Footer';
 
 function App() {
   return (
-    <BrowserRouter>
-      <Navbar />
-      <ProfilePrompt />
-      <div className="app-container">
+    <BirthProfileProvider>
+      <BrowserRouter>
+        <Navbar />
+        <ProfilePrompt />
+        <div className="app-container">
 
-        <Routes>
-          <Route path="/" element={<BharagavaPanchagam />} />
-          <Route path="/login" element={<Auth />} />
-          <Route path="/panchaka" element={<PanchakaMuhurth />} />
+          <Routes>
+            <Route path="/" element={<BharagavaPanchagam />} />
+            <Route path="/login" element={<Auth />} />
+            <Route path="/profiles" element={<BirthProfilesPage />} />
+            <Route path="/panchaka" element={<PanchakaMuhurth />} />
 
-          <Route path="/panchaka-swiss" element={<SwissPanchaka />} />
-          <Route path="/panchang" element={<DailyPanchang />} />
-          {/* <Route path="/panchang-swiss" element={<SwissPanchang />} /> */}
-          <Route path="/good-timings" element={<GoodTimingsPage />} />
-          <Route path="/planetary" element={<PlanetaryPage />} />
-          <Route path="/charts" element={<ChartsPage />} />
-          <Route path="/dasha" element={<DashaPage />} />
-          <Route path="/sadesati" element={<SadeSatiPage />} />
-          {/* <Route path="/astronomical" element={<AstronomicalPage />} /> */}
-          <Route path="/lagna" element={<LagnaPage />} />
-          <Route path="/hora" element={<HoraPage />} />
-          <Route path="/combine" element={<Combine />} />
-          <Route path="/choghadiya-info" element={<ChoghadiyaInfo />} />
-          <Route path="/advisor" element={<PersonalizedAdvisor />} />
-          <Route path="/chat" element={<AstroChat />} />
-          {/* Add more routes here if needed */}
-        </Routes>
-      </div>
-    </BrowserRouter>
+            <Route path="/panchaka-swiss" element={<SwissPanchaka />} />
+            <Route path="/panchang" element={<DailyPanchang />} />
+            {/* <Route path="/panchang-swiss" element={<SwissPanchang />} /> */}
+            <Route path="/good-timings" element={<GoodTimingsPage />} />
+            <Route path="/planetary" element={<PlanetaryPage />} />
+            <Route path="/charts" element={<ChartsPage />} />
+            <Route path="/dasha" element={<DashaPage />} />
+            <Route path="/sadesati" element={<SadeSatiPage />} />
+            {/* <Route path="/astronomical" element={<AstronomicalPage />} /> */}
+            <Route path="/lagna" element={<LagnaPage />} />
+            <Route path="/hora" element={<HoraPage />} />
+            <Route path="/combine" element={<Combine />} />
+            <Route path="/choghadiya-info" element={<ChoghadiyaInfo />} />
+            <Route path="/advisor" element={<PersonalizedAdvisor />} />
+            <Route path="/chat" element={<AstroChat />} />
+            {/* Add more routes here if needed */}
+          </Routes>
+        </div>
+        <Footer />
+      </BrowserRouter>
+    </BirthProfileProvider>
   );
 }
 

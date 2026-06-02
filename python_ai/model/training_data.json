@@ -182,6 +182,9 @@
     { "text": "navamsa chart", "intent": "GET_BIRTH_CHART" },
     { "text": "i want my kundali", "intent": "GET_BIRTH_CHART" },
     { "text": "rasi chakra", "intent": "GET_BIRTH_CHART" },
+    { "text": "tell me about me", "intent": "GET_BIRTH_CHART" },
+    { "text": "tell me about myself", "intent": "GET_BIRTH_CHART" },
+    { "text": "what does my chart say about me", "intent": "GET_BIRTH_CHART" },
 
     { "text": "is today a good day", "intent": "EVAL_GENERAL_DAY" },
     { "text": "how is today for me", "intent": "EVAL_GENERAL_DAY" },
@@ -297,6 +300,11 @@
     { "text": "explain astrology to me", "intent": "GENERAL_ASTROLOGY" },
     { "text": "tell me something", "intent": "GENERAL_ASTROLOGY" },
     { "text": "hmm", "intent": "GENERAL_ASTROLOGY" },
-    { "text": "interesting", "intent": "GENERAL_ASTROLOGY" }
+    { "text": "interesting", "intent": "GENERAL_ASTROLOGY" },
+    { "text": "about studies", "intent": "GENERAL_ASTROLOGY" },
+    { "text": "about career", "intent": "GENERAL_ASTROLOGY" },
+    { "text": "about marriage", "intent": "GENERAL_ASTROLOGY" },
+    { "text": "how will be my studies", "intent": "GENERAL_ASTROLOGY" },
+    { "text": "tell me about my education", "intent": "GENERAL_ASTROLOGY" }
   ]
 }

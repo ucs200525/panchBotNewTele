@@ -53,7 +53,7 @@ const Navbar = () => {
 
           <div className="upper-right">
             {isLoggedIn ? (
-              <div className="user-profile-nav">
+              <div className="user-profile-nav desktop-only">
                 <span className="user-welcome">Namaste, {userName}</span>
                 <button onClick={handleLogout} className="pro-login-btn">
                   Logout
@@ -129,6 +129,7 @@ const Navbar = () => {
                 </div>
               </div>
               <div className="submenu-content">
+                <Link to="/profiles" className="submenu-link">Birth Profiles 👤</Link>
                 <Link to="/advisor" className="submenu-link">Personal Advisor 🌟</Link>
                 <Link to="/charts" className="submenu-link">Birth Charts</Link>
                 <Link to="/dasha" className="submenu-link">Vimshottari Dasha</Link>
@@ -156,9 +157,15 @@ const Navbar = () => {
 
             {/* Mobile Login Item */}
             <div className="menu-item-container mobile-only-item">
-              <div className="menu-link mobile-login-item">
-                <span className="menu-icon">👤</span> LOGIN / REGISTER
-              </div>
+              {isLoggedIn ? (
+                <div className="menu-link mobile-login-item" onClick={() => { closeAll(); handleLogout(); }}>
+                  <span className="menu-icon">👤</span> LOGOUT ({userName || 'User'})
+                </div>
+              ) : (
+                <div className="menu-link mobile-login-item" onClick={() => { closeAll(); navigate('/login'); }}>
+                  <span className="menu-icon">👤</span> LOGIN / REGISTER
+                </div>
+              )}
             </div>
 
           </div>

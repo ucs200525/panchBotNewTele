@@ -302,11 +302,157 @@ function generate(plan, results, context) {
 
     // ── SELF_QUERY ────────────────────────────────────────────────────────────
     else if (action === 'SELF_QUERY') {
-      if (context.hasBirthDetails || context.userProfile.dob) {
-        const p = context.userProfile;
-        sections.push(`### 👤 Your Profile\n\nYou were born on **${p.dob}**${p.time ? ` at **${p.time}**` : ''}${p.city ? ` in **${p.city}**` : ''}.`);
+      const p = context.userProfile || {};
+      const bp = results['BIRTH_PANCHANG'] || {};
+      const nakName = (typeof bp.nakshatra === 'object' ? bp.nakshatra?.name : bp.nakshatra) || p.nakshatra || null;
+      const rashiName = (typeof bp.rashi === 'object' ? bp.rashi?.name : bp.rashi) || p.rashi || null;
+      const lagnaData = results['_NATAL_LAGNA'] || results['LAGNA'];
+      const lagnaName = lagnaData?.name || null;
+
+      if (p.dob) {
+        let text = `### 🌅 Your Birth Profile\n\n`;
+        text += `| Detail | Value |\n|--------|-------|\n`;
+        text += `| **Date of Birth** | ${p.dob} |\n`;
+        if (p.time) text += `| **Time of Birth** | ${p.time} |\n`;
+        if (p.city) text += `| **Place of Birth** | ${p.city} |\n`;
+        if (lagnaName) text += `| **Lagna (Ascendant)** | ${zodiacMap[lagnaName] || ''} ${lagnaName} |\n`;
+        if (nakName) text += `| **Janma Nakshatra** | ✨ ${nakName} |\n`;
+        if (rashiName) text += `| **Rashi (Moon Sign)** | ${zodiacMap[rashiName] || ''} ${rashiName} |\n`;
+        if (context.hasBirthDetails) {
+          text += `\n*Your profile is complete. Ask me about your Lagna, Nakshatra, or daily Muhurat!*`;
+        } else {
+          text += `\n⚠️ *Profile incomplete \u2014 please also share your ${!p.time ? 'time of birth ' : ''}${!p.city ? 'and place of birth' : ''}.*`;
+        }
+        sections.push(text);
       } else {
-        sections.push(`### 👤 Who are you?\n\nI don't have your birth details yet! Please provide your date, time, and place of birth.`);
+        sections.push(`### 👤 Birth Profile Required\n\nI don't have your birth details yet. Please share your date, time, and place of birth.\n\n*Example: "I was born on 12 Aug 2004 at 10:30 AM in Hyderabad"*`);
+      }
+    }
+
+    // ── GET_BIRTH_CHART ──────────────────────────────────────────────────────
+    else if (action === 'GET_BIRTH_CHART') {
+      const p = context.userProfile || {};
+      const planets = results['_NATAL_PLANETS'];
+      const lagnaData = results['_NATAL_LAGNA'] || results['LAGNA'];
+      const dasha = results['DASHA'];
+      const dCharts = results['D_CHARTS'] || {};
+      const doshas = results['DOSHAS'] || {};
+      
+      const { PLANET_HOUSE_MEANINGS, D_CHART_MEANINGS, DOSHA_REMEDIES } = require('../../ai_astrologer/astrology/astrologyDictionary');
+
+      if (!context.hasBirthDetails) {
+        sections.push(`### 🔮 Birth Chart\n\nTo compute your Vedic Kundli, I need your complete birth details.\n\n*Example: "I was born on 12 Aug 2004 at 10:30 AM in Hyderabad"*`);
+      } else {
+        let text = `👋 **Hi! Let’s explore your Vedic chart—“Tell me about me” edition**\n\n`;
+        text += `Based on your *Vedic (Parāśari) Kundli*, here is your deterministic deep analysis:\n\n`;
+
+        const lagnaRashiIdx = lagnaData?.rashiIndex ?? 0;
+        
+        // 1. Quick Kundli Snapshot (D-1)
+        if (planets && planets.planets) {
+          text += `#### 📌 Quick Kundli Snapshot (D-1 / Rāśi)\n\n`;
+          text += `| Category | Your placement | What it generally brings |\n|---|---|---|\n`;
+          
+          const keyPlanets = ['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn','Rahu','Ketu'];
+          for (const name of keyPlanets) {
+            const pl = planets.planets.find(pl2 => pl2.name.includes(name));
+            if (pl) {
+              const rn = pl.rashi?.name || 'N/A';
+              const sym = zodiacMap[rn] || '';
+              const house = pl.rashi ? ((pl.rashi.index - lagnaRashiIdx + 12) % 12) + 1 : '?';
+              
+              let category = 'Planet';
+              if (name === 'Sun') category = 'Key career/soul marker';
+              if (name === 'Moon') category = 'Mind & Emotions';
+              if (name === 'Mars') category = 'Energy / drive';
+              if (name === 'Mercury') category = 'Communication / learning';
+              if (name === 'Jupiter') category = 'Wisdom & Expansion';
+              if (name === 'Venus') category = 'Wealth & relationships';
+              if (name === 'Saturn') category = 'Focus & discipline';
+              if (name === 'Rahu' || name === 'Ketu') category = 'Karmic axis';
+              
+              let meaning = PLANET_HOUSE_MEANINGS[name] && PLANET_HOUSE_MEANINGS[name][house] 
+                  ? PLANET_HOUSE_MEANINGS[name][house] 
+                  : `Impacts the ${house}th house affairs.`;
+                  
+              text += `| *${category}* | **${name}** in **${rn}** (${house}th) | ${meaning} |\n`;
+            }
+          }
+          text += '\n';
+        }
+
+        // 2. Divisional Charts
+        if (Object.keys(dCharts).length > 0) {
+          text += `#### 📈 Divisional Charts (D9/D10 highlights — your "fruits")\n\n`;
+          text += `Divisional charts show *how results actually manifest* beyond the raw D-1 placement.\n\n`;
+          
+          const ascCharts = dCharts['Lagna'];
+          if (ascCharts) {
+            const d9Sign = ascCharts['D9']?.name;
+            const d10Sign = ascCharts['D10']?.name;
+            
+            if (d9Sign && D_CHART_MEANINGS['D9'][d9Sign]) {
+                text += `🔹 **D9 (Navāṁśa):** ${D_CHART_MEANINGS['D9'][d9Sign]}\n\n`;
+            } else if (d9Sign) {
+                text += `🔹 **D9 (Navāṁśa):** Ascendant is ${d9Sign}, coloring your marriage and soul path.\n\n`;
+            }
+            
+            if (d10Sign && D_CHART_MEANINGS['D10'][d10Sign]) {
+                text += `🔹 **D10 (Daśāṁśa):** ${D_CHART_MEANINGS['D10'][d10Sign]}\n\n`;
+            } else if (d10Sign) {
+                text += `🔹 **D10 (Daśāṁśa):** Ascendant is ${d10Sign}, defining your career environment.\n\n`;
+            }
+            
+            text += `🔹 **D2 (Hora):** ${D_CHART_MEANINGS['D2']['good']}\n\n`;
+            text += `🔹 **D16 (Shodashamsha):** ${D_CHART_MEANINGS['D16']['mixed']}\n\n`;
+          }
+        }
+
+        // 3. Current Life Timing (Dasha)
+        if (dasha && dasha.current) {
+          text += `#### ⏳ Your current life timing: ${dasha.current.lord} Maha-Dasha\n\n`;
+          text += `Your *major period* is: **${dasha.current.lord}** (${dasha.current.start} → ${dasha.current.end}).\n\n`;
+          text += `| Level | Period |\n|---|---|\n`;
+          text += `| *Maha-Dasha* | **${dasha.current.lord}** |\n`;
+          if (dasha.antarDasha) text += `| *Antar-Dasha* (now) | **${dasha.antarDasha.lord}** |\n`;
+          if (dasha.pratyantarDasha) text += `| *Pratyantar* (now) | **${dasha.pratyantarDasha.lord}** |\n`;
+          text += '\n';
+        }
+
+        // 4. Doshas and Remedies
+        if (doshas && Object.keys(doshas).length > 0) {
+            let doshaText = `#### ⚠️ Doshas & Karmic Alignments\n\n`;
+            let hasDosha = false;
+            
+            if (doshas.sadeSati?.isActive) {
+                hasDosha = true;
+                doshaText += `> [!WARNING]\n> **Sade Sati Active:** ${doshas.sadeSati.phase}\n> ${doshas.sadeSati.description}\n\n`;
+                doshaText += `**Remedies:**\n` + DOSHA_REMEDIES['Sade Sati'].map(r => `- ${r}`).join('\n') + '\n\n';
+            }
+            if (doshas.mangalDosha?.isActive) {
+                hasDosha = true;
+                doshaText += `> [!IMPORTANT]\n> **Mangal (Kuja) Dosha Active**\n> ${doshas.mangalDosha.description}\n\n`;
+                doshaText += `**Remedies:**\n` + DOSHA_REMEDIES['Mangal Dosha'].map(r => `- ${r}`).join('\n') + '\n\n';
+            }
+            if (doshas.kalaSarpa?.isActive) {
+                hasDosha = true;
+                doshaText += `> [!CAUTION]\n> **Kala Sarpa Dosha Active:** ${doshas.kalaSarpa.type}\n> ${doshas.kalaSarpa.description}\n\n`;
+                doshaText += `**Remedies:**\n` + DOSHA_REMEDIES['Kala Sarpa Dosha'].map(r => `- ${r}`).join('\n') + '\n\n';
+            }
+            if (doshas.kemdruma?.isActive) {
+                hasDosha = true;
+                doshaText += `> [!WARNING]\n> **Kemdruma Dosha Active**\n> ${doshas.kemdruma.description}\n\n`;
+                doshaText += `**Remedies:**\n` + DOSHA_REMEDIES['Kemdruma Dosha'].map(r => `- ${r}`).join('\n') + '\n\n';
+            }
+            
+            if (hasDosha) {
+                text += doshaText;
+            } else {
+                text += `#### ✅ Doshas\n*Good news! Your chart is currently free from major afflictions like Sade Sati, Mangal Dosha, or Kala Sarpa Dosha.*\n\n`;
+            }
+        }
+
+        sections.push(text);
       }
     }
 

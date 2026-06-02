@@ -127,9 +127,14 @@ router.post('/birth-chart', async (req, res) => {
     const latitude = lat ? parseFloat(lat) : 17.3850;
     const longitude = lng ? parseFloat(lng) : 78.4867;
 
-    // Combine date and time string to JS Date object
-    const birthDateTimeStr = `${birthDate}T${birthTime}:00`;
-    const birthDateObj = new Date(birthDateTimeStr);
+    // Combine date and time string to JS Date object timezone-independently
+    const { getTimezoneFromCoordinates } = require('../utils/panchangHelper');
+    const { getUtcDateForLocalTime } = require('../utils/timezoneHelper');
+    const timezone = getTimezoneFromCoordinates(latitude, longitude);
+
+    const [year, month, day] = birthDate.split('-').map(Number);
+    const [hour, min, sec = 0] = birthTime.split(':').map(Number);
+    const birthDateObj = getUtcDateForLocalTime(year, month, day, hour, min, sec, timezone);
 
     if (isNaN(birthDateObj.getTime())) {
       return res.status(400).json({ error: 'Invalid date or time parameters provided' });

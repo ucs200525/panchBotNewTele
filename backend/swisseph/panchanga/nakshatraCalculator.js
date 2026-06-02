@@ -63,11 +63,7 @@ class NakshatraCalculator extends BaseCalculator {
      */
     calculateDayNakshatras(date, timezone = 'Asia/Kolkata') {
         const nakshatras = [];
-        const startOfDay = new Date(date);
-        startOfDay.setHours(0, 0, 0, 0);
-
-        const endOfDay = new Date(date);
-        endOfDay.setHours(23, 59, 59, 999);
+        const startOfDay = this.getStartOfDay(date, timezone);
 
         // Check Nakshatra at start of day
         let currentNakshatra = this.getNakshatraAtTime(startOfDay);
@@ -75,8 +71,7 @@ class NakshatraCalculator extends BaseCalculator {
 
         // Sample every hour to detect transitions
         for (let hour = 1; hour <= 24; hour++) {
-            const checkTime = new Date(startOfDay);
-            checkTime.setHours(hour, 0, 0, 0);
+            const checkTime = new Date(startOfDay.getTime() + hour * 3600000);
 
             const nextNakshatra = this.getNakshatraAtTime(checkTime);
 

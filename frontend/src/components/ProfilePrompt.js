@@ -1,35 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ProfileService } from '../utils/profileService';
+import { useBirthProfiles } from '../context/BirthProfileContext';
 
 const ProfilePrompt = () => {
+  const { profiles, loading } = useBirthProfiles();
   const [hasProfile, setHasProfile] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    const check = async () => {
-      // Don't show on advisor page itself
-      if (location.pathname === '/advisor') {
-        setHasProfile(true);
-        return;
-      }
+    // Don't show on advisor or profiles page itself
+    if (location.pathname === '/advisor' || location.pathname === '/profiles') {
+      setHasProfile(true);
+      return;
+    }
 
-      const local = ProfileService.getLocalProfile();
-      if (!local.name || !local.dob) {
-        // Check DB
-        const dbProfile = await ProfileService.fetchProfile();
-        if (!dbProfile) {
-          setHasProfile(false);
-        } else {
-          setHasProfile(true);
-        }
-      } else {
-        setHasProfile(true);
-      }
-    };
-    check();
-  }, [location.pathname]);
+    if (!loading) {
+      setHasProfile(profiles.length > 0);
+    }
+  }, [location.pathname, profiles, loading]);
 
   if (hasProfile || localStorage.getItem('astro_guest_mode') === 'true') return null;
 
@@ -51,12 +41,12 @@ const ProfilePrompt = () => {
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
         <span style={{ fontSize: '1.3rem' }}>✨</span>
         <span>
-          <strong style={{ color: '#c7d2fe' }}>No Login Needed!</strong> Just setup your Birth Profile once to unlock personalized Muhurats and AI Birth Charts.
+          <strong style={{ color: '#c7d2fe' }}>Unlock Personalized Vedic Astrology!</strong> Setup your Birth Profile once to unlock custom Muhurats, Sade Sati transits, and AI birth charts.
         </span>
       </div>
       <div style={{ display: 'flex', gap: '12px' }}>
         <button 
-          onClick={() => navigate('/login')}
+          onClick={() => navigate(ProfileService.isLoggedIn() ? '/profiles' : '/login')}
           style={{
             background: '#fff',
             color: '#4338ca',
@@ -68,7 +58,7 @@ const ProfilePrompt = () => {
             fontSize: '0.82rem'
           }}
         >
-          Login / Register 🚀
+          {ProfileService.isLoggedIn() ? 'Setup Birth Profile 🚀' : 'Login / Register 🚀'}
         </button>
 
         <button 
@@ -93,6 +83,5 @@ const ProfilePrompt = () => {
     </div>
   );
 };
-
 
 export default ProfilePrompt;

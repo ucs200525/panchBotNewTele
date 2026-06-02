@@ -23,11 +23,14 @@ const trackApiRequest = async (req, res, next) => {
                 engineUsed: req.query.engine || 'unknown'
             };
 
-            // Save to DB asynchronously - don't await so we don't block anything
-            ApiAnalytics.create(analyticsData).catch(err => {
-                // Use console.log for internal errors to avoid recursion
-                console.error('Analytics Save Error:', err.message);
-            });
+            // Save to DB asynchronously if online - don't await so we don't block anything
+            const mongoose = require('mongoose');
+            if (mongoose.connection.readyState === 1) {
+                ApiAnalytics.create(analyticsData).catch(err => {
+                    // Use console.log for internal errors to avoid recursion
+                    console.error('Analytics Save Error:', err.message);
+                });
+            }
         } catch (error) {
             console.error('Analytics Middleware Error:', error.message);
         }

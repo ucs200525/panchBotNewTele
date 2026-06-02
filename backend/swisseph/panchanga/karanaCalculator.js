@@ -69,16 +69,14 @@ class KaranaCalculator extends BaseCalculator {
      */
     calculateDayKaranas(date, timezone = 'Asia/Kolkata') {
         const karanas = [];
-        const startOfDay = new Date(date);
-        startOfDay.setHours(0, 0, 0, 0);
+        const startOfDay = this.getStartOfDay(date, timezone);
 
         let currentKarana = this.getKaranaAtTime(startOfDay);
         let startTime = startOfDay;
 
         // Sample every hour to detect transitions (Karanas change ~2 times per day)
         for (let hour = 1; hour <= 24; hour++) {
-            const checkTime = new Date(startOfDay);
-            checkTime.setHours(hour, 0, 0, 0);
+            const checkTime = new Date(startOfDay.getTime() + hour * 3600000);
 
             const nextKarana = this.getKaranaAtTime(checkTime);
 

@@ -14,13 +14,16 @@ const requestLogger = morgan(
       ip: req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress
     };
 
-    // Save to MongoDB asynchronously (non-blocking)
-    Log.create({
-      level: logObj.status >= 400 ? 'error' : 'info',
-      message: `${logObj.method} ${logObj.url} ${logObj.status}`,
-      meta: logObj,
-      timestamp: new Date()
-    }).catch(err => console.error('Log Capture Error:', err.message));
+    // Save to MongoDB asynchronously (non-blocking) if database is online
+    const mongoose = require('mongoose');
+    if (mongoose.connection.readyState === 1) {
+      Log.create({
+        level: logObj.status >= 400 ? 'error' : 'info',
+        message: `${logObj.method} ${logObj.url} ${logObj.status}`,
+        meta: logObj,
+        timestamp: new Date()
+      }).catch(err => console.error('Log Capture Error:', err.message));
+    }
 
     return JSON.stringify(logObj);
   },

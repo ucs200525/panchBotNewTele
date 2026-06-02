@@ -40,6 +40,10 @@ function saveToDb(level, message, meta) {
   // Only save if it's not a heartbeat/debug message to keep DB clean
   if (typeof message === 'string' && (message.includes('Logger initialized') || message.includes('Server is running'))) return;
 
+  // Bypass DB logging instantly if MongoDB is offline
+  const mongoose = require('mongoose');
+  if (mongoose.connection.readyState !== 1) return;
+
   Log.create({
     level,
     message: typeof message === 'object' ? JSON.stringify(message) : message,

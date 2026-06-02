@@ -135,7 +135,8 @@ function extractEntities(query) {
     }
   }
 
-  entities.is_providing_dob = /\b(born|dob|birth\s*date|birth\s*time)\b/i.test(q);
+  const isQuestionOrRetrieve = /\b(when|where|what\s+is|what\s+are|tell\s+me|show|get|retrieve|do\s+you\s+know)\b/i.test(q);
+  entities.is_providing_dob = /\b(born|dob|birth\s*date|birth\s*time)\b/i.test(q) && !isQuestionOrRetrieve;
   entities.raw = query;
 
   return entities;

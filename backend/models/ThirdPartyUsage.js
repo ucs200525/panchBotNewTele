@@ -42,8 +42,7 @@ openCageUsageSchema.index({ date: 1 }, { unique: true });
 const swissEngineUsageSchema = new mongoose.Schema({
     date: {
         type: Date,
-        required: true,
-        index: true
+        required: true
     },
     
     nativeEngine: {

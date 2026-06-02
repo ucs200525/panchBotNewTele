@@ -55,16 +55,14 @@ class YogaCalculator extends BaseCalculator {
      */
     calculateDayYogas(date, timezone = 'Asia/Kolkata') {
         const yogas = [];
-        const startOfDay = new Date(date);
-        startOfDay.setHours(0, 0, 0, 0);
+        const startOfDay = this.getStartOfDay(date, timezone);
         
         let currentYoga = this.getYogaAtTime(startOfDay);
         let startTime = startOfDay;
         
         // Sample every 2 hours to detect transitions
         for (let hour = 2; hour <= 24; hour += 2) {
-            const checkTime = new Date(startOfDay);
-            checkTime.setHours(hour, 0, 0, 0);
+            const checkTime = new Date(startOfDay.getTime() + hour * 3600000);
             
             const nextYoga = this.getYogaAtTime(checkTime);
             

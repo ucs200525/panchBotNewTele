@@ -58,8 +58,7 @@ async function buildContext(params) {
   // ── CONTEXT BUILDER (SINGLE SOURCE OF TRUTH) ───────────────────────────────
   let resolvedDate = date; // Default system date
   const sessionProfile = sessionMemory.userProfile || {};
-  const isUpdatingProfile = entities.is_providing_dob || (entities.intents && entities.intents.includes('UPDATE_PROFILE'));
-
+  
   const profile = {
     name: sessionProfile.name || userProfile.name,
     dob: sessionProfile.dob || userProfile.dob,
@@ -70,6 +69,15 @@ async function buildContext(params) {
     nakshatra: sessionProfile.nakshatra || userProfile.nakshatra,
     rashi: sessionProfile.rashi || userProfile.rashi,
   };
+
+  // Auto-detect profile updates if a date+time package is provided or profile is currently incomplete
+  const isUpdatingProfile = !!(
+    entities.is_providing_dob || 
+    (entities.intents && entities.intents.includes('UPDATE_PROFILE')) ||
+    (entities.dates && entities.dates.length > 0 && entities.times && entities.times.length > 0) ||
+    (entities.dates && entities.dates.length > 0 && !profile.dob) ||
+    (entities.times && entities.times.length > 0 && !profile.time)
+  );
 
   const updatedFields = [];
 

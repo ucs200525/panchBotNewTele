@@ -100,7 +100,7 @@ function buildPlan(classifiedIntents) {
     'EVAL_BUSINESS', 'EVAL_TRAVEL', 'EVAL_GENERAL_DAY',
     'GET_LAGNA', 'GET_NAKSHATRA', 'GET_TODAY_NAKSHATRA',
     'GET_PLANET_INFO', 'GET_BIRTH_CHART', 'SUMMARY_ENGINE',
-    'COMPARE_NAKSHATRA'
+    'COMPARE_NAKSHATRA', 'SELF_QUERY', 'UPDATE_PROFILE', 'GENERAL_ASTROLOGY'
   ].includes(a.action));
   
   if (needsSwiss) {
@@ -121,14 +121,36 @@ function buildPlan(classifiedIntents) {
 /**
  * Execute the plan — compute Swiss data, apply rules, return results map.
  */
-async function executePlan(plan, context) {
+async function executePlan(plan, context, onStatus) {
   const results = {};
+  const notify = (msg) => { if (onStatus) onStatus(msg); };
 
   // ── Pre-compute Swiss data once (shared across steps) ──────────────────
   if (plan.some(s => s.action === '_SWISS_PREP')) {
-    const birthDate = context.userProfile.dob ? new Date(`${context.userProfile.dob}T${context.userProfile.time || '12:00'}`) : null;
+    notify("⚙️ Pre-computing ephemeris data (Swiss Ephemeris)...");
+    const { getTimezoneFromCoordinates } = require('../utils/panchangHelper');
+    const { getUtcDateForLocalTime } = require('../utils/timezoneHelper');
+
+    const birthLat = context.userProfile?.lat ? parseFloat(context.userProfile.lat) : 17.385;
+    const birthLng = context.userProfile?.lng ? parseFloat(context.userProfile.lng) : 78.4867;
+    const birthTimezone = getTimezoneFromCoordinates(birthLat, birthLng);
+
+    let birthDate = null;
+    if (context.userProfile?.dob) {
+      const [by, bm, bd] = context.userProfile.dob.split('-').map(Number);
+      const bTime = context.userProfile.time || '12:00';
+      const [bh, bmin, bsec = 0] = bTime.split(':').map(Number);
+      birthDate = getUtcDateForLocalTime(by, bm, bd, bh, bmin, bsec, birthTimezone);
+    }
+
+    const transitLat = context.userProfile?.lat ? parseFloat(context.userProfile.lat) : 17.385;
+    const transitLng = context.userProfile?.lng ? parseFloat(context.userProfile.lng) : 78.4867;
+    const transitTimezone = getTimezoneFromCoordinates(transitLat, transitLng);
+
+    const [ty, tm, td] = context.date.split('-').map(Number);
     const transitTime = context.userProfile?.transitTime || '12:00';
-    const transitDate = new Date(`${context.date}T${transitTime}`);
+    const [th, tmin, tsec = 0] = transitTime.split(':').map(Number);
+    const transitDate = getUtcDateForLocalTime(ty, tm, td, th, tmin, tsec, transitTimezone);
     
     results['_NATAL_LAGNA'] = birthDate ? swissAdapter.computeLagna(context.userProfile, birthDate) : null;
     results['_TRANSIT_LAGNA'] = swissAdapter.computeLagna(context.userProfile, transitDate);
@@ -137,6 +159,7 @@ async function executePlan(plan, context) {
     results['_TODAY_MOON'] = swissAdapter.computeTodayMoon(transitDate);
     
     // ── Transit Panchang (Rahu Kaal, Abhijit, etc.) ──────────────────────────
+    notify("📅 Extracting Transit Panchang (Rahu Kaal, Abhijit)...");
     results['_TRANSIT_PANCHANG'] = await swissAdapter.computeTransitPanchang(context.userProfile, transitDate);
     
     // Inject the calculated transit panchang into the context for Rule Engine
@@ -157,6 +180,7 @@ async function executePlan(plan, context) {
     }
     
     if (context.hasBirthDetails) {
+      notify("🔭 Reading your birth chart...");
       results['BIRTH_PANCHANG'] = swissAdapter.computeBirthPanchang(context.userProfile);
       // Auto-update profile markers for downstream use
       if (results['BIRTH_PANCHANG']) {
@@ -172,6 +196,7 @@ async function executePlan(plan, context) {
 
     // ── GET_LAGNA ────────────────────────────────────────────────────────
     if (action === 'GET_LAGNA') {
+      notify("⚙️ Computing Lagna & Ascendant...");
       const targetLagna = isNatal ? results['_NATAL_LAGNA'] : results['_TRANSIT_LAGNA'];
       results['LAGNA'] = targetLagna || results['_TRANSIT_LAGNA'];
       results['LAGNA_TYPE'] = isNatal && targetLagna ? 'NATAL' : 'TRANSIT';
@@ -179,6 +204,7 @@ async function executePlan(plan, context) {
 
     // ── GET_NAKSHATRA ────────────────────────────────────────────────────
     else if (action === 'GET_NAKSHATRA') {
+      notify("🌙 Analyzing Moon & Nakshatra...");
       results['NAKSHATRA'] = results['BIRTH_PANCHANG']?.nakshatra || { name: context.userProfile.nakshatra };
     }
 
@@ -189,12 +215,14 @@ async function executePlan(plan, context) {
 
     // ── EVALUATION INTENTS ────────────────────────────────────────────────
     else if (action === 'EVAL_BUSINESS') {
+      notify("📊 Evaluating Business alignments...");
       const moonSign = results['_TODAY_MOON']?.rashi || null;
       const moonNak = results['_TODAY_MOON']?.nakshatra || null;
       results['BUSINESS'] = ruleEngine.evaluateBusiness(results['_TRANSIT_LAGNA'], moonSign, moonNak, context.panchang);
     }
 
     else if (action === 'EVAL_TRAVEL') {
+      notify("✈️ Evaluating Travel muhurats...");
       const moonSign = results['_TODAY_MOON']?.rashi || null;
       const moonNak = results['_TODAY_MOON']?.nakshatra || null;
       results['TRAVEL'] = ruleEngine.evaluateTravel(results['_TRANSIT_LAGNA'], moonSign, moonNak, context.panchang);
@@ -214,7 +242,39 @@ async function executePlan(plan, context) {
 
     // ── GET_PLANET_INFO ──────────────────────────────────────────────────
     else if (action === 'GET_PLANET_INFO') {
+      notify("🪐 Mapping planetary positions...");
       results['PLANETS'] = results['_TRANSIT_PLANETS'];
+    }
+
+    // ── GET_BIRTH_CHART / GENERAL_ASTROLOGY ──────────────────────────
+    else if (action === 'GET_BIRTH_CHART' || action === 'GENERAL_ASTROLOGY') {
+      if (context.hasBirthDetails) {
+        notify("⏳ Calculating Vimshottari Dasha...");
+        // Compute Vimshottari Dasha from birth Moon
+        results['DASHA'] = swissAdapter.computeVimshottariDasha(context.userProfile);
+        // House placements
+        results['HOUSE_PLACEMENTS'] = swissAdapter.computeHousePlacements(context.userProfile);
+        // Natal planets are already in _NATAL_PLANETS from _SWISS_PREP
+        results['LAGNA'] = results['_NATAL_LAGNA'] || results['LAGNA'];
+        results['LAGNA_TYPE'] = 'NATAL';
+        
+        notify("🧮 Calculating Divisional Charts (D1-D60) & Doshas...");
+        const natalPlanetsObj = results['_NATAL_PLANETS'];
+        if (natalPlanetsObj && natalPlanetsObj.planets) {
+          // Compute D-charts for all planets
+          results['D_CHARTS'] = {};
+          natalPlanetsObj.planets.forEach(p => {
+             results['D_CHARTS'][p.name] = swissAdapter.getAllDivisionalCharts(p.longitude);
+          });
+          // Compute D-charts for Lagna
+          if (results['LAGNA'] && results['LAGNA'].degree) {
+             results['D_CHARTS']['Lagna'] = swissAdapter.getAllDivisionalCharts(results['LAGNA'].degree);
+          }
+          
+          // Analyze Doshas and Sade Sati
+          results['DOSHAS'] = swissAdapter.analyzeAllDoshas(results['LAGNA'], natalPlanetsObj.planets, results['_TRANSIT_PLANETS']?.planets);
+        }
+      }
     }
   }
 
@@ -235,9 +295,12 @@ async function executePlan(plan, context) {
  * Processes a single decomposed query segment.
  * ═══════════════════════════════════════════════════════
  */
-async function processSingleQuery(segmentQuery, userQuery, contextParams = {}, isMultiPart = false) {
+async function processSingleQuery(segmentQuery, userQuery, contextParams = {}, isMultiPart = false, onStatus = null) {
   try {
+    const notify = (msg) => { if (onStatus) onStatus(msg); };
+    
     // ── STEP 1: Preprocess ─────────────────────────────────────────────
+    notify("🔍 Analyzing query semantics...");
     const cleaned = segmentQuery;
 
     // ── STEP 2: Extract Entities (Hybrid Node Regex + Python spaCy) ────
@@ -446,12 +509,52 @@ async function processSingleQuery(segmentQuery, userQuery, contextParams = {}, i
     const plan = buildPlan(classifiedIntents);
 
     // ── STEP 7: Execute Plan (Swiss + Rules) ───────────────────────────
-    const executionResults = await executePlan(plan, context);
+    const executionResults = await executePlan(plan, context, onStatus);
 
     // ── STEP 8: Generate Natural Language Response ─────────────────────
     // Filter out internal prep steps from NLG plan
     const nlgPlan = plan.filter(s => !s.action.startsWith('_'));
-    const responseText = nlgEngine.generate(nlgPlan, executionResults, context);
+    
+    let responseText = null;
+    let llmUsed = false;
+
+    // ── Strategy: Local Generative LLM First for Creative/Interpretive Intents ──
+    // For intents where custom astrological interpretation is highly beneficial
+    // (like GENERAL_ASTROLOGY, GET_BIRTH_CHART, FUTURE_PREDICTION), we run the
+    // local LLM first. If it succeeds, we use the output. If it fails, runs out
+    // of memory, or times out, we gracefully fallback to the deterministic NLG engine.
+    const LLM_WORTHY_INTENTS = ['GENERAL_ASTROLOGY', 'FUTURE_PREDICTION'];
+    const wantsLLM = classifiedIntents.some(i => LLM_WORTHY_INTENTS.includes(i.intent));
+
+    if (wantsLLM) {
+      try {
+        notify("✍️ Formulating astrological response with Local AI... (this takes 15-20s)");
+        console.log(`[AI Core] Attempting local LLM for generative intent: ${classifiedIntents.map(i=>i.intent).join('+')}`);
+        const contextData = {
+          userProfile: context.userProfile || {},
+          panchang: context.rawPanchang || context.panchang || {},
+          results: executionResults || {},
+        };
+        const history = contextParams.history || [];
+        const llmText = await pythonBridge.generateLLMResponse(segmentQuery, contextData, history);
+        if (llmText && llmText.trim().length >= 10) {
+          responseText = llmText;
+          llmUsed = true;
+          console.log(`[AI Core] Local LLM response generated and used successfully.`);
+        } else {
+          console.log(`[AI Core] Local LLM response empty/invalid, falling back to deterministic NLG.`);
+        }
+      } catch (llmErr) {
+        console.error(`[AI Core] Local LLM generation failed, falling back to deterministic NLG:`, llmErr.message);
+      }
+    }
+
+    // Deterministic NLG fallback/standard path (always used if wantsLLM is false, or if LLM failed/timed out)
+    if (!responseText) {
+      notify("✍️ Composing response...");
+      console.log(`[AI Core] Using deterministic NLG engine.`);
+      responseText = nlgEngine.generate(nlgPlan, executionResults, context);
+    }
 
     return {
       success: true,
@@ -469,6 +572,7 @@ async function processSingleQuery(segmentQuery, userQuery, contextParams = {}, i
         pythonUsed: classifiedIntents.some(c => c.source === 'python_authoritative' || c.source === 'python_fallback'),
         entityCount: Object.values(entities).flat().filter(Boolean).length,
         hasBirthDetails: context.hasBirthDetails,
+        llmUsed: llmUsed,
       }
     };
 
@@ -492,19 +596,22 @@ async function processSingleQuery(segmentQuery, userQuery, contextParams = {}, i
  * Handles Decomposition, Execution Loop, and Response Composition
  * ═══════════════════════════════════════════════════════
  */
-async function processQuery(userQuery, contextParams = {}) {
+async function processQuery(userQuery, contextParams = {}, onStatus = null) {
   try {
+    const notify = (msg) => { if (onStatus) onStatus(msg); };
+    
     // 1. Normalization
     const cleaned = preprocessor.preprocess(userQuery);
 
     // 2. Decomposition
+    notify("🧩 Processing language structures...");
     const segments = querySplitter.splitQuery(cleaned);
 
     console.log(`[AI Core] Query Decomposed into ${segments.length} segments:`, segments);
 
     // If only one segment, process normally
     if (segments.length === 1) {
-      const result = await processSingleQuery(segments[0], userQuery, contextParams, false);
+      const result = await processSingleQuery(segments[0], userQuery, contextParams, false, onStatus);
       
       // Persist Session Memory
       if (contextParams.sessionId && result.success && result.context) {
@@ -541,8 +648,9 @@ async function processQuery(userQuery, contextParams = {}) {
 
     for (let i = 0; i < segments.length; i++) {
       const segment = segments[i];
+      if (segments.length > 1) notify(`⏳ Analyzing question part ${i + 1}/${segments.length}...`);
       // Run the pipeline for each segment independently
-      const res = await processSingleQuery(segment, userQuery, contextParams, true);
+      const res = await processSingleQuery(segment, userQuery, contextParams, true, onStatus);
       
       if (res.success) {
         // Compose the header

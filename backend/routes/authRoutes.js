@@ -13,7 +13,7 @@ const JWT_SECRET = process.env.ADMIN_SECRET || 'vedicSecretKey123';
  */
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, dob, time, city, lat, lng } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ error: 'Please provide name, email, and password' });
@@ -29,10 +29,37 @@ router.post('/register', async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    let nakshatra = '';
+    let rashi = '';
+    if (dob && time && lat !== undefined && lng !== undefined) {
+      try {
+        const swissAdapter = require('../ai_core/executor/swissAdapter');
+        const birthPanchang = swissAdapter.computeBirthPanchang({
+          dob,
+          time,
+          lat: parseFloat(lat),
+          lng: parseFloat(lng)
+        });
+        if (birthPanchang) {
+          nakshatra = typeof birthPanchang.nakshatra === 'object' ? birthPanchang.nakshatra?.name : birthPanchang.nakshatra;
+          rashi = typeof birthPanchang.rashi === 'object' ? birthPanchang.rashi?.name : birthPanchang.rashi;
+        }
+      } catch (swissErr) {
+        logger.error({ message: 'Swiss calculation error in registration', error: swissErr.message });
+      }
+    }
+
     user = new User({
       name,
       email,
-      password: hashedPassword
+      password: hashedPassword,
+      dob,
+      time,
+      city,
+      lat,
+      lng,
+      nakshatra: nakshatra || undefined,
+      rashi: rashi || undefined
     });
 
     await user.save();
@@ -46,7 +73,12 @@ router.post('/register', async (req, res) => {
       user: {
         id: user._id,
         name: user.name,
-        email: user.email
+        email: user.email,
+        nakshatra: user.nakshatra,
+        rashi: user.rashi,
+        dob: user.dob,
+        time: user.time,
+        city: user.city
       }
     });
   } catch (err) {

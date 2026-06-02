@@ -65,6 +65,18 @@ except Exception as e:
     entity_extractor = None
     ENTITY_EXTRACTOR_AVAILABLE = False
 
+# Generative LLM Model Setup
+GENERATOR_AVAILABLE = False
+generator = None
+
+try:
+    from model.llm_generator import VedicLLMGenerator
+    generator = VedicLLMGenerator()
+    GENERATOR_AVAILABLE = True
+    logging.info("Vedic LLM Generator initialized (lazy-loading on first request).")
+except Exception as e:
+    logging.warning(f"Vedic LLM Generator failed to initialize: {e}")
+
 # ── App Setup ──────────────────────────────────────────────────────────────
 app = FastAPI(
     title="Vedic AI Intelligence Service",
@@ -98,6 +110,11 @@ class EntitiesRequest(BaseModel):
 
 class SemanticRequest(BaseModel):
     query: str
+
+class GenerateRequest(BaseModel):
+    query: str
+    context: dict
+    history: Optional[list] = []
 
 # ── Endpoints ──────────────────────────────────────────────────────────────
 @app.get("/health")
@@ -196,6 +213,20 @@ def semantic_search(req: SemanticRequest):
     """
     # Phase 3 feature — returns empty for now
     return {"matches": [], "message": "Semantic search not yet initialized. Coming in Phase 3."}
+
+@app.post("/generate")
+def generate_response(req: GenerateRequest):
+    """
+    Generate conversational Vedic astrology response using local LLM.
+    """
+    if not GENERATOR_AVAILABLE or generator is None:
+        return {"error": "Local LLM generator not available", "text": None}
+    try:
+        text = generator.generate_response(req.query, req.context, req.history)
+        return {"text": text, "source": "local_llm"}
+    except Exception as e:
+        logger.error(f"Local LLM generation error: {e}")
+        return {"error": str(e), "text": None}
 
 
 if __name__ == "__main__":

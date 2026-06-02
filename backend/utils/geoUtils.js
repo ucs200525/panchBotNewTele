@@ -16,14 +16,14 @@ async function fetchCoordinates(city) {
 
   try {
     // 1. Search for the city
-    const searchUrl = `http://api.geonames.org/searchJSON?q=${encodeURIComponent(city)}&maxRows=1&username=${username}`;
+    const searchUrl = `https://secure.geonames.org/searchJSON?q=${encodeURIComponent(city)}&maxRows=1&username=${username}`;
     const searchResponse = await axios.get(searchUrl);
 
     if (searchResponse.data.geonames && searchResponse.data.geonames.length > 0) {
       const { lat, lng } = searchResponse.data.geonames[0];
 
       // 2. Get timezone for the coordinates
-      const tzUrl = `http://api.geonames.org/timezoneJSON?lat=${lat}&lng=${lng}&username=${username}`;
+      const tzUrl = `https://secure.geonames.org/timezoneJSON?lat=${lat}&lng=${lng}&username=${username}`;
       const tzResponse = await axios.get(tzUrl);
 
       const timeZone = tzResponse.data.timezoneId;

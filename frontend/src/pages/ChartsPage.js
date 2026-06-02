@@ -4,6 +4,8 @@ import { CityAutocomplete } from '../components/forms';
 import ChartWheel from '../components/charts/ChartWheel';
 import { useAuth } from '../context/AuthContext';
 import { saveProfile, getProfile, getAllProfiles } from '../utils/profileStorage';
+import { useBirthProfiles } from '../context/BirthProfileContext';
+import ProfileSelector from '../components/common/ProfileSelector';
 
 const VARGA_GROUPS = {
     'Basic': ['D1', 'D9', 'D10'],
@@ -13,6 +15,7 @@ const VARGA_GROUPS = {
 };
 
 const ChartsPage = () => {
+    const { selectedProfile } = useBirthProfiles();
     const { setCityAndDate } = useAuth();
     const [name, setName] = useState('');
     const [cityName, setCityName] = useState(() => localStorage.getItem('selectedCity') || '');
@@ -28,6 +31,17 @@ const ChartsPage = () => {
     useEffect(() => {
         setSavedProfiles(getAllProfiles());
     }, []);
+
+    // Sync input fields when global birth profile selection changes
+    useEffect(() => {
+        if (selectedProfile) {
+            setName(selectedProfile.name);
+            setCityName(selectedProfile.city || '');
+            setCurrentDate(selectedProfile.dob || '');
+            setBirthTime(selectedProfile.time || '12:00');
+            fetchChartData(selectedProfile.city, selectedProfile.dob || '', false);
+        }
+    }, [selectedProfile]);
 
     // Initial load: Fetch data automatically if we have city and date
     useEffect(() => {
@@ -98,6 +112,7 @@ const ChartsPage = () => {
 
     return (
         <div className="content">
+            <ProfileSelector />
             <div className="hero-section">
                 <div className="hero-content">
                     <h1 className="hero-title">Shodashvarga - 16 Charts</h1>

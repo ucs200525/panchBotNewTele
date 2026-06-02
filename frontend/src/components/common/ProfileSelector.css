@@ -1,0 +1,158 @@
+/* =============================================
+   ProfileSelector – Premium Glassmorphism Widget
+   ============================================= */
+
+.profile-selector-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.75rem;
+  width: 100%;
+}
+
+.profile-selector-inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(30, 41, 59, 0.85) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  padding: 10px 16px;
+  border-radius: 14px;
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(99, 102, 241, 0.1) inset;
+  flex-wrap: wrap;
+  max-width: 700px;
+  width: 100%;
+}
+
+/* Label ---------------------------------------- */
+.profile-selector-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #e2e8f0;          /* ← bright white-ish, fully visible */
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+
+/* Dropdown ------------------------------------- */
+.profile-selector-dropdown {
+  flex: 1;
+  min-width: 180px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(99, 102, 241, 0.4);
+  color: #f8fafc;           /* ← high contrast white */
+  padding: 7px 12px;
+  border-radius: 9px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23a5b4fc' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 30px;
+}
+
+.profile-selector-dropdown:hover {
+  border-color: rgba(99, 102, 241, 0.7);
+  background-color: rgba(15, 23, 42, 0.95);
+}
+
+.profile-selector-dropdown:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+}
+
+.profile-selector-dropdown option {
+  background: #0f172a;
+  color: #f1f5f9;
+  font-weight: 600;
+}
+
+/* Setup Button (no profiles yet) --------------- */
+.profile-selector-setup-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  border: none;
+  color: #ffffff;
+  padding: 7px 16px;
+  border-radius: 9px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+  transition: all 0.2s ease;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+
+.profile-selector-setup-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(99, 102, 241, 0.5);
+  background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+}
+
+/* Manage Button -------------------------------- */
+.profile-selector-manage-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  color: #a5b4fc;          /* ← indigo-300 clearly visible */
+  padding: 7px 13px;
+  border-radius: 9px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.profile-selector-manage-btn:hover {
+  background: rgba(99, 102, 241, 0.25);
+  border-color: rgba(99, 102, 241, 0.6);
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+}
+
+/* Active profile indicator --------------------- */
+.profile-selector-active-hint {
+  font-size: 0.72rem;
+  color: #6ee7b7;          /* emerald – clearly visible status */
+  font-weight: 700;
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+}
+
+/* Responsive ----------------------------------- */
+@media (max-width: 600px) {
+  .profile-selector-inner {
+    gap: 8px;
+    padding: 10px 12px;
+  }
+  .profile-selector-label {
+    font-size: 0.75rem;
+  }
+  .profile-selector-dropdown {
+    min-width: 140px;
+    font-size: 0.82rem;
+  }
+  .profile-selector-manage-btn {
+    font-size: 0.75rem;
+    padding: 6px 10px;
+  }
+}

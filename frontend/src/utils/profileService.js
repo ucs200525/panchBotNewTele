@@ -8,11 +8,11 @@ const API_BASE = process.env.REACT_APP_API_URL || '';
 export const ProfileService = {
 
   // --- AUTH METHODS ---
-  register: async (name, email, password) => {
+  register: async (name, email, password, dob, time, city, lat, lng) => {
     const res = await fetch(`${API_BASE}/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, password })
+      body: JSON.stringify({ name, email, password, dob, time, city, lat, lng })
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Registration failed');
@@ -36,11 +36,6 @@ export const ProfileService = {
 
   logout: () => {
     localStorage.removeItem('astro_token');
-    localStorage.removeItem('astro_name');
-    localStorage.removeItem('astro_nakshatra');
-    localStorage.removeItem('astro_rashi');
-    localStorage.removeItem('astro_birth_date');
-    localStorage.removeItem('astro_birth_time');
     localStorage.removeItem('astro_guest_mode');
     window.location.href = '/login';
   },
@@ -104,14 +99,15 @@ export const ProfileService = {
 
   syncToLocal: (p) => {
     if (!p) return;
-    localStorage.setItem('astro_name', p.name || '');
-    localStorage.setItem('astro_nakshatra', p.nakshatra || '');
-    localStorage.setItem('astro_rashi', p.rashi || '');
-    localStorage.setItem('astro_city', p.city || 'Hyderabad');
-    localStorage.setItem('astro_birth_date', p.dob || '');
-    localStorage.setItem('astro_birth_time', p.time || '');
-    localStorage.setItem('astro_lat', p.lat || '');
-    localStorage.setItem('astro_lng', p.lng || '');
+    const existing = ProfileService.getLocalProfile();
+    localStorage.setItem('astro_name', p.name !== undefined ? p.name : existing.name);
+    localStorage.setItem('astro_nakshatra', p.nakshatra !== undefined ? p.nakshatra : existing.nakshatra);
+    localStorage.setItem('astro_rashi', p.rashi !== undefined ? p.rashi : existing.rashi);
+    localStorage.setItem('astro_city', p.city !== undefined ? p.city : existing.city);
+    localStorage.setItem('astro_birth_date', p.dob !== undefined ? p.dob : existing.dob);
+    localStorage.setItem('astro_birth_time', p.time !== undefined ? p.time : existing.time);
+    localStorage.setItem('astro_lat', p.lat !== undefined ? p.lat : existing.lat);
+    localStorage.setItem('astro_lng', p.lng !== undefined ? p.lng : existing.lng);
   },
 
   getLocalProfile: () => {

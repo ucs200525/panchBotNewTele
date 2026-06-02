@@ -27,3 +27,4 @@ python_ai/model/distilbert_saved/
 backend/test_results*.txt
 .env*
 !.env.example
+.vercel

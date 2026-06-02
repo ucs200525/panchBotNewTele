@@ -25,14 +25,14 @@ async function fetchCoordinates(city) {
 
     try {
         // 1. Search for the city
-        const searchUrl = `http://api.geonames.org/searchJSON?q=${encodeURIComponent(city)}&maxRows=1&username=${username}`;
+        const searchUrl = `https://secure.geonames.org/searchJSON?q=${encodeURIComponent(city)}&maxRows=1&username=${username}`;
         const searchResponse = await axios.get(searchUrl);
 
         if (searchResponse.data.geonames && searchResponse.data.geonames.length > 0) {
             const { lat, lng } = searchResponse.data.geonames[0];
 
             // 2. Get timezone for the coordinates
-            const tzUrl = `http://api.geonames.org/timezoneJSON?lat=${lat}&lng=${lng}&username=${username}`;
+            const tzUrl = `https://secure.geonames.org/timezoneJSON?lat=${lat}&lng=${lng}&username=${username}`;
             const tzResponse = await axios.get(tzUrl);
 
             const timeZone = tzResponse.data.timezoneId;
@@ -247,7 +247,7 @@ function getCurrentDateInTimeZone(timeZone) {
 // Function to fetch GeoName ID based on city
 async function getGeoNameId(city) {
     logger.info({ message: 'getGeoNameId called', city });
-    const geoNamesUrl = `http://api.geonames.org/searchJSON?q=${city}&maxRows=1&username=ucs05`;
+    const geoNamesUrl = `https://secure.geonames.org/searchJSON?q=${city}&maxRows=1&username=ucs05`;
     try {
         const response = await axios.get(geoNamesUrl);
         // console.log("Total Results Count:", response.data.totalResultsCount);
@@ -1392,6 +1392,34 @@ router.get('/fetchCoordinates/:city', async (req, res) => {
     }
 });
 
+router.get('/calculate-birth-details', async (req, res) => {
+    try {
+        const { dob, time, lat, lng } = req.query;
+        if (!dob || !time || !lat || !lng) {
+            return res.status(400).json({ error: 'dob, time, lat, and lng are required' });
+        }
+        const swissAdapter = require('../ai_core/executor/swissAdapter');
+        const birthPanchang = swissAdapter.computeBirthPanchang({
+            dob,
+            time,
+            lat: parseFloat(lat),
+            lng: parseFloat(lng)
+        });
+        if (birthPanchang) {
+            const nakName = typeof birthPanchang.nakshatra === 'object' ? birthPanchang.nakshatra?.name : birthPanchang.nakshatra;
+            const rashiName = typeof birthPanchang.rashi === 'object' ? birthPanchang.rashi?.name : birthPanchang.rashi;
+            res.json({
+                nakshatra: nakName || null,
+                rashi: rashiName || null
+            });
+        } else {
+            res.status(500).json({ error: 'Failed to calculate birth details' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 router.get('/fetchCityName/:lat/:lng', async (req, res) => {
     const { lat, lng } = req.params;
     logger.info({ message: 'Route /fetchCityName called', lat, lng });
@@ -1723,15 +1751,32 @@ router.post('/ai/chat', async (req, res) => {
         const { message, city, date, name, birthNakshatra, birthRashi, birthDate, birthTime, lat, lng, history } = req.body;
         logger.info({ message: 'POST /ai/chat called', messageStr: message, city, date, hasHistory: !!history });
 
+        // ── OPTIONAL AUTHENTICATION ──────────────────────────────────────────
+        let loggedInUserId = null;
+        const authHeader = req.headers.authorization;
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            const token = authHeader.split(' ')[1];
+            try {
+                const jwt = require('jsonwebtoken');
+                const JWT_SECRET = process.env.ADMIN_SECRET || 'vedicSecretKey123';
+                const decoded = jwt.verify(token, JWT_SECRET);
+                loggedInUserId = decoded.id;
+            } catch (err) {
+                logger.warn({ message: 'Optional authentication in chat failed', error: err.message });
+            }
+        }
+
         if (!message || !city || !date) {
             return res.status(400).json({ error: 'Message, city, and date are required' });
         }
 
         // Use provided coordinates or fetch them
         let coords;
-        if (lat && lng && lat !== 'null' && lng !== 'null') {
+        const resolvedLat = lat || req.body.lat;
+        const resolvedLng = lng || req.body.lng;
+        if (resolvedLat && resolvedLng && resolvedLat !== 'null' && resolvedLng !== 'null') {
             const { getTimezoneFromCoordinates } = require('../utils/panchangHelper');
-            coords = { lat: parseFloat(lat), lng: parseFloat(lng), timeZone: getTimezoneFromCoordinates(parseFloat(lat), parseFloat(lng)) };
+            coords = { lat: parseFloat(resolvedLat), lng: parseFloat(resolvedLng), timeZone: getTimezoneFromCoordinates(parseFloat(resolvedLat), parseFloat(resolvedLng)) };
         } else {
             coords = await fetchCoordinates(city);
             if (!coords) {
@@ -1772,6 +1817,17 @@ router.post('/ai/chat', async (req, res) => {
         // Run the Chatbot Copilot Engine
         const { processChatRequest } = require('../utils/chatEngine');
         
+        const isStream = req.query.stream === 'true';
+        if (isStream) {
+            res.setHeader('Content-Type', 'application/x-ndjson');
+            res.setHeader('Cache-Control', 'no-cache');
+            res.setHeader('Connection', 'keep-alive');
+        }
+        
+        const onStatus = isStream ? (msg) => {
+            res.write(JSON.stringify({ type: 'status', message: msg }) + '\n');
+        } : null;
+        
         // Pass the internal fetchmuhurat and createBharagvTable functions so the engine can fetch live data
         const chatResponse = await processChatRequest(
             message,
@@ -1779,26 +1835,111 @@ router.post('/ai/chat', async (req, res) => {
             date,
             { 
               name, 
-              nakshatra: birthNakshatra, 
-              rashi: birthRashi, 
-              dob: birthDate, 
-              time: birthTime, 
-              lat, 
-              lng 
+              nakshatra: birthNakshatra || req.body.nakshatra, 
+              rashi: birthRashi || req.body.rashi, 
+              dob: birthDate || req.body.dob, 
+              time: birthTime || req.body.time, 
+              lat: lat || req.body.lat, 
+              lng: lng || req.body.lng 
             },
             panchangData,
             // helper wrappers
             async (c, d) => await fetchmuhurat(c, convertToDDMMYYYY(d), coords.lat, coords.lng, coords.timeZone),
             async (c, d, showNonBlue = true, is12HourFormat = true) => await createBharagvTable(c, d, showNonBlue, is12HourFormat, coords.lat, coords.lng, coords.timeZone),
             history,
-            sessionId
+            sessionId,
+            onStatus
         );
 
-        res.setHeader('Content-Type', 'application/json; charset=utf-8');
-        res.json({ ...chatResponse, sessionId });
+        // If the user is logged in, and birth details were updated during the chat session,
+        // automatically propagate those changes permanently to the User document in MongoDB!
+        let updatedUserProfile = null;
+
+        // ── Always extract profile from context for guest sessions ───────────
+        // Even without a login token, if the AI context detected an UPDATE_PROFILE
+        // we send the resolved profile back so the frontend can close the settings
+        // form and display the updated data instantly.
+        if (chatResponse.success && chatResponse.context?.updatedFields?.length > 0) {
+            const contextProfile = chatResponse.context.userProfile || {};
+            const nakStr = typeof contextProfile.nakshatra === 'object' ? contextProfile.nakshatra?.name : contextProfile.nakshatra;
+            const rashiStr = typeof contextProfile.rashi === 'object' ? contextProfile.rashi?.name : contextProfile.rashi;
+            updatedUserProfile = {
+                name: contextProfile.name || null,
+                dob: contextProfile.dob || null,
+                time: contextProfile.time || null,
+                city: contextProfile.city || null,
+                lat: contextProfile.lat !== undefined ? contextProfile.lat : null,
+                lng: contextProfile.lng !== undefined ? contextProfile.lng : null,
+                nakshatra: nakStr || null,
+                rashi: rashiStr || null
+            };
+        }
+
+        // ── For logged-in users, additionally persist to MongoDB ────────────
+        if (loggedInUserId && chatResponse.success && chatResponse.context?.updatedFields?.length > 0) {
+            const User = require('../models/User');
+            const contextProfile = chatResponse.context.userProfile || {};
+            
+            const updateData = {
+                updatedAt: Date.now()
+            };
+            if (contextProfile.name) updateData.name = contextProfile.name;
+            if (contextProfile.dob) updateData.dob = contextProfile.dob;
+            if (contextProfile.time) updateData.time = contextProfile.time;
+            if (contextProfile.city) updateData.city = contextProfile.city;
+            if (contextProfile.lat !== undefined) updateData.lat = contextProfile.lat;
+            if (contextProfile.lng !== undefined) updateData.lng = contextProfile.lng;
+            if (contextProfile.nakshatra) updateData.nakshatra = typeof contextProfile.nakshatra === 'object' ? contextProfile.nakshatra?.name : contextProfile.nakshatra;
+            if (contextProfile.rashi) updateData.rashi = typeof contextProfile.rashi === 'object' ? contextProfile.rashi?.name : contextProfile.rashi;
+            
+            try {
+                const updatedUser = await User.findByIdAndUpdate(
+                    loggedInUserId,
+                    { $set: updateData },
+                    { new: true }
+                ).select('-password');
+                
+                if (updatedUser) {
+                    // Override the guest-level profile with the confirmed DB values
+                    updatedUserProfile = {
+                        name: updatedUser.name,
+                        email: updatedUser.email,
+                        dob: updatedUser.dob,
+                        time: updatedUser.time,
+                        city: updatedUser.city,
+                        lat: updatedUser.lat,
+                        lng: updatedUser.lng,
+                        nakshatra: updatedUser.nakshatra,
+                        rashi: updatedUser.rashi
+                    };
+                    logger.info({ message: 'Propagated chat birth details update to User model', userId: loggedInUserId });
+                }
+            } catch (dbErr) {
+                logger.error({ message: 'Failed to propagate chat profile update to DB', error: dbErr.message });
+            }
+        }
+
+        const finalPayload = { 
+            ...chatResponse, 
+            sessionId,
+            userProfile: updatedUserProfile // Propagate updated profile back to frontend for instant sync!
+        };
+
+        if (isStream) {
+            res.write(JSON.stringify({ type: 'result', data: finalPayload }) + '\n');
+            res.end();
+        } else {
+            res.setHeader('Content-Type', 'application/json; charset=utf-8');
+            res.json(finalPayload);
+        }
     } catch (error) {
         logger.error({ message: 'POST /api/ai/chat error', error: error.message, stack: error.stack });
-        res.status(500).json({ error: 'Failed to process chat query', details: error.message });
+        if (req.query.stream === 'true') {
+            res.write(JSON.stringify({ type: 'error', data: { error: 'Failed to process chat query', details: error.message } }) + '\n');
+            res.end();
+        } else {
+            res.status(500).json({ error: 'Failed to process chat query', details: error.message });
+        }
     }
 });
 
@@ -1864,6 +2005,39 @@ router.get('/ai/sessions', async (req, res) => {
         res.json({ success: true, sessions });
     } catch (error) {
         res.status(500).json({ error: 'Failed to list sessions' });
+    }
+});
+
+router.post('/public/stats', async (req, res) => {
+    try {
+        const SiteStats = require('../models/SiteStats');
+        const { ApiAnalytics } = require('../models/Analytics');
+
+        // Increment visit count
+        await SiteStats.updateOne(
+            { key: 'global_stats' },
+            { $inc: { totalVisits: 1 } },
+            { upsert: true }
+        );
+
+        const stats = await SiteStats.findOne({ key: 'global_stats' });
+        const totalVisits = stats ? stats.totalVisits : 1;
+
+        // Get online users in last 5 minutes
+        const activeThreshold = new Date(Date.now() - 5 * 60 * 1000);
+        const onlineCount = await ApiAnalytics.distinct('ipAddress', { timestamp: { $gte: activeThreshold } }).then(arr => arr.length);
+
+        // Fallback variance so the site looks alive (min 3)
+        const displayOnline = Math.max(onlineCount + 2, 3);
+
+        res.json({
+            success: true,
+            totalVisits,
+            onlineUsers: displayOnline
+        });
+    } catch (error) {
+        console.error('Stats endpoint error:', error.message);
+        res.status(500).json({ error: error.message });
     }
 });
 

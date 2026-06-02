@@ -5,6 +5,7 @@
 
 const config = require('./config');
 const { dateToJulianDay } = require('./julianDay');
+const timezoneHelper = require('../../utils/timezoneHelper');
 
 class BaseCalculator {
     constructor() {
@@ -18,6 +19,22 @@ class BaseCalculator {
                 console.warn('⚠️ Failed to set sidereal mode (Lahiri):', e.message);
             }
         }
+    }
+
+    getPartsInTimezone(date, timezone) {
+        return timezoneHelper.getPartsInTimezone(date, timezone);
+    }
+
+    getUtcDateForLocalTime(year, month, day, hour, minute, second, timezone) {
+        return timezoneHelper.getUtcDateForLocalTime(year, month, day, hour, minute, second, timezone);
+    }
+
+    getStartOfDay(date, timezone) {
+        return timezoneHelper.getStartOfDay(date, timezone);
+    }
+
+    getEndOfDay(date, timezone) {
+        return timezoneHelper.getEndOfDay(date, timezone);
     }
 
     /**

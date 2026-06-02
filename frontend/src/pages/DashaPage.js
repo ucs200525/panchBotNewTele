@@ -4,9 +4,12 @@ import { Section } from '../components/layout';
 import { CityAutocomplete } from '../components/forms';
 import { useAuth } from '../context/AuthContext';
 import { saveProfile, getProfile, getAllProfiles } from '../utils/profileStorage';
+import { useBirthProfiles } from '../context/BirthProfileContext';
+import ProfileSelector from '../components/common/ProfileSelector';
 
 
 const DashaPage = () => {
+    const { selectedProfile } = useBirthProfiles();
     const { setCityAndDate } = useAuth();
     const [name, setName] = useState('');
     const [cityName, setCityName] = useState(() => localStorage.getItem('selectedCity') || '');
@@ -22,6 +25,17 @@ const DashaPage = () => {
     useEffect(() => {
         setSavedProfiles(getAllProfiles());
     }, []);
+
+    // Sync input fields when global birth profile selection changes
+    useEffect(() => {
+        if (selectedProfile) {
+            setName(selectedProfile.name);
+            setCityName(selectedProfile.city || '');
+            setCurrentDate(selectedProfile.dob || '');
+            setBirthTime(selectedProfile.time || '12:00');
+            fetchDashaData(selectedProfile.city, selectedProfile.dob || '', false);
+        }
+    }, [selectedProfile]);
 
     // Initial load: Fetch data automatically if we have city and date
     useEffect(() => {
@@ -109,6 +123,7 @@ const DashaPage = () => {
 
     return (
         <div className={styles.content}>
+            <ProfileSelector />
             {/* Hero Section */}
             <div className="hero-section">
                 <div className="hero-content">
